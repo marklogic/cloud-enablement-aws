@@ -1,0 +1,36 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "9.0-3",
+    "parameters": {
+        "virtualNetworkSetting": {
+            "type": "object"
+        }
+    },
+    "resources": [
+        {
+            "name": "[parameters('virtualNetworkSetting').name]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "location": "[parameters('virtualNetworkSetting').location]",
+            "apiVersion": "[parameters('virtualNetworkSetting').apiVersion]",
+            "dependsOn": [],
+            "tags": {
+                "displayName": "[parameters('virtualNetworkSetting').name]"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('virtualNetworkSetting').virtualNetworkPrefix]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('virtualNetworkSetting').virtualNetworkSubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('virtualNetworkSetting').virtualNetworkSubnetPrefix]"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

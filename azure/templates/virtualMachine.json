@@ -1,0 +1,102 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "virtualMachineSetting": {
+      "type": "object"
+    }
+  },
+  "variables": {
+    "location": "[parameters('virtualMachineSettings').location]",
+    "computeApiVersion": "[parameters('virtualMachineSettings').computeApiVersion]",
+    "vmName": "[parameters('virtualMachineSettings').vmName]",
+    "vmSize": "[parameters('virtualMachineSettings').vmSize]",
+    "adminUsername": "[parameters('virtualMachineSettings').adminUsername]",
+    "adminPasswordOrSshKey": "[parameters('virtualMachineSettings').adminPasswordOrSshKey]",
+    "imagePublisher": "[parameters('virtualMachineSettings').imagePublisher]",
+    "imageOffer": "[parameters('virtualMachineSettings').imageOffer]",
+    "imageSKU": "[parameters('virtualMachineSettings').imageSKU]",
+    "imageVersion": "[parameters('virtualMachineSettings').imageVersion]",
+    "osDiskStorageAccountName": "[parameters('virtualMachineSettings').osDiskStorageAccountName]",
+    "dataDiskStorageAccountName": "[parameters('virtualMachineSettings').dataDiskStorageAccountName]",
+    "vmStorageAccountContainerName": "[parameters('virtualMachineSettings').vmStorageAccountContainerName]",
+    "networkInterfaceName": "[parameters('virtualMachineSettings').networkInterfaceName]",
+    "dataDiskSizeGB": "[parameters('virtualMachineSettings').dataDiskSizeGB]",
+    "count": "[parameters('virtualMachineSettings').count]",
+    "availabilitySetName": "[parameters('virtualMachineSettings').availabilitySetName]"
+  },
+  "resources": [
+    {
+      "apiVersion": "[parameters('virtualMachineSetting').computeApiVersion]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(parameters('virtualMachineSetting').name,'-',copyIndex())]",
+      "location": "[parameters('virtualMachineSetting').location]",
+      "copy": {
+        "name": "vmLoop",
+        "count": "[parameters('virtualMachineSetting').count]"
+      },
+      "plan": {
+        "name": "[parameters('virtualMachineSetting').imageSKU]",
+        "publisher": "[parameters('virtualMachineSetting').imagePublisher]",
+        "product": "[parameters('virtualMachineSetting').imageOffer]"
+      },
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('virtualMachineSetting').availabilitySetName)]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('virtualMachineSetting').vmSize]"
+        },
+        "osProfile": {
+          "computername": "[concat(parameters('virtualMachineSetting').name,'-',copyIndex())]",
+          "adminUsername": "[parameters('virtualMachineSetting').adminUsername]",
+          "linuxConfiguration": {
+            "disablePasswordAuthentication": "true",
+            "ssh": {
+              "publicKeys": [
+                {
+                  "path": "[concat('/home/',parameters('virtualMachineSetting').adminUsername,'/.ssh/authorized_keys')]",
+                  "keyData": "[parameters('virtualMachineSetting').sshKey]"
+                }
+              ]
+            }
+          }
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[parameters('virtualMachineSetting').imagePublisher]",
+            "offer": "[parameters('virtualMachineSetting').imageOffer]",
+            "sku": "[parameters('virtualMachineSetting').imageSKU]",
+            "version": "[parameters('virtualMachineSetting').imageVersion]"
+          },
+          "osDisk": {
+            "name": "[concat(parameters('virtualMachineSetting').name,'-osDisk')]",
+            "vhd": {
+              "uri": "[concat('http://', variables('osDiskStorageAccountName'), '.blob.core.windows.net/',variables('vmStorageAccountContainerName'),copyIndex(),'/', variables('vmName'),'-osdisk.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          },
+          "dataDisks": [
+            {
+              "name": "[concat(variables('vmName'),'-datadisk0')]",
+              "diskSizeGB": "[variables('dataDiskSizeGB')]",
+              "lun": 0,
+              "vhd": {
+                "Uri": "[concat('http://', variables('dataDiskStorageAccountName'), '.blob.core.windows.net/',variables('vmStorageAccountContainerName'),copyIndex(),'/', variables('vmName'),'-datadisk.vhd')]"
+              },
+              "createOption": "Empty"
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('networkInterfaceName'), copyIndex()))]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

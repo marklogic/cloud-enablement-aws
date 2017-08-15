@@ -1,0 +1,162 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "9.0-3",
+    "parameters": {
+        "ClusterName": {
+            "type": "string",
+            "minLength": 0,
+            "metadata": {
+                "description": "The name of the cluster"
+            }
+        },
+        "AdminUser": {
+            "type": "string",
+            "minLength": 0,
+            "metadata": {
+                "description": "The MarkLogic Administrator Username"
+            }
+        },
+        "AdminPass": {
+            "type": "string",
+            "minLength": 0,
+            "metadata": {
+                "description": "The MarkLogic Administrator Username"
+            }
+        },
+        "Licensee": {
+            "type": "string",
+            "minLength": 0,
+            "defaultValue": "none",
+            "metadata": {
+                "description": "The MarkLogic Licensee or 'none'"
+            }
+        },
+        "LicenseKey": {
+            "type": "string",
+            "minLength": 0,
+            "defaultValue": "none",
+            "metadata": {
+                "description": "The MarkLogic License Key or 'none'"
+            }
+        },
+        "NumberOfNodes": {
+            "type": "int",
+            "defaultValue": 3,
+            "allowedValues": [1,3],
+            "metadata": {
+                "description": "Total number of nodes in the cluster"
+            }
+        },
+        "EnableAvailabilitySet": {
+            "type": "bool",
+            "defaultValue": "true",
+            "metadata": {
+                "description": "Whether to put virtual machines in an Availability Set"
+            }
+        },
+        "LoadBalancer": {
+            "type": "string",
+            "defaultValue": "public",
+            "allowedValues": ["public", "internal"],
+            "metadata": {
+                "description": "Type of load balancer to use, public or internal"
+            }
+        },
+        "IPv6": {
+            "type": "bool",
+            "defaultValue": "true",
+            "metadata": {
+                "description": "Whether to enable IPv6 on the cluster"
+            }
+        },
+        "OSStorage": {
+            "type": "string",
+            "defaultValue": "premium",
+            "allowedValue": ["premium", "standard"],
+            "metadata": {
+                "description": "Storage type for operating system of virtual machines, premium or standard"
+            }
+        },
+        "DataStorage": {
+            "type": "string",
+            "defaultValue": "premium",
+            "allowedValue": ["preimum", "standard"],
+            "metadata": {
+                "description": "Storage type for data directory of virtual machines, premium or standard"
+            }
+        },
+        "VirtualMachineUser": {
+            "type": "string",
+            "minLength": 0,
+            "metadata": {
+                "description": "Username used to log into virtual machines"
+            }
+        },
+        "SSHPublicKey": {
+            "type": "string",
+            "minLength": 0,
+            "metadata": {
+                "description": "The public key for SSH"
+            }
+        },
+        "InstanceType": {
+            "type": "string",
+            "defaultValue": "TBD",
+            "allowedValues": ["TBD"],
+            "metadata": {
+                "description": "Type of virtual machine to launch"
+            }
+        },
+        "HighAvailability": {
+            "type": "bool",
+            "defaultValue": "true",
+            "metadata": {
+                "description": "Whether to configure high availability on MarkLogic cluster"
+            }
+        }
+    },
+    "variables": {
+        "clusterPrefix": "[replace(parameters('ClusterName'),' ','')]",
+        "clusterLocation": "[resourceGroup().location]",
+        "internalLoadBalancerPrivateIP": "10.0.1.10",
+        "apiVersions": {
+            "deploymentApiVersion": "2015-01-01",
+            "networkApiVersion": "2015-06-15",
+            "storageApiVersion": "2015-06-15",
+            "computeApiVersion": "2015-06-15"
+        },
+        "availabilitySetSetting": {
+            "name": "[concat(variables('clusterPrefix'),'-availset')]",
+            "location": "[varaibles('clusterLocation')]",
+            "updateDomainCount": "20",
+            "faultDomainCount": "3",
+            "apiVersion": "[variables('apiVersions').networkApiVersion]"
+        },
+        "virtualNetworkSetting": {
+            "name": "[concat(variables('clusterPrefix'),'-vnet')]",
+            "location": "[varaibles('clusterLocation')]",
+            "virtualNetworkPrefix": "10.0.0.0/16",
+            "virtualNetworkSubnetName": "[concat(variables('virtualNetworkSetting'),'-subnet')]",
+            "virtualNetworkSubnetPrefix": "10.0.1.0/24",
+            "apiVersion": "[variables('apiVersions').networkApiVersion]"
+        },
+        "networkSecurityGroupSetting": {
+            "name": "[concat(variables('clusterPrefix'),'-nsg')]",
+            "location": "[varaibles('clusterLocation')]",
+            "apiVersion": "[variables('apiVersions').networkApiVersion]"
+        },
+        "nodePublicIpSetting": {
+            "name": "[concat(variables('clusterPrefix'),'-ip')]",
+            "location": "[varaibles('clusterLocation')]",
+            "domainNameLabel": "[concat(variables('clusterPrefix'),'-',uniqueString(variables('clusterPrefix')))]",
+            "IPAllocationMethod": "Static",
+            "idleTimeout": "4",
+            "count": "[parameters('NumberOfNodes')]",
+            "apiVersion": "[variables('apiVersions').networkApiVersion]"
+        },
+        "publicLBIpSetting": {},
+        "publicLBSetting": {},
+        "virtualMachineSetting": {}
+    },
+    "resources": []
+}
