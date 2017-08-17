@@ -13,7 +13,7 @@
             "name": "[concat(parameters('nodePublicIpSetting').name,'v4-node',copyIndex())]",
             "location": "[parameters('nodePublicIpSetting').location]",
             "properties": {
-                "publicIPAllocationMethod": "[parameters('nodePublicIpSetting').IPAllocationMethod]",
+                "publicIPAllocationMethod": "[parameters('nodePublicIpSetting').IPv4AllocationMethod]",
                 "idleTimeoutInMinutes": "[parameters('nodePublicIpSetting').idleTimeout]",
                 "publicIpAddressVersion": "IPv4",
                 "dnsSettings": {
@@ -31,7 +31,7 @@
             "name": "[concat(parameters('nodePublicIpSetting').name,'v6-node',copyIndex())]",
             "location": "[parameters('nodePublicIpSetting').location]",
             "properties": {
-                "publicIPAllocationMethod": "[parameters('nodePublicIpSetting').IPAllocationMethod]",
+                "publicIPAllocationMethod": "[parameters('nodePublicIpSetting').IPv6AllocationMethod]",
                 "idleTimeoutInMinutes": "[parameters('nodePublicIpSetting').idleTimeout]",
                 "publicIpAddressVersion": "IPv6",
                 "dnsSettings": {

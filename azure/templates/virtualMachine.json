@@ -72,7 +72,7 @@
           "osDisk": {
             "name": "[concat(parameters('virtualMachineSetting').name,'-osDisk')]",
             "vhd": {
-              "uri": "[concat('http://', variables('osDiskStorageAccountName'), '.blob.core.windows.net/',variables('vmStorageAccountContainerName'),copyIndex(),'/', variables('vmName'),'-osdisk.vhd')]"
+              "uri": "[concat('http://', parameters('virtualMachineSetting').osDiskStorageAccountName, '.blob.core.windows.net/',variables('vmStorageAccountContainerName'),copyIndex(),'/', variables('vmName'),'-osdisk.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"

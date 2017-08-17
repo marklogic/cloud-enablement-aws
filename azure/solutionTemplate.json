@@ -72,7 +72,7 @@
         "OSStorage": {
             "type": "string",
             "defaultValue": "premium",
-            "allowedValue": ["premium", "standard"],
+            "allowedValues": ["premium", "standard"],
             "metadata": {
                 "description": "Storage type for operating system of virtual machines, premium or standard"
             }
@@ -80,7 +80,7 @@
         "DataStorage": {
             "type": "string",
             "defaultValue": "premium",
-            "allowedValue": ["preimum", "standard"],
+            "allowedValues": ["premium", "standard"],
             "metadata": {
                 "description": "Storage type for data directory of virtual machines, premium or standard"
             }
@@ -116,6 +116,8 @@
         }
     },
     "variables": {
+        "templateVersion": "9.0-3",
+        "templateRepoUrl": "https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/cloud-enablement/azure/templates/",
         "clusterPrefix": "[replace(parameters('ClusterName'),' ','')]",
         "clusterLocation": "[resourceGroup().location]",
         "internalLoadBalancerPrivateIP": "10.0.1.10",
@@ -125,31 +127,38 @@
             "storageApiVersion": "2015-06-15",
             "computeApiVersion": "2015-06-15"
         },
+        "templateUrls": {
+            "availabilitySetTemplateUrl": "[concat(variables('templateRepoUrl'),'availabilitySet.json')]",
+            "vnetTemplateUrl": "[concat(variables('templateRepoUrl'),'virtualNetwork.json')]",
+            "nodePublicIpTemplateUrl": "[concat(variables('templateRepoUrl'),'nodePublicIp.json')]",
+            "networkSecurityGroupTemplateUrl": "[concat(variables('templateRepoUrl'),'networkSecurityGroup.json')]"
+        },
         "availabilitySetSetting": {
             "name": "[concat(variables('clusterPrefix'),'-availset')]",
-            "location": "[varaibles('clusterLocation')]",
+            "location": "[variables('clusterLocation')]",
             "updateDomainCount": "20",
             "faultDomainCount": "3",
             "apiVersion": "[variables('apiVersions').networkApiVersion]"
         },
         "virtualNetworkSetting": {
             "name": "[concat(variables('clusterPrefix'),'-vnet')]",
-            "location": "[varaibles('clusterLocation')]",
+            "location": "[variables('clusterLocation')]",
             "virtualNetworkPrefix": "10.0.0.0/16",
-            "virtualNetworkSubnetName": "[concat(variables('virtualNetworkSetting'),'-subnet')]",
+            "virtualNetworkSubnetName": "[concat(variables('clusterPrefix'),'-vnet-subnet')]",
             "virtualNetworkSubnetPrefix": "10.0.1.0/24",
             "apiVersion": "[variables('apiVersions').networkApiVersion]"
         },
         "networkSecurityGroupSetting": {
             "name": "[concat(variables('clusterPrefix'),'-nsg')]",
-            "location": "[varaibles('clusterLocation')]",
+            "location": "[variables('clusterLocation')]",
             "apiVersion": "[variables('apiVersions').networkApiVersion]"
         },
         "nodePublicIpSetting": {
             "name": "[concat(variables('clusterPrefix'),'-ip')]",
-            "location": "[varaibles('clusterLocation')]",
+            "location": "[variables('clusterLocation')]",
             "domainNameLabel": "[concat(variables('clusterPrefix'),'-',uniqueString(variables('clusterPrefix')))]",
-            "IPAllocationMethod": "Static",
+            "IPv4AllocationMethod": "Static",
+            "IPv6AllocationMethod": "Dynamic",
             "idleTimeout": "4",
             "count": "[parameters('NumberOfNodes')]",
             "apiVersion": "[variables('apiVersions').networkApiVersion]"
@@ -158,5 +167,74 @@
         "publicLBSetting": {},
         "virtualMachineSetting": {}
     },
-    "resources": []
+    "resources": [
+        {
+            "name": "availabilitySet",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').deploymentAPIVersion]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').availabilitySetTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "availabilitySetSetting": {
+                        "value": "[variables('availabilitySetSetting')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "virtualNetwork",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').deploymentAPIVersion]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').vnetTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "virtualNetworkSetting": {
+                        "value": "[variables('virtualNetworkSetting')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "nodePublicIp",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').deploymentAPIVersion]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').nodePublicIpTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "nodePublicIpSetting": {
+                        "value": "[variables('nodePublicIpSetting')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "networkSerityGroup",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').deploymentAPIVersion]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').networkSecurityGroupTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "networkSecurityGroupSetting": {
+                        "value": "[variables('networkSecurityGroupSetting')]"
+                    }
+                }
+            }
+        }
+    ]
 }
