@@ -2,31 +2,31 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "9.0-3",
     "parameters": {
-        "virtualNetworkSetting": {
+        "vnetSetting": {
             "type": "object"
         }
     },
     "resources": [
         {
-            "name": "[parameters('virtualNetworkSetting').name]",
+            "name": "[parameters('vnetSetting').name]",
             "type": "Microsoft.Network/virtualNetworks",
-            "location": "[parameters('virtualNetworkSetting').location]",
-            "apiVersion": "[parameters('virtualNetworkSetting').apiVersion]",
+            "location": "[parameters('vnetSetting').location]",
+            "apiVersion": "[parameters('vnetSetting').apiVersion]",
             "dependsOn": [],
             "tags": {
-                "displayName": "[parameters('virtualNetworkSetting').name]"
+                "displayName": "[parameters('vnetSetting').name]"
             },
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
-                        "[parameters('virtualNetworkSetting').virtualNetworkPrefix]"
+                        "[parameters('vnetSetting').vnetPrefix]"
                     ]
                 },
                 "subnets": [
                     {
-                        "name": "[parameters('virtualNetworkSetting').virtualNetworkSubnetName]",
+                        "name": "[parameters('vnetSetting').vnetSubnetName]",
                         "properties": {
-                            "addressPrefix": "[parameters('virtualNetworkSetting').virtualNetworkSubnetPrefix]"
+                            "addressPrefix": "[parameters('vnetSetting').vnetSubnetPrefix]"
                         }
                     }
                 ]

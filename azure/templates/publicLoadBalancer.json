@@ -12,7 +12,7 @@
     "variables": {
         "ipv4Name": "[concat(parameters('publicLBIpSetting').name,'v4')]",
         "ipv6Name": "[concat(parameters('publicLBIpSetting').name,'v6')]"
-    }
+    },
     "resources": [
         {
             "apiVersion": "[parameters('publicLBSetting').apiVersion]",

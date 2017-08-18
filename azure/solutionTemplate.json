@@ -16,7 +16,7 @@
                 "description": "The MarkLogic Administrator Username"
             }
         },
-        "AdminPass": {
+        "AdminPassword": {
             "type": "string",
             "minLength": 0,
             "metadata": {
@@ -62,7 +62,7 @@
                 "description": "Type of load balancer to use, public or internal"
             }
         },
-        "IPv6": {
+        "IPV6": {
             "type": "bool",
             "defaultValue": "true",
             "metadata": {
@@ -131,7 +131,8 @@
             "availabilitySetTemplateUrl": "[concat(variables('templateRepoUrl'),'availabilitySet.json')]",
             "vnetTemplateUrl": "[concat(variables('templateRepoUrl'),'virtualNetwork.json')]",
             "nodePublicIpTemplateUrl": "[concat(variables('templateRepoUrl'),'nodePublicIp.json')]",
-            "networkSecurityGroupTemplateUrl": "[concat(variables('templateRepoUrl'),'networkSecurityGroup.json')]"
+            "nsgTemplateUrl": "[concat(variables('templateRepoUrl'),'networkSecurityGroup.json')]",
+            "networkInterfaceTemplateUrl": "[concat(variables('templateRepoUrl'),'networkInterface.json')]"
         },
         "availabilitySetSetting": {
             "name": "[concat(variables('clusterPrefix'),'-availset')]",
@@ -140,15 +141,15 @@
             "faultDomainCount": "3",
             "apiVersion": "[variables('apiVersions').networkApiVersion]"
         },
-        "virtualNetworkSetting": {
+        "vnetSetting": {
             "name": "[concat(variables('clusterPrefix'),'-vnet')]",
             "location": "[variables('clusterLocation')]",
-            "virtualNetworkPrefix": "10.0.0.0/16",
-            "virtualNetworkSubnetName": "[concat(variables('clusterPrefix'),'-vnet-subnet')]",
-            "virtualNetworkSubnetPrefix": "10.0.1.0/24",
+            "vnetPrefix": "10.0.0.0/16",
+            "vnetSubnetName": "[concat(variables('clusterPrefix'),'-vnet-subnet')]",
+            "vnetSubnetPrefix": "10.0.1.0/24",
             "apiVersion": "[variables('apiVersions').networkApiVersion]"
         },
-        "networkSecurityGroupSetting": {
+        "nsgSetting": {
             "name": "[concat(variables('clusterPrefix'),'-nsg')]",
             "location": "[variables('clusterLocation')]",
             "apiVersion": "[variables('apiVersions').networkApiVersion]"
@@ -163,13 +164,28 @@
             "count": "[parameters('NumberOfNodes')]",
             "apiVersion": "[variables('apiVersions').networkApiVersion]"
         },
+        "networkInterfaceSetting": {
+            "name": "[concat(variables('clusterPrefix'),'-networkInterface')]",
+            "apiVersion": "[variables('apiVersions').networkApiVersion]",
+            "location": "[variables('clusterLocation')]",
+            "count":  "[parameters('NumberOfNodes')]",
+            "vnetName": "[variables('vnetSetting').name]",
+            "subnetName": "[variables('vnetSetting').vnetSubnetName]",
+            "nodePublicIpName": "[variables('nodePublicIpSetting').name]",
+            "nsgName": "[variables('nsgSetting').name]"
+        },
         "publicLBIpSetting": {},
         "publicLBSetting": {},
-        "virtualMachineSetting": {}
+        "virtualMachineSetting": {
+            "imagePublisher": "marklogic",
+            "imageOffer": "marklogic-developer-9",
+            "imageSku": "ml902_centos",
+            "imageVersion": "latest"
+        }
     },
     "resources": [
         {
-            "name": "availabilitySet",
+            "name": "availabilitySetDeployment",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "[variables('apiVersions').deploymentAPIVersion]",
             "properties": {
@@ -186,7 +202,7 @@
             }
         },
         {
-            "name": "virtualNetwork",
+            "name": "vnetDeployment",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "[variables('apiVersions').deploymentAPIVersion]",
             "properties": {
@@ -196,14 +212,14 @@
                     "contentVersion": "[variables('templateVersion')]"
                 },
                 "parameters": {
-                    "virtualNetworkSetting": {
-                        "value": "[variables('virtualNetworkSetting')]"
+                    "vnetSetting": {
+                        "value": "[variables('vnetSetting')]"
                     }
                 }
             }
         },
         {
-            "name": "nodePublicIp",
+            "name": "nodePublicIpDeployment",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "[variables('apiVersions').deploymentAPIVersion]",
             "properties": {
@@ -220,18 +236,40 @@
             }
         },
         {
-            "name": "networkSerityGroup",
+            "name": "nsgDeployment",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "[variables('apiVersions').deploymentAPIVersion]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[variables('templateUrls').networkSecurityGroupTemplateUrl]",
+                    "uri": "[variables('templateUrls').nsgTemplateUrl]",
                     "contentVersion": "[variables('templateVersion')]"
                 },
                 "parameters": {
-                    "networkSecurityGroupSetting": {
-                        "value": "[variables('networkSecurityGroupSetting')]"
+                    "nsgSetting": {
+                        "value": "[variables('nsgSetting')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "networkInterfaceDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').deploymentAPIVersion]",
+            "dependsOn": [
+                "vnetDeployment",
+                "nodePublicIpDeployment",
+                "nsgDeployment"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').networkInterfaceTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "networkInterfaceSetting": {
+                        "value": "[variables('networkInterfaceSetting')]"
                     }
                 }
             }

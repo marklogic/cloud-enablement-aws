@@ -2,16 +2,16 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "9.0-3",
     "parameters": {
-        "networkSecurityGroupSetting": {
+        "nsgSetting": {
                 "type": "object"
         }
     },
     "resources": [
         {
-            "apiVersion": "[parameters('networkSecurityGroupSetting').apiVersion]",
+            "apiVersion": "[parameters('nsgSetting').apiVersion]",
             "type": "Microsoft.Network/networkSecurityGroups",
-            "name": "[parameters('networkSecurityGroupSetting').name]",
-            "location": "[parameters('networkSecurityGroupSetting').location]",
+            "name": "[parameters('nsgSetting').name]",
+            "location": "[parameters('nsgSetting').location]",
             "properties": {
                 "securityRules": [
                     {

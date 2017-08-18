@@ -1,0 +1,44 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "9.0-3",
+    "parameters": {
+        "networkInterfaceSetting": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "vnetId": "[resourceId('Microsoft.Network/virtualNetworks',parameters('networkInterfaceSetting').vnetName)]",
+        "subnetId": "[concat(variables('vnetId'),'/subnets/',parameters('networkInterfaceSetting').subnetName)]"
+    },
+    "resources": [
+        {
+            "name": "[concat(parameters('networkInterfaceSetting').name,'-',copyIndex())]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "[parameters('networkInterfaceSetting').apiVersion]",
+            "location": "[parameters('networkInterfaceSetting').location]",
+            "copy": {
+                "name": "networkInterfaceLoop",
+                "count": "[parameters('networkInterfaceSetting').count]"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetId')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIpAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses',concat(parameters('networkInterfaceSetting').nodePublicIpName,'v4-node',copyIndex()))]",
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups',parameters('networkInterfaceSetting').nsgName)]"
+                }
+            }
+        }
+    ]
+}
