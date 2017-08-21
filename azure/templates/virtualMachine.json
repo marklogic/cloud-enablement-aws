@@ -6,16 +6,34 @@
       "type": "object"
     }
   },
-  "variables": {
-    "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vmSetting').vnetName)]",
-    "subnetId": "[concat(variables('vnetId'), '/subnets/', parameters('vmSetting').subnetName)]"
-  },
   "resources": [
+    {
+        "apiVersion": "[parameters('vmSetting').storageApiVersion]",
+        "type": "Microsoft.Compute/disks",
+        "name": "[concat(parameters('vmSetting').dataDiskName,'-',copyIndex())]",
+        "location": "[parameters('vmSetting').location]",
+        "copy": {
+            "name": "dataDiskLoop",
+            "count": "[parameters('vmSetting').count]"
+        },
+        "sku": {
+            "name": "[parameters('vmSetting').accountType]"
+        },
+        "properties": {
+            "creationData": {
+                "createOption": "[parameters('vmSetting').dataDiskCreateOption]"
+            },
+            "diskSizeGB": "[parameters('vmSetting').dataDiskSizeGB]"
+        }
+    },
     {
       "apiVersion": "[parameters('vmSetting').computeApiVersion]",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(parameters('vmSetting').name,'-',copyIndex())]",
+      "name": "[concat(parameters('vmSetting').vmName,'-',copyIndex())]",
       "location": "[parameters('vmSetting').location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/disks/',concat(parameters('vmSetting').dataDiskName,'-',copyIndex()))]"
+      ],
       "copy": {
         "name": "vmLoop",
         "count": "[parameters('vmSetting').count]"
@@ -33,7 +51,7 @@
           "vmSize": "[parameters('vmSetting').vmSize]"
         },
         "osProfile": {
-          "computername": "[concat(parameters('vmSetting').name,'-',copyIndex())]",
+          "computername": "[concat(parameters('vmSetting').vmName,'-',copyIndex())]",
           "adminUsername": "[parameters('vmSetting').adminUsername]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
@@ -55,59 +73,30 @@
             "version": "[parameters('vmSetting').imageVersion]"
           },
           "osDisk": {
-            "name": "[concat(parameters('vmSetting').name,'-osDisk')]",
-            "vhd": {
-              "uri": "[concat('http://', parameters('vmSetting').osDiskStorageAccountName, '.blob.core.windows.net/',variables('vmStorageAccountContainerName'),copyIndex(),'/', variables('vmName'),'-osdisk.vhd')]"
+            "managedDisk": {
+                "storageAccountType": "[parameters('vmSetting').osDiskAcctType]"
             },
-            "caching": "ReadWrite",
             "createOption": "FromImage"
           },
           "dataDisks": [
             {
-              "name": "[concat(variables('vmName'),'-datadisk0')]",
-              "diskSizeGB": "[variables('dataDiskSizeGB')]",
               "lun": 0,
-              "vhd": {
-                "Uri": "[concat('http://', variables('dataDiskStorageAccountName'), '.blob.core.windows.net/',variables('vmStorageAccountContainerName'),copyIndex(),'/', variables('vmName'),'-datadisk.vhd')]"
-              },
-              "createOption": "Empty"
+              "name": "[concat(parameters('vmSetting').dataDiskName,'-',copyIndex())]",
+              "createOption": "attach",
+              "managedDisk": {
+                  "id": "[resourceId('Microsoft.Compute/disks/',concat(parameters('vmSetting').dataDiskName,'-',copyIndex()))]"
+              }
             }
           ]
         },
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('networkInterfaceName'), copyIndex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('vmSetting').networkInterfaceName,'-',copyIndex()))]"
             }
           ]
         }
       }
-    },
-    {
-        "name": "[parameters('vmSetting').networkInterfaceName]",
-        "type": "Microsoft.Network/networkInterfaces",
-        "apiVersion": "[parameters('vmSetting').networkInterfaceName.apiVersion]",
-        "location": "[parameters('vmSetting').location]",
-        "dependsOn": [],
-        "properties": {
-            "ipConfigurations": [
-                {
-                    "name": "ipconfig1",
-                    "properties": {
-                        "subnet": {
-                            "id": "[variables('subnetId')]"
-                        },
-                        "privateIPAllocationMethod": "Static",
-                        "publicIpAddress": {
-                            "id": "[resourceId('Microsoft.Network/publicIpAddresses', parameters('publicIpAddressName'))]"
-                        }
-                    }
-                }
-            ],
-            "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('vmSetting').networkSecurityGroupName)]"
-            }
-        }
     }
   ]
 }

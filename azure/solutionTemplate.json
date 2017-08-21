@@ -122,24 +122,25 @@
         "clusterLocation": "[resourceGroup().location]",
         "internalLoadBalancerPrivateIP": "10.0.1.10",
         "apiVersions": {
-            "deploymentApiVersion": "2015-01-01",
-            "networkApiVersion": "2015-06-15",
-            "storageApiVersion": "2015-06-15",
-            "computeApiVersion": "2015-06-15"
+            "resourcesApiVersion": "2016-09-01",
+            "networkApiVersion": "2017-08-01",
+            "storageApiVersion": "2017-03-30",
+            "computeApiVersion": "2017-03-30"
         },
         "templateUrls": {
             "availabilitySetTemplateUrl": "[concat(variables('templateRepoUrl'),'availabilitySet.json')]",
             "vnetTemplateUrl": "[concat(variables('templateRepoUrl'),'virtualNetwork.json')]",
             "nodePublicIpTemplateUrl": "[concat(variables('templateRepoUrl'),'nodePublicIp.json')]",
             "nsgTemplateUrl": "[concat(variables('templateRepoUrl'),'networkSecurityGroup.json')]",
-            "networkInterfaceTemplateUrl": "[concat(variables('templateRepoUrl'),'networkInterface.json')]"
+            "networkInterfaceTemplateUrl": "[concat(variables('templateRepoUrl'),'networkInterface.json')]",
+            "vmTemplateUrl": "[concat(variables('templateRepoUrl'),'virtualMachine.json')]"
         },
         "availabilitySetSetting": {
             "name": "[concat(variables('clusterPrefix'),'-availset')]",
             "location": "[variables('clusterLocation')]",
             "updateDomainCount": "20",
             "faultDomainCount": "3",
-            "apiVersion": "[variables('apiVersions').networkApiVersion]"
+            "apiVersion": "[variables('apiVersions').computeApiVersion]"
         },
         "vnetSetting": {
             "name": "[concat(variables('clusterPrefix'),'-vnet')]",
@@ -176,18 +177,38 @@
         },
         "publicLBIpSetting": {},
         "publicLBSetting": {},
-        "virtualMachineSetting": {
+        "vmSetting": {
+            "location": "[variables('clusterLocation')]",
+            "count": "[parameters('NumberOfNodes')]",
+
+            "diagnoStorageAcctName": "[concat(toLower(variables('clusterPrefix')),'diagnostorageacct')]",
+            "storageApiVersion": "[variables('apiVersions').storageApiVersion]",
+            "diagnoStorageAccType": "Standard_RAGRS",
+
+            "dataDiskName": "[concat(variables('clusterPrefix'),'-disk')]",
+            "dataDiskCreateOption": "Empty",
+            "accountType": "Premium_LRS",
+            "dataDiskSizeGB": 1023,
+
+            "computeApiVersion": "[variables('apiVersions').computeApiVersion]",
+            "vmName": "[concat(variables('clusterPrefix'),'-vm')]",
             "imagePublisher": "marklogic",
             "imageOffer": "marklogic-developer-9",
             "imageSku": "ml902_centos",
-            "imageVersion": "latest"
+            "imageVersion": "latest",
+            "availabilitySetName": "[variables('availabilitySetSetting').name]",
+            "vmSize": "Standard_DS11",
+            "adminUsername": "[parameters('VirtualMachineUser')]",
+            "sshKey": "[parameters('SSHPublicKey')]",
+            "osDiskAcctType": "Premium_LRS",
+            "networkInterfaceName": "[variables('networkInterfaceSetting').name]"
         }
     },
     "resources": [
         {
             "name": "availabilitySetDeployment",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "[variables('apiVersions').deploymentAPIVersion]",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -204,7 +225,7 @@
         {
             "name": "vnetDeployment",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "[variables('apiVersions').deploymentAPIVersion]",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -221,7 +242,7 @@
         {
             "name": "nodePublicIpDeployment",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "[variables('apiVersions').deploymentAPIVersion]",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -238,7 +259,7 @@
         {
             "name": "nsgDeployment",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "[variables('apiVersions').deploymentAPIVersion]",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -255,7 +276,7 @@
         {
             "name": "networkInterfaceDeployment",
             "type": "Microsoft.Resources/deployments",
-            "apiVersion": "[variables('apiVersions').deploymentAPIVersion]",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
             "dependsOn": [
                 "vnetDeployment",
                 "nodePublicIpDeployment",
@@ -270,6 +291,27 @@
                 "parameters": {
                     "networkInterfaceSetting": {
                         "value": "[variables('networkInterfaceSetting')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "virtualMachineDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
+            "dependsOn": [
+                "networkInterfaceDeployment",
+                "availabilitySetDeployment"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').vmTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "vmSetting": {
+                        "value": "[variables('vmSetting')]"
                     }
                 }
             }

@@ -16,6 +16,9 @@
             "tags": {
                 "displayName": "[parameters('availabilitySetSetting').name]"
             },
+            "sku": {
+                "name": "Aligned"
+            },
             "properties": {
                 "platformUpdateDomainCount": "[parameters('availabilitySetSetting').updateDomainCount]",
                 "platformFaultDomainCount": "[parameters('availabilitySetSetting').faultDomainCount]"
