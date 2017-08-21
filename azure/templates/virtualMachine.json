@@ -6,6 +6,11 @@
       "type": "object"
     }
   },
+  "variables": {
+      "availabilitySetId": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('vmSetting').availabilitySetName)]"
+      }
+  },
   "resources": [
     {
         "apiVersion": "[parameters('vmSetting').storageApiVersion]",
@@ -17,7 +22,7 @@
             "count": "[parameters('vmSetting').count]"
         },
         "sku": {
-            "name": "[parameters('vmSetting').accountType]"
+            "name": "[parameters('vmSetting').dataDiskAcctType]"
         },
         "properties": {
             "creationData": {
@@ -44,9 +49,7 @@
         "product": "[parameters('vmSetting').imageOffer]"
       },
       "properties": {
-        "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('vmSetting').availabilitySetName)]"
-        },
+        "availabilitySet": "[if(parameters('vmSetting').enableAvailabilitySet,variables('availabilitySetId'),json('null'))]",
         "hardwareProfile": {
           "vmSize": "[parameters('vmSetting').vmSize]"
         },
