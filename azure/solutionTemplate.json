@@ -230,7 +230,7 @@
         },
         "HighAvailability": {
             "type": "bool",
-            "defaultValue": "true",
+            "defaultValue": true,
             "metadata": {
                 "description": "Whether to configure high availability on MarkLogic cluster"
             }
@@ -238,12 +238,14 @@
     },
     "variables": {
         "templateVersion": "9.0-3",
-        "templateRepoUrl": "https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/cloud-enablement/azure/templates/",
+        "repositoryUrl": "https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/cloud-enablement/azure/",
+        "templateBaseUrl": "[concat(variables('repositoryUrl'),'templates/')]",
+        "scriptBaseUrl": "[concat(variables('repositoryUrl'),'scripts/')]",
         "clusterPrefix": "[replace(parameters('ClusterName'),' ','')]",
         "clusterLocation": "[resourceGroup().location]",
         "internalLoadBalancerPrivateIP": "10.0.1.10",
-        "EnableAvailabilitySet": "[if(lessOrEquals(parameters('NumberOfNodes'),1),false,parameters('EnableAvailabilitySet'))]",
-        "license": "[if(and(equals(parameters('Licensee'),'none'),equals(parameters('License'),'none')),'DEV','BYOL')]",
+        "EnableAvailabilitySet": "[if(lessOrEquals(parameters('NumberOfNodes'),1),bool('false'),parameters('EnableAvailabilitySet'))]",
+        "license": "[if(and(equals(parameters('Licensee'),'none'),equals(parameters('LicenseKey'),'none')),'DEV','BYOL')]",
         "imageOffer": "[if(equals(variables('license'),'DEV'),'marklogic-developer-9','marklogic-9-byol')]",
         "imageSku": "[if(equals(variables('license'),'DEV'),'ml902_centos','ml902_centos_byol')]",
         "apiVersions": {
@@ -253,12 +255,18 @@
             "computeApiVersion": "2017-03-30"
         },
         "templateUrls": {
-            "availabilitySetTemplateUrl": "[concat(variables('templateRepoUrl'),'availabilitySet.json')]",
-            "vnetTemplateUrl": "[concat(variables('templateRepoUrl'),'virtualNetwork.json')]",
-            "nodePublicIpTemplateUrl": "[concat(variables('templateRepoUrl'),'nodePublicIp.json')]",
-            "nsgTemplateUrl": "[concat(variables('templateRepoUrl'),'networkSecurityGroup.json')]",
-            "networkInterfaceTemplateUrl": "[concat(variables('templateRepoUrl'),'networkInterface.json')]",
-            "vmTemplateUrl": "[concat(variables('templateRepoUrl'),'virtualMachine.json')]"
+            "availabilitySetTemplateUrl": "[concat(variables('templateBaseUrl'),'availabilitySet.json')]",
+            "vnetTemplateUrl": "[concat(variables('templateBaseUrl'),'virtualNetwork.json')]",
+            "nodePublicIpTemplateUrl": "[concat(variables('templateBaseUrl'),'nodePublicIp.json')]",
+            "nsgTemplateUrl": "[concat(variables('templateBaseUrl'),'networkSecurityGroup.json')]",
+            "networkInterfaceTemplateUrl": "[concat(variables('templateBaseUrl'),'networkInterface.json')]",
+            "vmTemplateUrl": "[concat(variables('templateBaseUrl'),'virtualMachine.json')]",
+            "bootstrapNodeExtTemplateUrl": "[concat(variables('templateBaseUrl'),'bootstrapNodeExt.json')]",
+            "additionalNodeExtTemplateUrl": "[concat(variables('templateBaseUrl'),'additionalNodeExt.json')]"
+        },
+        "scriptUrls": {
+            "bootstrapNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'init-bootstrap-node.sh')]",
+            "additionalNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'init-additional-node.sh')]"
         },
         "availabilitySetSetting": {
             "name": "[concat(variables('clusterPrefix'),'-availset')]",
@@ -283,7 +291,7 @@
         "nodePublicIpSetting": {
             "name": "[concat(variables('clusterPrefix'),'-ip')]",
             "location": "[variables('clusterLocation')]",
-            "domainNameLabel": "[concat(variables('clusterPrefix'),'-',uniqueString(variables('clusterPrefix')))]",
+            "domainNameLabel": "[concat(variables('clusterPrefix'),'-',uniqueString(concat(variables('clusterPrefix'),resourceGroup().id)))]",
             "IPv4AllocationMethod": "Static",
             "IPv6AllocationMethod": "Dynamic",
             "idleTimeout": "4",
@@ -328,6 +336,21 @@
             "sshKey": "[parameters('SSHPublicKey')]",
             "osDiskAcctType": "[if(equals(parameters('OSStorage'),'standard'),'Standard_LRS','Premium_LRS')]",
             "networkInterfaceName": "[variables('networkInterfaceSetting').name]"
+        },
+        "bootstrapNodeExtSetting": {
+            "vmName": "[variables('vmSetting').vmName]",
+            "apiVersion": "[variables('apiVersions').computeApiVersion]",
+            "location": "[variables('clusterLocation')]",
+            "bootstrapNodeScriptUrl": "[variables('scriptUrls').bootstrapNodeScriptUrl]",
+            "bootstrapNodeCmd": "[concat('sh init-bootstrap-node.sh localhost ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth public 5 10')]"
+        },
+        "additionalNodeExtSetting": {
+            "vmName": "[variables('vmSetting').vmName]",
+            "apiVersion": "[variables('apiVersions').computeApiVersion]",
+            "location": "[variables('clusterLocation')]",
+            "additionalNodeExtCount": "[sub(parameters('NumberOfNodes'),1)]",
+            "additionalNodeScriptUrl": "[variables('scriptUrls').additionalNodeScriptUrl]",
+            "additionalNodeCmd": "[concat('sh init-additional-node.sh ',variables('vmSetting').vmName,'-0 ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth 5 10 localhost')]"
         }
     },
     "resources": [
@@ -439,6 +462,46 @@
                 "parameters": {
                     "vmSetting": {
                         "value": "[variables('vmSetting')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "bootstrapNodeExtDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
+            "dependsOn": [
+                "virtualMachineDeployment"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').bootstrapNodeExtTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "bootstrapNodeExtSetting": {
+                        "value": "[variables('bootstrapNodeExtSetting')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "additionalNodeExtDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
+            "dependsOn": [
+                "bootstrapNodeExtDeployment"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').additionalNodeExtTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "additionalNodeExtSetting": {
+                        "value": "[variables('additionalNodeExtSetting')]"
                     }
                 }
             }
