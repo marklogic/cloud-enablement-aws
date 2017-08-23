@@ -17,7 +17,7 @@
                 "idleTimeoutInMinutes": "[parameters('nodePublicIpSetting').idleTimeout]",
                 "publicIpAddressVersion": "IPv4",
                 "dnsSettings": {
-                    "domainNameLabel": "[concat(parameters('nodePublicIpSetting').domainNameLabel,'-node',copyIndex())]"
+                    "domainNameLabel": "[concat(parameters('nodePublicIpSetting').domainNameLabel,copyIndex())]"
                 }
             },
             "copy": {
@@ -35,7 +35,7 @@
                 "idleTimeoutInMinutes": "[parameters('nodePublicIpSetting').idleTimeout]",
                 "publicIpAddressVersion": "IPv6",
                 "dnsSettings": {
-                    "domainNameLabel": "[concat(parameters('nodePublicIpSetting').domainNameLabel,'-node',copyIndex())]"
+                    "domainNameLabel": "[concat(parameters('nodePublicIpSetting').domainNameLabel,copyIndex())]"
                 }
             },
             "copy": {

@@ -7,7 +7,9 @@
     }
   },
   "variables": {
-      "bootstrapNodeExt": "[concat(parameters('bootstrapNodeExtSetting').vmName,'-0/extone')]"
+      "bootstrapNodeExt": "[concat(parameters('bootstrapNodeExtSetting').vmName,'-0/extone')]",
+      "vmDNS": "[concat(parameters('bootstrapNodeExtSetting').dnsPrefix,'0.',parameters('bootstrapNodeExtSetting').vmLocation,'.cloudapp.azure.com')]",
+      "cmd": "[concat(parameters('bootstrapNodeExtSetting').cmdPrefix,' ',variables('vmDNS'))]"
   },
   "resources": [
     {
@@ -26,7 +28,7 @@
           ]
         },
         "protectedSettings": {
-          "commandToExecute": "[parameters('bootstrapNodeExtSetting').bootstrapNodeCmd]"
+          "commandToExecute": "[variables('cmd')]"
         }
       }
     }

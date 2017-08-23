@@ -291,7 +291,7 @@
         "nodePublicIpSetting": {
             "name": "[concat(variables('clusterPrefix'),'-ip')]",
             "location": "[variables('clusterLocation')]",
-            "domainNameLabel": "[concat(variables('clusterPrefix'),'-',uniqueString(concat(variables('clusterPrefix'),resourceGroup().id)))]",
+            "domainNameLabel": "[concat(variables('clusterPrefix'),'-',uniqueString(concat(variables('clusterPrefix'),resourceGroup().id)),'-')]",
             "IPv4AllocationMethod": "Static",
             "IPv6AllocationMethod": "Dynamic",
             "idleTimeout": "4",
@@ -342,7 +342,9 @@
             "apiVersion": "[variables('apiVersions').computeApiVersion]",
             "location": "[variables('clusterLocation')]",
             "bootstrapNodeScriptUrl": "[variables('scriptUrls').bootstrapNodeScriptUrl]",
-            "bootstrapNodeCmd": "[concat('sh init-bootstrap-node.sh localhost ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth public 5 10')]"
+            "cmdPrefix": "[concat('sh init-bootstrap-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth public 5 10')]",
+            "dnsPrefix": "[variables('nodePublicIpSetting').domainNameLabel]",
+            "vmLocation": "[variables('vmSetting').location]"
         },
         "additionalNodeExtSetting": {
             "vmName": "[variables('vmSetting').vmName]",
@@ -350,7 +352,9 @@
             "location": "[variables('clusterLocation')]",
             "additionalNodeExtCount": "[sub(parameters('NumberOfNodes'),1)]",
             "additionalNodeScriptUrl": "[variables('scriptUrls').additionalNodeScriptUrl]",
-            "additionalNodeCmd": "[concat('sh init-additional-node.sh ',variables('vmSetting').vmName,'-0 ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth 5 10 localhost')]"
+            "vmLocation": "[variables('vmSetting').location]",
+            "dnsPrefix": "[variables('nodePublicIpSetting').domainNameLabel]",
+            "cmdPrefix": "[concat('sh init-additional-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth 5 10')]"
         }
     },
     "resources": [
@@ -500,7 +504,7 @@
                     "contentVersion": "[variables('templateVersion')]"
                 },
                 "parameters": {
-                    "additionalNodeExtSetting": {
+                    "extSetting": {
                         "value": "[variables('additionalNodeExtSetting')]"
                     }
                 }

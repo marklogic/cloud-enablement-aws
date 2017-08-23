@@ -2,28 +2,25 @@
 ######################################################################################################
 # File         : init-bootstrap-node.sh
 # Description  : This script will setup the first node in the cluster
-# Usage        : sh init-bootstrap-node.sh hostname username password auth-mode security-realm \
-#                n-retry retry-interval
+# Usage        : sh init-bootstrap-node.sh username password auth-mode security-realm \
+#                n-retry retry-interval hostname
 ######################################################################################################
 
 # variables
-BOOTSTRAP_HOST=$1
-USER=$2
-PASS=$3
-AUTH_MODE=$4
-SEC_REALM=$5
-N_RETRY=$6
-RETRY_INTERVAL=$7
+USER=$1
+PASS=$2
+AUTH_MODE=$3
+SEC_REALM=$4
+N_RETRY=$5
+RETRY_INTERVAL=$6
+BOOTSTRAP_HOST=$7
 
 # log file to record all the activities
 LOG="/tmp/init-bootstrap-node-$(date +"%Y%m%d%h%m%s").log"
-# curl command
-CURL="curl"
+# Suppress progress meter, but still show errors
+CURL="curl -s -S"
 # add authentication related options, required once security is initialized
 AUTH_CURL="${CURL} --${AUTH_MODE} --user ${USER}:${PASS}"
-
-# for debugging purpose, delete later
-echo $@ >> $LOG
 
 ######################################################################################################
 # restart_check(hostname, baseline_timestamp, caller_lineno)
@@ -33,12 +30,14 @@ echo $@ >> $LOG
 ######################################################################################################
 
 function restart_check {
-  LAST_START=`$AUTH_CURL "http://$1:8001/admin/v1/timestamp"`
+  LAST_START=`$AUTH_CURL "http://$1:8001/admin/v1/timestamp" |& tee -a $LOG`
   for i in `seq 1 ${N_RETRY}`; do
     if [ "$2" == "$LAST_START" ] || [ "$LAST_START" == "" ]; then
+      echo "Server didn't restart. Retry in $RETRY_INTERVAL seconds..." >> $LOG
       sleep ${RETRY_INTERVAL}
-	LAST_START=`$AUTH_CURL "http://$1:8001/admin/v1/timestamp"`
-    else 
+	  LAST_START=`$AUTH_CURL "http://$1:8001/admin/v1/timestamp" |& tee -a $LOG`
+    else
+      echo "Server successfully restarted." >> $LOG
       return 0
     fi
   done
@@ -55,14 +54,16 @@ function restart_check {
 ######################################################################################################
 
 echo "Initializing $BOOTSTRAP_HOST..." >> $LOG
-$CURL -X POST -d "" http://${BOOTSTRAP_HOST}:8001/admin/v1/init
+$CURL -X POST -d "" http://${BOOTSTRAP_HOST}:8001/admin/v1/init &>> $LOG
 sleep 10
 
+echo "Initializing database admin and security database..." >> $LOG
 TIMESTAMP=`$CURL -X POST \
    -H "Content-type: application/x-www-form-urlencoded" \
    --data "admin-username=${USER}" --data "admin-password=${PASS}" \
    --data "realm=${SEC_REALM}" \
    http://${BOOTSTRAP_HOST}:8001/admin/v1/instance-admin \
+   |& tee -a $LOG \
    | grep "last-startup" \
    | sed 's%^.*<last-startup.*>\(.*\)</last-startup>.*$%\1%'`
 if [ "$TIMESTAMP" == "" ]; then
@@ -71,6 +72,7 @@ if [ "$TIMESTAMP" == "" ]; then
 fi
 
 # Test for successful restart
+echo "Checking server restart..." >> $LOG
 restart_check $BOOTSTRAP_HOST $TIMESTAMP $LINENO
 
 echo "Initialization complete for $BOOTSTRAP_HOST..." >> $LOG

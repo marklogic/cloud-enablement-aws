@@ -2,19 +2,23 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "9.0-3",
   "parameters": {
-    "additionalNodeExtSetting": {
+    "extSetting": {
       "type": "object"
     }
   },
+  "variables": {
+        "dnsPostFix": "[concat('.',parameters('extSetting').vmLocation,'.cloudapp.azure.com')]",
+        "bootstrapNodeDns": "[concat(parameters('extSetting').dnsPrefix,'0',variables('dnsPostFix'))]"
+    },
   "resources": [
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(parameters('additionalNodeExtSetting').vmName,'-',copyIndex(1),'/extone')]",
-      "apiVersion": "[parameters('additionalNodeExtSetting').apiVersion]",
-      "location": "[parameters('additionalNodeExtSetting').location]",
+      "name": "[concat(parameters('extSetting').vmName,'-',copyIndex(1),'/extone')]",
+      "apiVersion": "[parameters('extSetting').apiVersion]",
+      "location": "[parameters('extSetting').location]",
       "copy": {
         "name": "additionalNodeExtLoop",
-        "count": "[parameters('additionalNodeExtSetting').additionalNodeExtCount]"
+        "count": "[parameters('extSetting').additionalNodeExtCount]"
       },
       "properties": {
         "publisher": "Microsoft.Azure.Extensions",
@@ -23,11 +27,11 @@
         "autoUpgradeMinorVersion": true,
         "settings": {
           "fileUris": [
-              "[parameters('additionalNodeExtSetting').additionalNodeScriptUrl]"
+              "[parameters('extSetting').additionalNodeScriptUrl]"
           ]
         },
         "protectedSettings": {
-          "commandToExecute": "[parameters('additionalNodeExtSetting').additionalNodeCmd]"
+          "commandToExecute": "[concat(parameters('extSetting').cmdPrefix,' ',variables('bootstrapNodeDns'),' ',parameters('extSetting').dnsPrefix,copyIndex(1),variables('dnsPostFix'))]"
         }
       }
     }
