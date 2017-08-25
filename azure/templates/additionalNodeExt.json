@@ -31,7 +31,7 @@
           ]
         },
         "protectedSettings": {
-          "commandToExecute": "[concat(parameters('extSetting').cmdPrefix,' ',variables('bootstrapNodeDns'),' ',parameters('extSetting').dnsPrefix,copyIndex(1),variables('dnsPostFix'))]"
+          "commandToExecute": "[concat(parameters('extSetting').cmdPrefix,' ',variables('bootstrapNodeDns'))]"
         }
       }
     }

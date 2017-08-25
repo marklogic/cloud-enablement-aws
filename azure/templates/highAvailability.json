@@ -2,19 +2,19 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "9.0-3",
   "parameters": {
-    "extSetting": {
+    "haExtSetting": {
       "type": "object"
     }
   },
   "variables": {
-      "bootstrapNodeExt": "[concat(parameters('extSetting').vmName,'-0/extone')]"
+      "vmName": "[concat(parameters('haExtSetting').vmName,'-0')]"
   },
   "resources": [
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[variables('bootstrapNodeExt')]",
-      "apiVersion": "[parameters('extSetting').apiVersion]",
-      "location": "[parameters('extSetting').location]",
+      "name": "[concat(variables('vmName'),'/haExt')]",
+      "apiVersion": "[parameters('haExtSetting').apiVersion]",
+      "location": "[parameters('haExtSetting').location]",
       "properties": {
         "publisher": "Microsoft.Azure.Extensions",
         "type": "CustomScript",
@@ -22,11 +22,12 @@
         "autoUpgradeMinorVersion": true,
         "settings": {
           "fileUris": [
-              "[parameters('extSetting').bootstrapNodeScriptUrl]"
+              "[parameters('haExtSetting').haExtScriptUrl]",
+              "[parameters('haExtSetting').haExtXqyUrl]"
           ]
         },
         "protectedSettings": {
-          "commandToExecute": "[parameters('extSetting').cmd]"
+            "commandToExecute": "[parameters('haExtSetting').cmd]"
         }
       }
     }

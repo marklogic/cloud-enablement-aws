@@ -262,11 +262,14 @@
             "networkInterfaceTemplateUrl": "[concat(variables('templateBaseUrl'),'networkInterface.json')]",
             "vmTemplateUrl": "[concat(variables('templateBaseUrl'),'virtualMachine.json')]",
             "bootstrapNodeExtTemplateUrl": "[concat(variables('templateBaseUrl'),'bootstrapNodeExt.json')]",
-            "additionalNodeExtTemplateUrl": "[concat(variables('templateBaseUrl'),'additionalNodeExt.json')]"
+            "additionalNodeExtTemplateUrl": "[concat(variables('templateBaseUrl'),'additionalNodeExt.json')]",
+            "haExtTemplateUrl": "[concat(variables('templateBaseUrl'),'highAvailability.json')]"
         },
         "scriptUrls": {
             "bootstrapNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'init-bootstrap-node.sh')]",
-            "additionalNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'init-additional-node.sh')]"
+            "additionalNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'init-additional-node.sh')]",
+            "haExtScriptUrl": "[concat(variables('scriptBaseUrl'),'high-availability.sh')]",
+            "haExtXqyUrl": "[concat(variables('scriptBaseUrl'),'configure-ha.xqy')]"
         },
         "availabilitySetSetting": {
             "name": "[concat(variables('clusterPrefix'),'-availset')]",
@@ -342,9 +345,7 @@
             "apiVersion": "[variables('apiVersions').computeApiVersion]",
             "location": "[variables('clusterLocation')]",
             "bootstrapNodeScriptUrl": "[variables('scriptUrls').bootstrapNodeScriptUrl]",
-            "cmdPrefix": "[concat('sh init-bootstrap-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth public 5 10')]",
-            "dnsPrefix": "[variables('nodePublicIpSetting').domainNameLabel]",
-            "vmLocation": "[variables('vmSetting').location]"
+            "cmd": "[concat('sudo sh init-bootstrap-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth public 5 10')]"
         },
         "additionalNodeExtSetting": {
             "vmName": "[variables('vmSetting').vmName]",
@@ -354,7 +355,7 @@
             "additionalNodeScriptUrl": "[variables('scriptUrls').additionalNodeScriptUrl]",
             "vmLocation": "[variables('vmSetting').location]",
             "dnsPrefix": "[variables('nodePublicIpSetting').domainNameLabel]",
-            "cmdPrefix": "[concat('sh init-additional-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth 5 10')]"
+            "cmdPrefix": "[concat('sudo sh init-additional-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth 5 10 ', string(parameters('HighAvailability')))]"
         }
     },
     "resources": [
@@ -484,7 +485,7 @@
                     "contentVersion": "[variables('templateVersion')]"
                 },
                 "parameters": {
-                    "bootstrapNodeExtSetting": {
+                    "extSetting": {
                         "value": "[variables('bootstrapNodeExtSetting')]"
                     }
                 }

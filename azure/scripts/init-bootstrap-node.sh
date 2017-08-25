@@ -3,7 +3,7 @@
 # File         : init-bootstrap-node.sh
 # Description  : This script will setup the first node in the cluster
 # Usage        : sh init-bootstrap-node.sh username password auth-mode security-realm \
-#                n-retry retry-interval hostname
+#                n-retry retry-interval
 ######################################################################################################
 
 # variables
@@ -13,7 +13,7 @@ AUTH_MODE=$3
 SEC_REALM=$4
 N_RETRY=$5
 RETRY_INTERVAL=$6
-BOOTSTRAP_HOST=$7
+BOOTSTRAP_HOST=$(curl ipinfo.io/ip)
 
 # log file to record all the activities
 LOG="/tmp/init-bootstrap-node-$(date +"%Y%m%d%h%m%s").log"
@@ -21,6 +21,9 @@ LOG="/tmp/init-bootstrap-node-$(date +"%Y%m%d%h%m%s").log"
 CURL="curl -s -S"
 # add authentication related options, required once security is initialized
 AUTH_CURL="${CURL} --${AUTH_MODE} --user ${USER}:${PASS}"
+
+#!!!!!!!!!!!for debugging purpose only, delete later!!!!!!!!!!!!
+echo $@ >> $LOG
 
 ######################################################################################################
 # restart_check(hostname, baseline_timestamp, caller_lineno)
@@ -52,6 +55,9 @@ function restart_check {
 #   (2) POST /admin/v1/instance-admin?admin-user=X&admin-password=Y&realm=Z
 # GET /admin/v1/timestamp is used to confirm restarts.
 ######################################################################################################
+
+echo "Writing $BOOTSTRAP_HOST into /etc/marklogic.conf" >> $LOG
+echo "MARKLOGIC_HOSTNAME=$BOOTSTRAP_HOST" >> /etc/marklogic.conf |& tee -a $LOG
 
 echo "Initializing $BOOTSTRAP_HOST..." >> $LOG
 $CURL -X POST -d "" http://${BOOTSTRAP_HOST}:8001/admin/v1/init &>> $LOG
