@@ -56,8 +56,12 @@ function restart_check {
 # GET /admin/v1/timestamp is used to confirm restarts.
 ######################################################################################################
 
-echo "Writing $BOOTSTRAP_HOST into /etc/marklogic.conf" >> $LOG
-echo "MARKLOGIC_HOSTNAME=$BOOTSTRAP_HOST" >> /etc/marklogic.conf |& tee -a $LOG
+echo "Writing data into /etc/marklogic.conf..." >> $LOG
+echo "export MARKLOGIC_HOSTNAME=$BOOTSTRAP_HOST" >> /etc/marklogic.conf |& tee -a $LOG
+
+echo "Restarting the server to pick up changes in /etc/marklogic.conf..." >> $LOG
+/etc/init.d/MarkLogic restart |& tee -a $LOG
+sleep 10
 
 echo "Initializing $BOOTSTRAP_HOST..." >> $LOG
 $CURL -X POST -d "" http://${BOOTSTRAP_HOST}:8001/admin/v1/init &>> $LOG

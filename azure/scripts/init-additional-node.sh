@@ -57,8 +57,12 @@ function restart_check {
 # 
 #####################################################################################################
 
-echo "Writing $JOINING_HOST into /etc/marklogic.conf" >> $LOG
-echo "MARKLOGIC_HOSTNAME=$JOINING_HOST" >> /etc/marklogic.conf |& tee -a $LOG
+echo "Writing data into /etc/marklogic.conf" >> $LOG
+echo "export MARKLOGIC_HOSTNAME=$JOINING_HOST" >> /etc/marklogic.conf |& tee -a $LOG
+
+echo "Restarting the server to pick up changes in /etc/marklogic.conf..." >> $LOG
+/etc/init.d/MarkLogic restart |& tee -a $LOG
+sleep 10
 
 echo "Adding host to cluster: $JOINING_HOST..." >> $LOG
 # initialize MarkLogic Server on the joining host
@@ -124,7 +128,7 @@ restart_check $JOINING_HOST $TIMESTAMP $LINENO
 rm ./cluster-config.zip
 echo "...$JOINING_HOST successfully added to the cluster." >> $LOG
 
-if [ "$ENABLE_HA" == "true" ]; then
+if [ "$ENABLE_HA" == "True" ]; then
   echo "Configurating high availability on the cluster..."
   . ./high-availability.sh $USER $PASS $AUTH_MODE $BOOTSTRAP_HOST
 fi

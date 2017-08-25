@@ -104,6 +104,32 @@
                             "priority": 1070,
                             "direction": "Inbound"
                         }
+                    },
+                    {
+                        "name": "communication-7778",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "7998",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 1080,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "communication-7999",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "7999",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 1090,
+                            "direction": "Inbound"
+                        }
                     }
                 ]
             }

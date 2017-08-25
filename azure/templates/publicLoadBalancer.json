@@ -29,7 +29,7 @@
                         "name": "[parameters('publicLBSetting').lbIpConfigName]",
                         "properties": {
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicLBSetting').lbIpAddrName)]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('ipv4Name'))]"
                             }
                         }
                     },
@@ -37,7 +37,7 @@
                         "name": "LoadBalancerIPv6FrontEnd",
                         "properties": {
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicLBSetting').lbIpAddrNameV6)]"
+                                "id": "[if(parameters('publicLBIpSetting').enableIpv6,resourceId('Microsoft.Network/publicIPAddresses',variables('ipv6Name')),json('null'))]"
                             }
                         }
                     }
@@ -118,6 +118,7 @@
             "apiVersion": "[parameters('publicLBIpSetting').apiVersion]",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('ipv6Name')]",
+            "condition": "[parameters('publicLBIpSetting').enableIpv6]",
             "location": "[parameters('publicLBIpSetting').location]",
             "properties": {
                 "publicIPAllocationMethod": "[parameters('publicLBIpSetting').IPAllocationMethod]",

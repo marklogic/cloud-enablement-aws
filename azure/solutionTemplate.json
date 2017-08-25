@@ -262,8 +262,7 @@
             "networkInterfaceTemplateUrl": "[concat(variables('templateBaseUrl'),'networkInterface.json')]",
             "vmTemplateUrl": "[concat(variables('templateBaseUrl'),'virtualMachine.json')]",
             "bootstrapNodeExtTemplateUrl": "[concat(variables('templateBaseUrl'),'bootstrapNodeExt.json')]",
-            "additionalNodeExtTemplateUrl": "[concat(variables('templateBaseUrl'),'additionalNodeExt.json')]",
-            "haExtTemplateUrl": "[concat(variables('templateBaseUrl'),'highAvailability.json')]"
+            "additionalNodeExtTemplateUrl": "[concat(variables('templateBaseUrl'),'additionalNodeExt.json')]"
         },
         "scriptUrls": {
             "bootstrapNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'init-bootstrap-node.sh')]",
