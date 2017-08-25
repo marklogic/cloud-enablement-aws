@@ -129,6 +129,6 @@ rm ./cluster-config.zip
 echo "...$JOINING_HOST successfully added to the cluster." >> $LOG
 
 if [ "$ENABLE_HA" == "True" ]; then
-  echo "Configurating high availability on the cluster..."
-  . ./high-availability.sh $USER $PASS $AUTH_MODE $BOOTSTRAP_HOST
+  echo "Configurating high availability on the cluster..." |& tee -a $LOG
+  . ./high-availability.sh $USER $PASS $AUTH_MODE $BOOTSTRAP_HOST |& tee -a $LOG
 fi
