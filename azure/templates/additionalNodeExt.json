@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "9.0-3",
+  "parameters": {
+    "extSetting": {
+      "type": "object"
+    }
+  },
+  "variables": {
+        "dnsPostFix": "[concat('.',parameters('extSetting').vmLocation,'.cloudapp.azure.com')]",
+        "bootstrapNodeDns": "[concat(parameters('extSetting').dnsPrefix,'0',variables('dnsPostFix'))]"
+    },
+  "resources": [
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(parameters('extSetting').vmName,'-',copyIndex(1),'/extone')]",
+      "apiVersion": "[parameters('extSetting').apiVersion]",
+      "location": "[parameters('extSetting').location]",
+      "copy": {
+        "name": "additionalNodeExtLoop",
+        "count": "[parameters('extSetting').additionalNodeExtCount]"
+      },
+      "properties": {
+        "publisher": "Microsoft.Azure.Extensions",
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+              "[parameters('extSetting').additionalNodeScriptUrl]",
+              "[parameters('extSetting').haExtXqyUrl]"
+          ]
+        },
+        "protectedSettings": {
+          "commandToExecute": "[concat(parameters('extSetting').cmdPrefix,' ',variables('bootstrapNodeDns'))]"
+        }
+      }
+    }
+  ]
+}

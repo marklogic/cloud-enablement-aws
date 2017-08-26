@@ -1,0 +1,167 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "9.0-3",
+    "parameters": {
+        "publicLBSetting": {
+            "type": "object"
+        },
+        "publicLBIpSetting": {
+            "type": "object"
+        }
+    },
+    "variables": {
+        "ipv4Name": "[concat(parameters('publicLBIpSetting').name,'v4')]",
+        "ipv6Name": "[concat(parameters('publicLBIpSetting').name,'v6')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "[parameters('publicLBSetting').apiVersion]",
+            "name": "[parameters('publicLBSetting').name)]",
+            "type": "Microsoft.Network/loadBalancers",
+            "location": "[parameters('publicLBSetting').location)]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('ipv6Name'))]",
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('ipv4Name'))]"
+            ],
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "[parameters('publicLBSetting').lbIpConfigName]",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('ipv4Name'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "LoadBalancerIPv6FrontEnd",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[if(parameters('publicLBIpSetting').enableIpv6,resourceId('Microsoft.Network/publicIPAddresses',variables('ipv6Name')),json('null'))]"
+                            }
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "[parameters('publicLoadBalancerSetting').lbBackendPoolName]"
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "qconsole",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[parameters('publicLBSetting').lbIpConfigName]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8000,
+                            "backendPort": 8000,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 5
+                        }
+                    },
+                    {
+                        "name": "adminGui",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[parameters('publicLBSetting').lbIpConfigName]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8001,
+                            "backendPort": 8001,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 5
+                        }
+                    },
+                    {
+                        "name": "manageApi",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[parameters('publicLBSetting').lbIpConfigName]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8002,
+                            "backendPort": 8002,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 5
+                        }
+                    },
+                    {
+                        "name": "healthCheck",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[parameters('publicLBSetting').lbIpConfigName]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 7997,
+                            "backendPort": 7997,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 5
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "mlProbe",
+                        "properties": {
+                            "protocol": "tcp",
+                            "port": 7997,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "[parameters('publicLBIpSetting').apiVersion]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('ipv6Name')]",
+            "condition": "[parameters('publicLBIpSetting').enableIpv6]",
+            "location": "[parameters('publicLBIpSetting').location]",
+            "properties": {
+                "publicIPAllocationMethod": "[parameters('publicLBIpSetting').IPAllocationMethod]",
+                "publicIPAddressVersion": "IPv6",
+                "dnsSettings": {
+                    "domainNameLabel": "[parameters('publicLBIpSetting').domainNameLabel]"
+                }
+            }
+        },
+        {
+            "apiVersion": "[parameters('publicLBIpSetting').apiVersion]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('ipv4Name')]",
+            "location": "[parameters('publicLBIpSetting').location]",
+            "properties": {
+                "publicIPAllocationMethod": "[parameters('publicLBIpSetting').IPAllocationMethod]",
+                "publicIPAddressVersion": "IPv4",
+                "dnsSettings": {
+                    "domainNameLabel": "[parameters('publicLBIpSetting').domainNameLabel]"
+                }
+            }
+        },
+        {
+            "apiVersion": "[parameters('publicLBIpSetting').apiVersion]",
+            "type": "Microsoft.Network/loadBalancers/inboundNatRules",
+            "name": "[concat(variables('loadBalancerName'), '/', 'admin-', variables('clusterPrefix'), copyIndex())]",
+            "location": "[parameters('publicLBSetting').name)]",
+            "copy": {
+                "name": "lbNatLoop",
+                "count": "[variables('count')]"
+            },
+            "dependsOn": [
+                "[variables('loadBalancerbId')]"
+            ],
+            "properties": {
+                "frontendIPConfiguration": {
+                    "id": "[variables('lbIpConfigId')]"
+                },
+                "protocol": "tcp",
+                "frontendPort": "[copyIndex(2200)]",
+                "backendPort": 8001,
+                "enableFloatingIP": false
+            }
+        }
+    ]
+}

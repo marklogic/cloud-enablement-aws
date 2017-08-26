@@ -1,0 +1,47 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "9.0-3",
+    "parameters": {
+        "nodePublicIpSetting": {
+            "type": "object"
+        }
+    },
+    "resources": [
+        {
+            "apiVersion": "[parameters('nodePublicIpSetting').apiVersion]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[concat(parameters('nodePublicIpSetting').name,'v4-node',copyIndex())]",
+            "location": "[parameters('nodePublicIpSetting').location]",
+            "properties": {
+                "publicIPAllocationMethod": "[parameters('nodePublicIpSetting').IPv4AllocationMethod]",
+                "idleTimeoutInMinutes": "[parameters('nodePublicIpSetting').idleTimeout]",
+                "publicIpAddressVersion": "IPv4",
+                "dnsSettings": {
+                    "domainNameLabel": "[concat(parameters('nodePublicIpSetting').domainNameLabel,copyIndex())]"
+                }
+            },
+            "copy": {
+                "name": "clusterNodeIpv4",
+                "count": "[parameters('nodePublicIpSetting').count]"
+            }
+        },
+        {
+            "apiVersion": "2016-03-30",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[concat(parameters('nodePublicIpSetting').name,'v6-node',copyIndex())]",
+            "location": "[parameters('nodePublicIpSetting').location]",
+            "properties": {
+                "publicIPAllocationMethod": "[parameters('nodePublicIpSetting').IPv6AllocationMethod]",
+                "idleTimeoutInMinutes": "[parameters('nodePublicIpSetting').idleTimeout]",
+                "publicIpAddressVersion": "IPv6",
+                "dnsSettings": {
+                    "domainNameLabel": "[concat(parameters('nodePublicIpSetting').domainNameLabel,copyIndex())]"
+                }
+            },
+            "copy": {
+                "name": "clusterNodeIpv6",
+                "count": "[parameters('nodePublicIpSetting').count]"
+            }
+        }
+    ]
+}

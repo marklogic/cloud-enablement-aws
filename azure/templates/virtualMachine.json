@@ -1,0 +1,105 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "9.0-3",
+  "parameters": {
+    "vmSetting": {
+      "type": "object"
+    }
+  },
+  "variables": {
+      "availabilitySetId": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('vmSetting').availabilitySetName)]"
+      }
+  },
+  "resources": [
+    {
+        "apiVersion": "[parameters('vmSetting').storageApiVersion]",
+        "type": "Microsoft.Compute/disks",
+        "name": "[concat(parameters('vmSetting').dataDiskName,'-',copyIndex())]",
+        "location": "[parameters('vmSetting').location]",
+        "copy": {
+            "name": "dataDiskLoop",
+            "count": "[parameters('vmSetting').count]"
+        },
+        "sku": {
+            "name": "[parameters('vmSetting').dataDiskAcctType]"
+        },
+        "properties": {
+            "creationData": {
+                "createOption": "[parameters('vmSetting').dataDiskCreateOption]"
+            },
+            "diskSizeGB": "[parameters('vmSetting').dataDiskSizeGB]"
+        }
+    },
+    {
+      "apiVersion": "[parameters('vmSetting').computeApiVersion]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(parameters('vmSetting').vmName,'-',copyIndex())]",
+      "location": "[parameters('vmSetting').location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/disks/',concat(parameters('vmSetting').dataDiskName,'-',copyIndex()))]"
+      ],
+      "copy": {
+        "name": "vmLoop",
+        "count": "[parameters('vmSetting').count]"
+      },
+      "plan": {
+        "name": "[parameters('vmSetting').imageSku]",
+        "publisher": "[parameters('vmSetting').imagePublisher]",
+        "product": "[parameters('vmSetting').imageOffer]"
+      },
+      "properties": {
+        "availabilitySet": "[if(parameters('vmSetting').enableAvailabilitySet,variables('availabilitySetId'),json('null'))]",
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSetting').vmSize]"
+        },
+        "osProfile": {
+          "computername": "[concat(parameters('vmSetting').vmName,'-',copyIndex())]",
+          "adminUsername": "[parameters('vmSetting').adminUsername]",
+          "linuxConfiguration": {
+            "disablePasswordAuthentication": "true",
+            "ssh": {
+              "publicKeys": [
+                {
+                  "path": "[concat('/home/',parameters('vmSetting').adminUsername,'/.ssh/authorized_keys')]",
+                  "keyData": "[parameters('vmSetting').sshKey]"
+                }
+              ]
+            }
+          }
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[parameters('vmSetting').imagePublisher]",
+            "offer": "[parameters('vmSetting').imageOffer]",
+            "sku": "[parameters('vmSetting').imageSku]",
+            "version": "[parameters('vmSetting').imageVersion]"
+          },
+          "osDisk": {
+            "managedDisk": {
+                "storageAccountType": "[parameters('vmSetting').osDiskAcctType]"
+            },
+            "createOption": "FromImage"
+          },
+          "dataDisks": [
+            {
+              "lun": 0,
+              "name": "[concat(parameters('vmSetting').dataDiskName,'-',copyIndex())]",
+              "createOption": "attach",
+              "managedDisk": {
+                  "id": "[resourceId('Microsoft.Compute/disks/',concat(parameters('vmSetting').dataDiskName,'-',copyIndex()))]"
+              }
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('vmSetting').networkInterfaceName,'-',copyIndex()))]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
