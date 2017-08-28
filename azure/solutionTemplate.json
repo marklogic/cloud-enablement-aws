@@ -267,6 +267,7 @@
         "scriptUrls": {
             "bootstrapNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'init-bootstrap-node.sh')]",
             "additionalNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'init-additional-node.sh')]",
+            "highAvailabilityScriptUrl": "[concat(variables('scriptBaseUrl'),'high-availability.sh')]",
             "haExtXqyUrl": "[concat(variables('scriptBaseUrl'),'configure-ha.xqy')]"
         },
         "availabilitySetSetting": {
@@ -354,7 +355,8 @@
             "vmLocation": "[variables('vmSetting').location]",
             "dnsPrefix": "[variables('nodePublicIpSetting').domainNameLabel]",
             "haExtXqyUrl": "[variables('scriptUrls').haExtXqyUrl]",
-            "cmdPrefix": "[concat('sudo sh init-additional-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth 5 10 ', string(parameters('HighAvailability')))]"
+            "highAvailabilityScriptUrl": "[variables('scriptUrls').highAvailabilityScriptUrl]",
+            "cmdPrefix": "[concat('sudo sh init-additional-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth 5 10 ',string(parameters('HighAvailability')))]"
         }
     },
     "resources": [

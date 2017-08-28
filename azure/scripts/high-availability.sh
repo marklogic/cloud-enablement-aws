@@ -18,4 +18,4 @@ CURL="curl -s -S"
 AUTH_CURL="${CURL} --${AUTH_MODE} --user ${USER}:${PASS}"
 
 echo "Sending configuration query to server..." >> $LOG
-$AUTH_CURL -X POST -d @./configure-ha.xqy "http://${HOST_NAME}:8000/v1/eval" |& tee -a $LOG
+$AUTH_CURL -X POST -d @./configure-ha.xqy "http://${HOST}:8000/v1/eval" |& tee -a $LOG
