@@ -64,7 +64,7 @@
         },
         "IPV6": {
             "type": "bool",
-            "defaultValue": "true",
+            "defaultValue": true,
             "metadata": {
                 "description": "Whether to enable IPv6 on the cluster"
             }
@@ -243,7 +243,6 @@
         "scriptBaseUrl": "[concat(variables('repositoryUrl'),'scripts/')]",
         "clusterPrefix": "[replace(parameters('ClusterName'),' ','')]",
         "clusterLocation": "[resourceGroup().location]",
-        "internalLoadBalancerPrivateIP": "10.0.1.10",
         "EnableAvailabilitySet": "[if(lessOrEquals(parameters('NumberOfNodes'),1),bool('false'),parameters('EnableAvailabilitySet'))]",
         "license": "[if(and(equals(parameters('Licensee'),'none'),equals(parameters('LicenseKey'),'none')),'DEV','BYOL')]",
         "imageOffer": "[if(equals(variables('license'),'DEV'),'marklogic-developer-9','marklogic-9-byol')]",
@@ -262,7 +261,8 @@
             "networkInterfaceTemplateUrl": "[concat(variables('templateBaseUrl'),'networkInterface.json')]",
             "vmTemplateUrl": "[concat(variables('templateBaseUrl'),'virtualMachine.json')]",
             "bootstrapNodeExtTemplateUrl": "[concat(variables('templateBaseUrl'),'bootstrapNodeExt.json')]",
-            "additionalNodeExtTemplateUrl": "[concat(variables('templateBaseUrl'),'additionalNodeExt.json')]"
+            "additionalNodeExtTemplateUrl": "[concat(variables('templateBaseUrl'),'additionalNodeExt.json')]",
+            "lbTemplateUrl": "[concat(variables('templateBaseUrl'),'loadBalancer.json')]"
         },
         "scriptUrls": {
             "bootstrapNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'init-bootstrap-node.sh')]",
@@ -308,10 +308,29 @@
             "vnetName": "[variables('vnetSetting').name]",
             "subnetName": "[variables('vnetSetting').vnetSubnetName]",
             "nodePublicIpName": "[variables('nodePublicIpSetting').name]",
-            "nsgName": "[variables('nsgSetting').name]"
+            "nsgName": "[variables('nsgSetting').name]",
+            "lbName": "[variables('lbSetting').name]",
+            "lbBackendPoolIpv4Name": "[concat(variables('lbSetting').lbBackendPoolName,'-v4')]"
         },
-        "publicLBIpSetting": {},
-        "publicLBSetting": {},
+        "lbSetting": {
+            "name": "[concat(variables('clusterPrefix'),'-lb')]",
+            "apiVersion": "[variables('apiVersions').networkApiVersion]",
+            "location": "[variables('clusterLocation')]",
+            "lbIpConfigName": "[concat(variables('clusterPrefix'),'-lbIpConfig')]",
+            "lbBackendPoolName": "[concat(variables('clusterPrefix'),'-lbBackendPool')]",
+            "probeName": "[concat(variables('clusterPrefix'),'-lbProbe')]",
+            "vnetName": "[variables('vnetSetting').name]",
+            "subnetName": "[variables('vnetSetting').vnetSubnetName]",
+            "type": "[parameters('LoadBalancer')]"
+        },
+        "publicLBIpSetting": {
+            "name": "[concat(variables('lbSetting').name,'Ip')]",
+            "enableIpv6": "[parameters('IPV6')]",
+            "apiVersion": "[variables('apiVersions').networkApiVersion]",
+            "location": "[variables('clusterLocation')]",
+            "IPAllocationMethod": "Static",
+            "domainNameLabel": "[concat(variables('clusterPrefix'),'-',uniqueString(concat(variables('clusterPrefix'),resourceGroup().id)),'-lb')]"
+        },
         "vmSetting": {
             "location": "[variables('clusterLocation')]",
             "count": "[parameters('NumberOfNodes')]",
@@ -430,13 +449,34 @@
             }
         },
         {
+            "name": "loadBalancerDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('templateUrls').lbTemplateUrl]",
+                    "contentVersion": "[variables('templateVersion')]"
+                },
+                "parameters": {
+                    "lbSetting": {
+                        "value": "[variables('lbSetting')]"
+                    },
+                    "publicLBIpSetting": {
+                        "value": "[variables('publicLBIpSetting')]"
+                    }
+                }
+            }
+        },
+        {
             "name": "networkInterfaceDeployment",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
             "dependsOn": [
                 "vnetDeployment",
                 "nodePublicIpDeployment",
-                "nsgDeployment"
+                "nsgDeployment",
+                "loadBalancerDeployment"
             ],
             "properties": {
                 "mode": "Incremental",

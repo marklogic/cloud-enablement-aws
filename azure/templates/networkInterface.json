@@ -8,7 +8,9 @@
     },
     "variables": {
         "vnetId": "[resourceId('Microsoft.Network/virtualNetworks',parameters('networkInterfaceSetting').vnetName)]",
-        "subnetId": "[concat(variables('vnetId'),'/subnets/',parameters('networkInterfaceSetting').subnetName)]"
+        "subnetId": "[concat(variables('vnetId'),'/subnets/',parameters('networkInterfaceSetting').subnetName)]",
+        "lbId": "[resourceId('Microsoft.Network/loadBalancers',parameters('networkInterfaceSetting').lbName)]",
+        "lbBackendPoolIpv4Id": "[concat(variables('lbId'),'/backendAddressPools/',parameters('networkInterfaceSetting').lbBackendPoolIpv4Name)]"
     },
     "resources": [
         {
@@ -30,8 +32,13 @@
                             },
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIpAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIpAddresses',concat(parameters('networkInterfaceSetting').nodePublicIpName,'v4-node',copyIndex()))]",
-                            }
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses',concat(parameters('networkInterfaceSetting').nodePublicIpName,'v4-node',copyIndex()))]"
+                            },
+                            "loadBalancerBackendAddressPools": [
+                              {
+                                "id": "[variables('lbBackendPoolIpv4Id')]"
+                              }
+                            ]
                         }
                     }
                 ],
