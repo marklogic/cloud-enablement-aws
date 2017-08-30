@@ -6,9 +6,6 @@
 #                n-retry retry-interval hostname
 ######################################################################################################
 
-# log file to record all the activities
-LOG="/tmp/init-bootstrap-node-$(date +"%Y%m%d%h%m%s").log"
-
 # variables
 USER=$1
 PASS=$2
@@ -18,10 +15,8 @@ N_RETRY=$5
 RETRY_INTERVAL=$6
 BOOTSTRAP_HOST=$7
 
-# !!!! debugging only !!!
-echo $@ |& tee -a $LOG
-echo "bootstrap host is: $BOOTSTRAP_HOST $7 $6" |& tee -a $LOG
-
+# log file to record all the activities
+LOG="/tmp/init-bootstrap-node-$(date +"%Y%m%d%h%m%s").log"
 # Suppress progress meter, but still show errors
 CURL="curl -s -S"
 # add authentication related options, required once security is initialized

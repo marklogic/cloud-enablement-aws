@@ -16,7 +16,6 @@ RETRY_INTERVAL=$5
 ENABLE_HA=$6
 BOOTSTRAP_HOST=$7
 JOINING_HOST=$8
-HOST_IP=$(curl ipinfo.io/ip)
 
 # log file to record all the activities
 LOG="/tmp/log-additional-node-$(date +"%Y%m%d%h%m%s").log"
