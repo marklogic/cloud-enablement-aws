@@ -5,7 +5,7 @@
 # 				       MarkLogic Server cluster. The first (bootstrap) host for the cluster should already 
 #                be fully initialized.
 # Usage        : sh init-additional-node.sh user password auth-mode n-retry retry-interval \
-#                enable-high-availability bootstrap-node
+#                enable-high-availability bootstrap-node joining-host
 ######################################################################################################
 
 USER=$1
@@ -15,7 +15,7 @@ N_RETRY=$4
 RETRY_INTERVAL=$5
 ENABLE_HA=$6
 BOOTSTRAP_HOST=$7
-JOINING_HOST=$(curl ipinfo.io/ip)
+JOINING_HOST=$8
 
 # log file to record all the activities
 LOG="/tmp/log-additional-node-$(date +"%Y%m%d%h%m%s").log"
@@ -23,9 +23,6 @@ LOG="/tmp/log-additional-node-$(date +"%Y%m%d%h%m%s").log"
 CURL="curl -s -S"
 # add authentication related options, required once security is initialized
 AUTH_CURL="${CURL} --${AUTH_MODE} --user ${USER}:${PASS}"
-
-#!!!!!!!!!!!for debugging purpose only, delete later!!!!!!!!!!!!
-echo $@ >> $LOG
 
 ######################################################################################################
 # restart_check(hostname, baseline_timestamp, caller_lineno)
@@ -111,8 +108,8 @@ fi
 
 #####################################################################################################
 #
-#     Send the cluster config data to the joining host, completing 
-#     the join sequence.
+# Send the cluster config data to the joining host, completing 
+# the join sequence.
 #
 #####################################################################################################  
 

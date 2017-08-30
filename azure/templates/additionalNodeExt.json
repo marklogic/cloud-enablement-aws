@@ -13,7 +13,7 @@
   "resources": [
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(parameters('extSetting').vmName,'-',copyIndex(1),'/extone')]",
+      "name": "[concat(parameters('extSetting').vmName,'-',copyIndex(1),'/node-config')]",
       "apiVersion": "[parameters('extSetting').apiVersion]",
       "location": "[parameters('extSetting').location]",
       "copy": {
@@ -33,7 +33,7 @@
           ]
         },
         "protectedSettings": {
-          "commandToExecute": "[concat(parameters('extSetting').cmdPrefix,' ',variables('bootstrapNodeDns'))]"
+          "commandToExecute": "[concat(parameters('extSetting').cmdPrefix,' ',variables('bootstrapNodeDns'),' ',parameters('extSetting').dnsPrefix,copyIndex(1),variables('dnsPostFix'))]"
         }
       }
     }
