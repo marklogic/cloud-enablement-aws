@@ -33,7 +33,7 @@
           ]
         },
         "protectedSettings": {
-          "commandToExecute": "[concat(parameters('extSetting').cmdPrefix,' ',variables('bootstrapNodeDns'))]"
+          "commandToExecute": "[concat(parameters('extSetting').cmdPrefix,' ',variables('bootstrapNodeDns'),' ',parameters('extSetting').dnsPrefix,copyIndex(1),variables('dnsPostFix'))]"
         }
       }
     }

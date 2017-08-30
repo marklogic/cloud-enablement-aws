@@ -238,7 +238,7 @@
     },
     "variables": {
         "templateVersion": "9.0-3",
-        "repositoryUrl": "https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/cloud-enablement/azure/",
+        "repositoryUrl": "https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/cloud-enablement-dev/azure/",
         "templateBaseUrl": "[concat(variables('repositoryUrl'),'templates/')]",
         "scriptBaseUrl": "[concat(variables('repositoryUrl'),'scripts/')]",
         "clusterPrefix": "[replace(parameters('ClusterName'),' ','')]",
@@ -265,8 +265,8 @@
             "additionalNodeExtTemplateUrl": "[concat(variables('templateBaseUrl'),'additionalNodeExt.json')]"
         },
         "scriptUrls": {
-            "bootstrapNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'init-bootstrap-node.sh')]",
-            "additionalNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'init-additional-node.sh')]",
+            "bootstrapNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'config-bootstrap-node.sh')]",
+            "additionalNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'config-additional-node.sh')]",
             "highAvailabilityScriptUrl": "[concat(variables('scriptBaseUrl'),'high-availability.sh')]",
             "haExtXqyUrl": "[concat(variables('scriptBaseUrl'),'configure-ha.xqy')]"
         },
@@ -344,7 +344,8 @@
             "apiVersion": "[variables('apiVersions').computeApiVersion]",
             "location": "[variables('clusterLocation')]",
             "bootstrapNodeScriptUrl": "[variables('scriptUrls').bootstrapNodeScriptUrl]",
-            "cmd": "[concat('sudo sh init-bootstrap-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth public 5 10')]"
+            "dnsPrefix": "[variables('nodePublicIpSetting').domainNameLabel]",
+            "cmdPrefix": "[concat('sudo sh config-bootstrap-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth public 5 10')]"
         },
         "additionalNodeExtSetting": {
             "vmName": "[variables('vmSetting').vmName]",
@@ -356,7 +357,7 @@
             "dnsPrefix": "[variables('nodePublicIpSetting').domainNameLabel]",
             "haExtXqyUrl": "[variables('scriptUrls').haExtXqyUrl]",
             "highAvailabilityScriptUrl": "[variables('scriptUrls').highAvailabilityScriptUrl]",
-            "cmdPrefix": "[concat('sudo sh init-additional-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth 5 10 ',string(parameters('HighAvailability')))]"
+            "cmdPrefix": "[concat('sudo sh config-additional-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth 5 10 ',string(parameters('HighAvailability')))]"
         }
     },
     "resources": [
