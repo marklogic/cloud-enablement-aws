@@ -268,7 +268,8 @@
             "bootstrapNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'config-bootstrap-node.sh')]",
             "additionalNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'config-additional-node.sh')]",
             "highAvailabilityScriptUrl": "[concat(variables('scriptBaseUrl'),'high-availability.sh')]",
-            "haExtXqyUrl": "[concat(variables('scriptBaseUrl'),'configure-ha.xqy')]"
+            "haExtXqyUrl": "[concat(variables('scriptBaseUrl'),'configure-ha.xqy')]",
+            "initScriptUrl": "[concat(variables('scriptBaseUrl'),'init.sh')]"
         },
         "availabilitySetSetting": {
             "name": "[concat(variables('clusterPrefix'),'-availset')]",
@@ -363,6 +364,7 @@
             "apiVersion": "[variables('apiVersions').computeApiVersion]",
             "location": "[variables('clusterLocation')]",
             "bootstrapNodeScriptUrl": "[variables('scriptUrls').bootstrapNodeScriptUrl]",
+            "initScriptUrl": "[variables('scriptUrls').initScriptUrl]",
             "dnsPrefix": "[variables('nodePublicIpSetting').domainNameLabel]",
             "cmdPrefix": "[concat('sudo sh config-bootstrap-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth public 5 10')]"
         },
@@ -372,6 +374,7 @@
             "location": "[variables('clusterLocation')]",
             "additionalNodeExtCount": "[sub(parameters('NumberOfNodes'),1)]",
             "additionalNodeScriptUrl": "[variables('scriptUrls').additionalNodeScriptUrl]",
+            "initScriptUrl": "[variables('scriptUrls').initScriptUrl]",
             "vmLocation": "[variables('vmSetting').location]",
             "dnsPrefix": "[variables('nodePublicIpSetting').domainNameLabel]",
             "haExtXqyUrl": "[variables('scriptUrls').haExtXqyUrl]",

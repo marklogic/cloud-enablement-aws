@@ -29,7 +29,8 @@
           "fileUris": [
               "[parameters('extSetting').additionalNodeScriptUrl]",
               "[parameters('extSetting').haExtXqyUrl]",
-              "[parameters('extSetting').highAvailabilityScriptUrl]"
+              "[parameters('extSetting').highAvailabilityScriptUrl]",
+              "[parameters('extSetting').initScriptUrl]"
           ]
         },
         "protectedSettings": {
