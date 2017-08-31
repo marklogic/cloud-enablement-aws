@@ -24,7 +24,8 @@
         "autoUpgradeMinorVersion": true,
         "settings": {
           "fileUris": [
-              "[parameters('extSetting').bootstrapNodeScriptUrl]"
+              "[parameters('extSetting').bootstrapNodeScriptUrl]",
+              "[parameters('extSetting').initScriptUrl]"
           ]
         },
         "protectedSettings": {
