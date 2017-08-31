@@ -2,25 +2,25 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "9.0-3",
     "parameters": {
-        "ClusterName": {
+        "DeploymentName": {
             "type": "string",
             "minLength": 0,
             "metadata": {
-                "description": "The name of the cluster"
+                "description": "The value will be used as prefix for all resources"
             }
         },
         "AdminUser": {
             "type": "string",
             "minLength": 0,
             "metadata": {
-                "description": "The MarkLogic Administrator Username"
+                "description": "The MarkLogic administrator user name"
             }
         },
         "AdminPassword": {
             "type": "secureString",
             "minLength": 0,
             "metadata": {
-                "description": "The MarkLogic Administrator Username"
+                "description": "The MarkLogic administrator password"
             }
         },
         "Licensee": {
@@ -28,7 +28,7 @@
             "minLength": 0,
             "defaultValue": "none",
             "metadata": {
-                "description": "The MarkLogic Licensee or 'none'"
+                "description": "The MarkLogic Licensee or 'none' for developer license"
             }
         },
         "LicenseKey": {
@@ -36,7 +36,7 @@
             "minLength": 0,
             "defaultValue": "none",
             "metadata": {
-                "description": "The MarkLogic License Key or 'none'"
+                "description": "The MarkLogic License Key or 'none' for developer license"
             }
         },
         "NumberOfNodes": {
@@ -47,11 +47,12 @@
                 "description": "Number of nodes in the cluster"
             }
         },
-        "EnableAvailabilitySet": {
-            "type": "bool",
-            "defaultValue": true,
+        "AvailabilitySet": {
+            "type": "string",
+            "defaultValue": "enable",
+            "allowedValues": ["enable", "disable"],
             "metadata": {
-                "description": "Whether to put virtual machines in an Availability Set"
+                "description": "Whether to put virtual machines in an Availability Set. If number of nodes is one, Availability Set will be disabled"
             }
         },
         "LoadBalancer": {
@@ -59,14 +60,15 @@
             "defaultValue": "public",
             "allowedValues": ["public", "internal"],
             "metadata": {
-                "description": "Type of load balancer to use, public or internal"
+                "description": "Type of load balancer to use"
             }
         },
-        "IPV6": {
-            "type": "bool",
-            "defaultValue": true,
+        "LoadBalancerIPV6": {
+            "type": "string",
+            "defaultValue": "enable",
+            "allowedValues": ["enable", "disable"],
             "metadata": {
-                "description": "Whether to enable IPv6 on the cluster"
+                "description": "IPv6 address on the load balancer. Only applicable if load balancer is public"
             }
         },
         "OSStorage": {
@@ -74,7 +76,7 @@
             "defaultValue": "premium",
             "allowedValues": ["premium", "standard"],
             "metadata": {
-                "description": "Storage type for operating system of virtual machines, premium or standard"
+                "description": "Storage type for operating system of virtual machines"
             }
         },
         "DataStorage": {
@@ -82,21 +84,21 @@
             "defaultValue": "premium",
             "allowedValues": ["premium", "standard"],
             "metadata": {
-                "description": "Storage type for data directory of virtual machines, premium or standard"
+                "description": "Storage type for data directory of virtual machines"
             }
         },
         "VirtualMachineUser": {
             "type": "string",
             "minLength": 0,
             "metadata": {
-                "description": "Username used to log into virtual machines"
+                "description": "Operating system user name for virtual machines"
             }
         },
         "SSHPublicKey": {
             "type": "string",
             "minLength": 0,
             "metadata": {
-                "description": "The public key for SSH"
+                "description": "Public SSH key for virtual machine user given above"
             }
         },
         "InstanceType": {
@@ -225,14 +227,15 @@
                 "Standard_E64s_v3"
             ],
             "metadata": {
-                "description": "Type of virtual machine to launch"
+                "description": "Type of virtual machine to launch. The list only includes instance types that meet minimum requirement of MarkLogic Server"
             }
         },
         "HighAvailability": {
-            "type": "bool",
-            "defaultValue": true,
+            "type": "string",
+            "defaultValue": "enable",
+            "allowedValues": ["enable","disable"],
             "metadata": {
-                "description": "Whether to configure high availability on MarkLogic cluster"
+                "description": "Initialize MarkLogic cluster with local-disk failover. If number of nodes is one, local-disk failover will not be initialized with MarkLogic"
             }
         }
     },
@@ -241,9 +244,11 @@
         "repositoryUrl": "https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/cloud-enablement/azure/",
         "templateBaseUrl": "[concat(variables('repositoryUrl'),'templates/')]",
         "scriptBaseUrl": "[concat(variables('repositoryUrl'),'scripts/')]",
-        "clusterPrefix": "[replace(parameters('ClusterName'),' ','')]",
+        "clusterPrefix": "[replace(parameters('DeploymentName'),' ','')]",
         "clusterLocation": "[resourceGroup().location]",
-        "EnableAvailabilitySet": "[if(lessOrEquals(parameters('NumberOfNodes'),1),bool('false'),parameters('EnableAvailabilitySet'))]",
+        "enableAvailabilitySet": "[if(lessOrEquals(parameters('NumberOfNodes'),1),bool('false'),equals(parameters('AvailabilitySet'),'enable'))]",
+        "enableLbIpv6": "[if(equals(parameters('LoadBalancerIPv6'),'enable'),bool('true'),bool('false'))]",
+        "enableHA": "[if(lessOrEquals(parameters('NumberOfNodes'),1),bool('false'),equals(parameters('HighAvailability'),'enable'))]",
         "license": "[if(and(equals(parameters('Licensee'),'none'),equals(parameters('LicenseKey'),'none')),'DEV','BYOL')]",
         "imageOffer": "[if(equals(variables('license'),'DEV'),'marklogic-developer-9','marklogic-9-byol')]",
         "imageSku": "[if(equals(variables('license'),'DEV'),'ml902_centos','ml902_centos_byol')]",
@@ -326,7 +331,7 @@
         },
         "publicLBIpSetting": {
             "name": "[concat(variables('lbSetting').name,'Ip')]",
-            "enableIpv6": "[parameters('IPV6')]",
+            "enableIpv6": "[variables('enableLbIpv6')]",
             "apiVersion": "[variables('apiVersions').networkApiVersion]",
             "location": "[variables('clusterLocation')]",
             "IPAllocationMethod": "Static",
@@ -352,7 +357,7 @@
             "imageSku": "[variables('imageSku')]",
             "imageVersion": "latest",
             "availabilitySetName": "[variables('availabilitySetSetting').name]",
-            "enableAvailabilitySet": "[variables('EnableAvailabilitySet')]",
+            "enableAvailabilitySet": "[variables('enableAvailabilitySet')]",
             "vmSize": "[parameters('InstanceType')]",
             "adminUsername": "[parameters('VirtualMachineUser')]",
             "sshKey": "[parameters('SSHPublicKey')]",
@@ -379,13 +384,13 @@
             "dnsPrefix": "[variables('nodePublicIpSetting').domainNameLabel]",
             "haExtXqyUrl": "[variables('scriptUrls').haExtXqyUrl]",
             "highAvailabilityScriptUrl": "[variables('scriptUrls').highAvailabilityScriptUrl]",
-            "cmdPrefix": "[concat('sudo sh config-additional-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth 5 10 ',string(parameters('HighAvailability')))]"
+            "cmdPrefix": "[concat('sudo sh config-additional-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth 5 10 ',string(variables('enableHA')))]"
         }
     },
     "resources": [
         {
             "name": "availabilitySetDeployment",
-            "condition": "[variables('EnableAvailabilitySet')]",
+            "condition": "[variables('enableAvailabilitySet')]",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
             "properties": {
