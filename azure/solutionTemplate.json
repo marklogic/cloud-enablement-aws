@@ -256,7 +256,7 @@
     },
     "variables": {
         "templateVersion": "9.0-3",
-        "repositoryUrl": "https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/cloud-enablement-dev/azure/",
+        "repositoryUrl": "https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/cloud-enablement/azure/",
         "templateBaseUrl": "[concat(variables('repositoryUrl'),'templates/')]",
         "scriptBaseUrl": "[concat(variables('repositoryUrl'),'scripts/')]",
         "clusterPrefix": "[replace(parameters('DeploymentName'),' ','')]",
