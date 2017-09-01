@@ -5,8 +5,9 @@
         "DeploymentName": {
             "type": "string",
             "minLength": 0,
+            "maxLength": 10,
             "metadata": {
-                "description": "The value will be used as prefix for all resources"
+                "description": "The value will be used as prefix for all resources. Limit to 10 characters and spaces will be removed."
             }
         },
         "AdminUser": {
