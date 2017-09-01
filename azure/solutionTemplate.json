@@ -52,7 +52,7 @@
             "defaultValue": "enable",
             "allowedValues": ["enable", "disable"],
             "metadata": {
-                "description": "Whether to put virtual machines in an Availability Set. If number of nodes is one, Availability Set will be disabled"
+                "description": "Whether to put virtual machines in an Availability Set. Only applicable to multi-node cluster"
             }
         },
         "LoadBalancer": {
@@ -235,7 +235,7 @@
             "defaultValue": "enable",
             "allowedValues": ["enable","disable"],
             "metadata": {
-                "description": "Initialize MarkLogic cluster with local-disk failover. If number of nodes is one, local-disk failover will not be initialized with MarkLogic"
+                "description": "Configure local-disk failover. Only applicable to multi-node cluster"
             }
         }
     },
