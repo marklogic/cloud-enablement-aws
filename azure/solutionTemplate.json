@@ -560,6 +560,7 @@
         {
             "name": "additionalNodeExtDeployment",
             "type": "Microsoft.Resources/deployments",
+            "condition": "[greater(parameters('NumberOfNodes'),1)]",
             "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
             "dependsOn": [
                 "bootstrapNodeExtDeployment"
