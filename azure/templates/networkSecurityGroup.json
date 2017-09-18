@@ -17,7 +17,7 @@
                     {
                         "name": "ssh",
                         "properties": {
-                            "protocol": "Tcp",
+                            "protocol": "TCP",
                             "sourcePortRange": "*",
                             "destinationPortRange": "22",
                             "sourceAddressPrefix": "*",
@@ -28,11 +28,11 @@
                         }
                     },
                     {
-                        "name": "http",
+                        "name": "custom-tcp-rule",
                         "properties": {
-                            "protocol": "Tcp",
+                            "protocol": "TCP",
                             "sourcePortRange": "*",
-                            "destinationPortRange": "80",
+                            "destinationPortRange": "8000-8010",
                             "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
@@ -41,11 +41,11 @@
                         }
                     },
                     {
-                        "name": "https",
+                        "name": "health-check",
                         "properties": {
-                            "protocol": "Tcp",
+                            "protocol": "TCP",
                             "sourcePortRange": "*",
-                            "destinationPortRange": "443",
+                            "destinationPortRange": "7997",
                             "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
@@ -54,11 +54,11 @@
                         }
                     },
                     {
-                        "name": "admin",
+                        "name": "communication-7998",
                         "properties": {
-                            "protocol": "*",
+                            "protocol": "TCP",
                             "sourcePortRange": "*",
-                            "destinationPortRange": "8000",
+                            "destinationPortRange": "7998",
                             "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
@@ -67,67 +67,15 @@
                         }
                     },
                     {
-                        "name": "health-check",
-                        "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "7997",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
-                            "priority": 1050,
-                            "direction": "Inbound"
-                        }
-                    },
-                    {
-                        "name": "app-services",
-                        "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "8001",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
-                            "priority": 1060,
-                            "direction": "Inbound"
-                        }
-                    },
-                    {
-                        "name": "manage",
-                        "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "8002",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
-                            "priority": 1070,
-                            "direction": "Inbound"
-                        }
-                    },
-                    {
-                        "name": "communication-7778",
-                        "properties": {
-                            "protocol": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "7998",
-                            "sourceAddressPrefix": "*",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
-                            "priority": 1080,
-                            "direction": "Inbound"
-                        }
-                    },
-                    {
                         "name": "communication-7999",
                         "properties": {
-                            "protocol": "*",
+                            "protocol": "TCP",
                             "sourcePortRange": "*",
                             "destinationPortRange": "7999",
                             "sourceAddressPrefix": "*",
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
-                            "priority": 1090,
+                            "priority": 1050,
                             "direction": "Inbound"
                         }
                     }
