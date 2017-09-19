@@ -387,7 +387,7 @@
             "bootstrapNodeScriptUrl": "[variables('scriptUrls').bootstrapNodeScriptUrl]",
             "initScriptUrl": "[variables('scriptUrls').initScriptUrl]",
             "dnsPrefix": "[variables('nodePublicIpSetting').domainNameLabel]",
-            "cmdPrefix": "[concat('sudo sh config-bootstrap-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth public 5 10')]"
+            "cmdPrefix": "[concat('sudo sh config-bootstrap-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 public')]"
         },
         "additionalNodeExtSetting": {
             "vmName": "[variables('vmSetting').vmName]",
@@ -400,7 +400,7 @@
             "dnsPrefix": "[variables('nodePublicIpSetting').domainNameLabel]",
             "haExtXqyUrl": "[variables('scriptUrls').haExtXqyUrl]",
             "highAvailabilityScriptUrl": "[variables('scriptUrls').highAvailabilityScriptUrl]",
-            "cmdPrefix": "[concat('sudo sh config-additional-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth 5 10 ',string(variables('enableHA')))]"
+            "cmdPrefix": "[concat('sudo sh config-additional-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 ',string(variables('enableHA')))]"
         }
     },
     "resources": [

@@ -8,11 +8,9 @@
 #                enable-high-availability bootstrap-node joining-host
 ######################################################################################################
 
-source ./init.sh $1 $2 $3
+source ./init.sh $1 "$2" $3 $4 $5
 
 # variables
-N_RETRY=$4
-RETRY_INTERVAL=$5
 ENABLE_HA=$6
 BOOTSTRAP_HOST=$7
 JOINING_HOST=$8
@@ -63,7 +61,7 @@ fi
 #
 #####################################################################################################
 
-$AUTH_CURL -X POST -o cluster-config.zip -d "group=Default" \
+$AUTH_CURL --user $USER:"$PASS" -X POST -o cluster-config.zip -d "group=Default" \
       --data-urlencode "server-config=${JOINER_CONFIG}" \
       -H "Content-type: application/x-www-form-urlencoded" \
       http://${BOOTSTRAP_HOST}:8001/admin/v1/cluster-config |& tee -a $LOG
@@ -97,5 +95,5 @@ INFO "$JOINING_HOST successfully added to the cluster"
 
 if [ "$ENABLE_HA" == "True" ]; then
   INFO "Configurating high availability on the cluster"
-  . ./high-availability.sh $USER $PASS $AUTH_MODE $BOOTSTRAP_HOST
+  . ./high-availability.sh $USER "$PASS" $AUTH_MODE $BOOTSTRAP_HOST
 fi
