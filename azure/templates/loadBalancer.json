@@ -18,7 +18,9 @@
         "lbBackendPoolIpv6Name": "[concat(parameters('lbSetting').lbBackendPoolName,'-v6')]",
         "lbId": "[resourceId('Microsoft.Network/loadBalancers',parameters('lbSetting').name)]",
         "lbIpv4ConfigId": "[concat(variables('lbId'),'/frontendIPConfigurations/',variables('lbIpv4ConfigName'))]",
+        "lbIpv6ConfigId": "[concat(variables('lbId'),'/frontendIPConfigurations/',variables('lbIpv6ConfigName'))]",
         "lbBackendPoolIpv4Id": "[concat(variables('lbId'),'/backendAddressPools/',variables('lbBackendPoolIpv4Name'))]",
+        "lbBackendPoolIpv6Id": "[concat(variables('lbId'),'/backendAddressPools/',variables('lbBackendPoolIpv6Name'))]",
         "probeId": "[concat(variables('lbId'),'/probes/',parameters('lbSetting').probeName)]",
         "vnetId": "[resourceId('Microsoft.Network/virtualNetworks',parameters('lbSetting').vnetName)]",
         "subnetId": "[concat(variables('vnetId'),'/subnets/',parameters('lbSetting').subnetName)]",
@@ -73,7 +75,7 @@
                 ],
                 "loadBalancingRules": [
                     {
-                        "name": "qconsole",
+                        "name": "8000-v4",
                         "properties": {
                             "frontendIPConfiguration": {
                                 "id": "[variables('lbIpv4ConfigId')]"
@@ -92,7 +94,7 @@
                         }
                     },
                     {
-                        "name": "adminGui",
+                        "name": "8001-v4",
                         "properties": {
                             "frontendIPConfiguration": {
                                 "id": "[variables('lbIpv4ConfigId')]"
@@ -111,7 +113,7 @@
                         }
                     },
                     {
-                        "name": "manageApi",
+                        "name": "8002-v4",
                         "properties": {
                             "frontendIPConfiguration": {
                                 "id": "[variables('lbIpv4ConfigId')]"
@@ -130,7 +132,7 @@
                         }
                     },
                     {
-                        "name": "healthCheck",
+                        "name": "8003-v4",
                         "properties": {
                             "frontendIPConfiguration": {
                                 "id": "[variables('lbIpv4ConfigId')]"
@@ -139,10 +141,258 @@
                               "id": "[variables('lbBackendPoolIpv4Id')]"
                             },
                             "protocol": "tcp",
-                            "frontendPort": 7997,
-                            "backendPort": 7997,
+                            "frontendPort": 8003,
+                            "backendPort": 8003,
                             "enableFloatingIP": false,
                             "idleTimeoutInMinutes": 5,
+                            "probe": {
+                              "id": "[variables('probeId')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "8004-v4",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('lbIpv4ConfigId')]"
+                            },
+                            "backendAddressPool": {
+                              "id": "[variables('lbBackendPoolIpv4Id')]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8004,
+                            "backendPort": 8004,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 5,
+                            "probe": {
+                              "id": "[variables('probeId')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "8005-v4",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('lbIpv4ConfigId')]"
+                            },
+                            "backendAddressPool": {
+                              "id": "[variables('lbBackendPoolIpv4Id')]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8005,
+                            "backendPort": 8005,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 5,
+                            "probe": {
+                              "id": "[variables('probeId')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "8006-v4",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('lbIpv4ConfigId')]"
+                            },
+                            "backendAddressPool": {
+                              "id": "[variables('lbBackendPoolIpv4Id')]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8006,
+                            "backendPort": 8006,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 5,
+                            "probe": {
+                              "id": "[variables('probeId')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "8007-v4",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('lbIpv4ConfigId')]"
+                            },
+                            "backendAddressPool": {
+                              "id": "[variables('lbBackendPoolIpv4Id')]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8007,
+                            "backendPort": 8007,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 5,
+                            "probe": {
+                              "id": "[variables('probeId')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "8008-v4",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('lbIpv4ConfigId')]"
+                            },
+                            "backendAddressPool": {
+                              "id": "[variables('lbBackendPoolIpv4Id')]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8008,
+                            "backendPort": 8008,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 5,
+                            "probe": {
+                              "id": "[variables('probeId')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "8000-v6",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('lbIpv6ConfigId')]"
+                            },
+                            "backendAddressPool": {
+                              "id": "[variables('lbBackendPoolIpv6Id')]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8000,
+                            "backendPort": 8000,
+                            "probe": {
+                              "id": "[variables('probeId')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "8001-v6",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('lbIpv6ConfigId')]"
+                            },
+                            "backendAddressPool": {
+                              "id": "[variables('lbBackendPoolIpv6Id')]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8001,
+                            "backendPort": 8001,
+                            "probe": {
+                              "id": "[variables('probeId')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "8002-v6",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('lbIpv6ConfigId')]"
+                            },
+                            "backendAddressPool": {
+                              "id": "[variables('lbBackendPoolIpv6Id')]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8002,
+                            "backendPort": 8002,
+                            "probe": {
+                              "id": "[variables('probeId')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "8003-v6",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('lbIpv6ConfigId')]"
+                            },
+                            "backendAddressPool": {
+                              "id": "[variables('lbBackendPoolIpv6Id')]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8003,
+                            "backendPort": 8003,
+                            "probe": {
+                              "id": "[variables('probeId')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "8004-v6",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('lbIpv6ConfigId')]"
+                            },
+                            "backendAddressPool": {
+                              "id": "[variables('lbBackendPoolIpv6Id')]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8004,
+                            "backendPort": 8004,
+                            "probe": {
+                              "id": "[variables('probeId')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "8005-v6",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('lbIpv6ConfigId')]"
+                            },
+                            "backendAddressPool": {
+                              "id": "[variables('lbBackendPoolIpv6Id')]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8005,
+                            "backendPort": 8005,
+                            "probe": {
+                              "id": "[variables('probeId')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "8006-v6",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('lbIpv6ConfigId')]"
+                            },
+                            "backendAddressPool": {
+                              "id": "[variables('lbBackendPoolIpv6Id')]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8006,
+                            "backendPort": 8006,
+                            "probe": {
+                              "id": "[variables('probeId')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "8007-v6",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('lbIpv6ConfigId')]"
+                            },
+                            "backendAddressPool": {
+                              "id": "[variables('lbBackendPoolIpv6Id')]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8007,
+                            "backendPort": 8007,
+                            "probe": {
+                              "id": "[variables('probeId')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "8008-v6",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('lbIpv6ConfigId')]"
+                            },
+                            "backendAddressPool": {
+                              "id": "[variables('lbBackendPoolIpv6Id')]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 8008,
+                            "backendPort": 8008,
                             "probe": {
                               "id": "[variables('probeId')]"
                             }
