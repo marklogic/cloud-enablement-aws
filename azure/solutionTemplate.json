@@ -64,14 +64,6 @@
                 "description": "Type of load balancer to use"
             }
         },
-        "LoadBalancerIPV6": {
-            "type": "string",
-            "defaultValue": "enable",
-            "allowedValues": ["enable", "disable"],
-            "metadata": {
-                "description": "IPv6 address on the load balancer. Only applicable if load balancer is public"
-            }
-        },
         "OSStorage": {
             "type": "string",
             "defaultValue": "premium",
@@ -263,7 +255,7 @@
         "clusterPrefix": "[replace(parameters('DeploymentName'),' ','')]",
         "clusterLocation": "[resourceGroup().location]",
         "enableAvailabilitySet": "[if(lessOrEquals(parameters('NumberOfNodes'),1),bool('false'),equals(parameters('AvailabilitySet'),'enable'))]",
-        "enableLbIpv6": "[if(equals(parameters('LoadBalancerIPv6'),'enable'),bool('true'),bool('false'))]",
+        "enableLbIpv6": true,
         "enableHA": "[if(lessOrEquals(parameters('NumberOfNodes'),1),bool('false'),equals(parameters('HighAvailability'),'enable'))]",
         "license": "[if(and(equals(parameters('Licensee'),'none'),equals(parameters('LicenseKey'),'none')),'DEV','BYOL')]",
         "imageOffer": "[if(equals(variables('license'),'DEV'),'marklogic-developer-9','marklogic-9-byol')]",
