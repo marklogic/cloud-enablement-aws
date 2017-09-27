@@ -2,16 +2,14 @@
 ######################################################################################################
 # File         : init-bootstrap-node.sh
 # Description  : This script will setup the first node in the cluster
-# Usage        : sh init-bootstrap-node.sh username password auth-mode security-realm \
-#                n-retry retry-interval hostname
+# Usage        : sh init-bootstrap-node.sh username password auth-mode \
+#                n-retry retry-interval security-realm hostname
 ######################################################################################################
 
-source ./init.sh $1 $2 $3
+source ./init.sh $1 "$2" $3 $4 $5
 
 # variables
-SEC_REALM=$4
-N_RETRY=$5
-RETRY_INTERVAL=$6
+SEC_REALM=$6
 BOOTSTRAP_HOST=$7
 
 ######################################################################################################
@@ -36,7 +34,7 @@ sleep 10
 INFO "Initializing database admin and security database"
 TIMESTAMP=`$CURL -X POST \
    -H "Content-type: application/x-www-form-urlencoded" \
-   --data "admin-username=${USER}" --data "admin-password=${PASS}" \
+   --data "admin-username=${USER}" --data-urlencode "admin-password=${PASS}" \
    --data "realm=${SEC_REALM}" \
    http://${BOOTSTRAP_HOST}:8001/admin/v1/instance-admin \
    |& tee -a $LOG \
