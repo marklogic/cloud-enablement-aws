@@ -332,7 +332,8 @@
             "nodePublicIpName": "[variables('nodePublicIpSetting').name]",
             "nsgName": "[variables('nsgSetting').name]",
             "lbName": "[variables('lbSetting').name]",
-            "lbBackendPoolIpv4Name": "[concat(variables('lbSetting').lbBackendPoolName,'-v4')]"
+            "lbBackendPoolIpv4Name": "[concat(variables('lbSetting').lbBackendPoolName,'-v4')]",
+            "lbBackendPoolIpv6Name": "[concat(variables('lbSetting').lbBackendPoolName,'-v6')]"
         },
         "lbSetting": {
             "name": "[concat(variables('clusterPrefix'),'-lb')]",
