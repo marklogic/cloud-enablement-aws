@@ -25,14 +25,7 @@ JOINING_HOST=${10}
 # 
 #####################################################################################################
 
-INFO "Writing data into /etc/marklogic.conf"
-echo "export MARKLOGIC_HOSTNAME=$JOINING_HOST" >> /etc/marklogic.conf |& tee -a $LOG
-echo "export MARKLOGIC_LICENSE_KEY=$LICENSE_KEY" >> /etc/marklogic.conf |& tee -a $LOG
-echo "export MARKLOGIC_LICENSEE=$LICENSEE" >> /etc/marklogic.conf |& tee -a $LOG
-
-INFO "Restarting the server to pick up changes in /etc/marklogic.conf"
-/etc/init.d/MarkLogic restart |& tee -a $LOG
-sleep 10
+write_conf $JOINING_HOST $LICENSE_KEY $LICENSEE
 
 INFO "Adding host $JOINING_HOST to the cluster $BOOTSTRAP_HOST"
 # initialize MarkLogic Server on the joining host

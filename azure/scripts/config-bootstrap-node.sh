@@ -24,14 +24,7 @@ BOOTSTRAP_HOST=$9
 # GET /admin/v1/timestamp is used to confirm restarts.
 ######################################################################################################
 
-INFO "Writing data into /etc/marklogic.conf"
-echo "export MARKLOGIC_HOSTNAME=$BOOTSTRAP_HOST" >> /etc/marklogic.conf |& tee -a $LOG
-echo "export MARKLOGIC_LICENSE_KEY=$LICENSE_KEY" >> /etc/marklogic.conf |& tee -a $LOG
-echo "export MARKLOGIC_LICENSEE=$LICENSEE" >> /etc/marklogic.conf |& tee -a $LOG
-
-INFO "Restarting the server to pick up changes in /etc/marklogic.conf"
-/etc/init.d/MarkLogic restart |& tee -a $LOG
-sleep 10
+write_conf $BOOTSTRAP_HOST $LICENSE_KEY $LICENSEE
 
 INFO "Initializing $BOOTSTRAP_HOST"
 $CURL -X POST -d "" http://${BOOTSTRAP_HOST}:8001/admin/v1/init &>> $LOG
