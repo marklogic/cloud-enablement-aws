@@ -3,7 +3,7 @@
 # File         : init-bootstrap-node.sh
 # Description  : This script will setup the first node in the cluster
 # Usage        : sh init-bootstrap-node.sh username password auth-mode security-realm \
-#                n-retry retry-interval hostname
+#                n-retry retry-interval license-key licensee hostname
 ######################################################################################################
 
 source ./init.sh $1 $2 $3
@@ -12,7 +12,9 @@ source ./init.sh $1 $2 $3
 SEC_REALM=$4
 N_RETRY=$5
 RETRY_INTERVAL=$6
-BOOTSTRAP_HOST=$7
+LICENSE_KEY=$7
+LICENSEE=$8
+BOOTSTRAP_HOST=$9
 
 ######################################################################################################
 # Bring up the first host in the cluster. The following
@@ -24,6 +26,8 @@ BOOTSTRAP_HOST=$7
 
 INFO "Writing data into /etc/marklogic.conf"
 echo "export MARKLOGIC_HOSTNAME=$BOOTSTRAP_HOST" >> /etc/marklogic.conf |& tee -a $LOG
+echo "export MARKLOGIC_LICENSE_KEY=$LICENSE_KEY" >> /etc/marklogic.conf |& tee -a $LOG
+echo "export MARKLOGIC_LICENSEE=$LICENSEE" >> /etc/marklogic.conf |& tee -a $LOG
 
 INFO "Restarting the server to pick up changes in /etc/marklogic.conf"
 /etc/init.d/MarkLogic restart |& tee -a $LOG
