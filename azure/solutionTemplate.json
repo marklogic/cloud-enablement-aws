@@ -332,7 +332,8 @@
             "nodePublicIpName": "[variables('nodePublicIpSetting').name]",
             "nsgName": "[variables('nsgSetting').name]",
             "lbName": "[variables('lbSetting').name]",
-            "lbBackendPoolIpv4Name": "[concat(variables('lbSetting').lbBackendPoolName,'-v4')]"
+            "lbBackendPoolIpv4Name": "[concat(variables('lbSetting').lbBackendPoolName,'-v4')]",
+            "lbBackendPoolIpv6Name": "[concat(variables('lbSetting').lbBackendPoolName,'-v6')]"
         },
         "lbSetting": {
             "name": "[concat(variables('clusterPrefix'),'-lb')]",
@@ -387,7 +388,7 @@
             "bootstrapNodeScriptUrl": "[variables('scriptUrls').bootstrapNodeScriptUrl]",
             "initScriptUrl": "[variables('scriptUrls').initScriptUrl]",
             "dnsPrefix": "[variables('nodePublicIpSetting').domainNameLabel]",
-            "cmdPrefix": "[concat('sudo sh config-bootstrap-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth public 5 10 ',parameters('LicenseKey'),' ',parameters('Licensee'))]"
+            "cmdPrefix": "[concat('sudo sh config-bootstrap-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 public',parameters('LicenseKey'),' ',parameters('Licensee'))]"
         },
         "additionalNodeExtSetting": {
             "vmName": "[variables('vmSetting').vmName]",
@@ -400,7 +401,7 @@
             "dnsPrefix": "[variables('nodePublicIpSetting').domainNameLabel]",
             "haExtXqyUrl": "[variables('scriptUrls').haExtXqyUrl]",
             "highAvailabilityScriptUrl": "[variables('scriptUrls').highAvailabilityScriptUrl]",
-            "cmdPrefix": "[concat('sudo sh config-additional-node.sh ',parameters('AdminUser'),' ',parameters('AdminPassword'),' anyauth 5 10 ',string(variables('enableHA')),' ',parameters('LicenseKey'),' ',parameters('Licensee'))]"
+            "cmdPrefix": "[concat('sudo sh config-additional-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 ',string(variables('enableHA')),' ',parameters('LicenseKey'),' ',parameters('Licensee'))]"
         }
     },
     "resources": [

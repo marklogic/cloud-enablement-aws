@@ -7,7 +7,7 @@
     }
   },
   "variables": {
-      "bootstrapNodeExt": "[concat(parameters('extSetting').vmName,'-0/node-config')]",
+      "bootstrapNodeExt": "[concat(parameters('extSetting').vmName,'-0/bootstrap-node-config')]",
       "bootstrapNodeDns": "[concat(parameters('extSetting').dnsPrefix,'0.',parameters('extSetting').location,'.cloudapp.azure.com')]",
       "cmd": "[concat(parameters('extSetting').cmdPrefix,' ',variables('bootstrapNodeDns'))]"
   },
