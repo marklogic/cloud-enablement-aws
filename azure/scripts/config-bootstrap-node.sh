@@ -12,6 +12,7 @@ source ./init.sh $1 "$2" $3 $4 $5
 SEC_REALM=$6
 LICENSE_KEY=$7
 LICENSEE=$8
+BOOTSTRAP_HOST=$9
 
 ######################################################################################################
 # Bring up the first host in the cluster. The following
