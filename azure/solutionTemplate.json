@@ -289,7 +289,7 @@
             "bootstrapNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'config-bootstrap-node.sh')]",
             "additionalNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'config-additional-node.sh')]",
             "highAvailabilityScriptUrl": "[concat(variables('scriptBaseUrl'),'high-availability.sh')]",
-            "haExtXqyUrl": "[concat(variables('scriptBaseUrl'),'configure-ha.xqy')]",
+            "haExtXqyUrl": "[concat(variables('scriptBaseUrl'),'configure-ha.txt')]",
             "initScriptUrl": "[concat(variables('scriptBaseUrl'),'init.sh')]"
         },
         "availabilitySetSetting": {
