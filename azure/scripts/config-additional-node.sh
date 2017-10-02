@@ -5,15 +5,17 @@
 # 				       MarkLogic Server cluster. The first (bootstrap) host for the cluster should already 
 #                be fully initialized.
 # Usage        : sh init-additional-node.sh user password auth-mode n-retry retry-interval \
-#                enable-high-availability bootstrap-node joining-host
+#                enable-high-availability license-key licensee bootstrap-node joining-host
 ######################################################################################################
 
 source ./init.sh $1 "$2" $3 $4 $5
 
 # variables
 ENABLE_HA=$6
-BOOTSTRAP_HOST=$7
-JOINING_HOST=$8
+LICENSE_KEY=$7
+LICENSEE=$8
+BOOTSTRAP_HOST=$9
+JOINING_HOST=${10}
 
 #####################################################################################################
 #
@@ -21,12 +23,7 @@ JOINING_HOST=$8
 # 
 #####################################################################################################
 
-INFO "Writing data into /etc/marklogic.conf"
-echo "export MARKLOGIC_HOSTNAME=$JOINING_HOST" >> /etc/marklogic.conf |& tee -a $LOG
-
-INFO "Restarting the server to pick up changes in /etc/marklogic.conf"
-/etc/init.d/MarkLogic restart |& tee -a $LOG
-sleep 10
+write_conf $JOINING_HOST $LICENSE_KEY $LICENSEE
 
 INFO "Adding host $JOINING_HOST to the cluster $BOOTSTRAP_HOST"
 # initialize MarkLogic Server on the joining host
