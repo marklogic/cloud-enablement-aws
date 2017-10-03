@@ -10,7 +10,8 @@
         "vnetId": "[resourceId('Microsoft.Network/virtualNetworks',parameters('networkInterfaceSetting').vnetName)]",
         "subnetId": "[concat(variables('vnetId'),'/subnets/',parameters('networkInterfaceSetting').subnetName)]",
         "lbId": "[resourceId('Microsoft.Network/loadBalancers',parameters('networkInterfaceSetting').lbName)]",
-        "lbBackendPoolIpv4Id": "[concat(variables('lbId'),'/backendAddressPools/',parameters('networkInterfaceSetting').lbBackendPoolIpv4Name)]"
+        "lbBackendPoolIpv4Id": "[concat(variables('lbId'),'/backendAddressPools/',parameters('networkInterfaceSetting').lbBackendPoolIpv4Name)]",
+        "lbBackendPoolIpv6Id": "[concat(variables('lbId'),'/backendAddressPools/',parameters('networkInterfaceSetting').lbBackendPoolIpv6Name)]"
     },
     "resources": [
         {
@@ -25,11 +26,12 @@
             "properties": {
                 "ipConfigurations": [
                     {
-                        "name": "ipconfig1",
+                        "name": "ipconfigv4",
                         "properties": {
                             "subnet": {
                                 "id": "[variables('subnetId')]"
                             },
+                            "primary": true,
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIpAddress": {
                                 "id": "[resourceId('Microsoft.Network/publicIpAddresses',concat(parameters('networkInterfaceSetting').nodePublicIpName,'v4-node',copyIndex()))]"
@@ -40,7 +42,19 @@
                               }
                             ]
                         }
+                    },
+                    {
+                        "name": "ipv6IPConfig",
+                        "properties": {
+                            "privateIPAddressVersion": "IPv6",
+                            "privateIPAllocationMethod": "Dynamic",
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[variables('lbBackendPoolIpv6Id')]"
+                                }
+                            ]
                     }
+          }
                 ],
                 "networkSecurityGroup": {
                     "id": "[resourceId('Microsoft.Network/networkSecurityGroups',parameters('networkInterfaceSetting').nsgName)]"
