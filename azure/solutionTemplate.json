@@ -11,7 +11,7 @@
             }
         },
         "AdminUser": {
-            "type": "string",
+            "type": "secureString",
             "minLength": 0,
             "metadata": {
                 "description": "The MarkLogic administrator user name"
@@ -81,14 +81,14 @@
             }
         },
         "VirtualMachineUser": {
-            "type": "string",
+            "type": "secureString",
             "minLength": 0,
             "metadata": {
                 "description": "Operating system user name for virtual machines"
             }
         },
         "SSHPublicKey": {
-            "type": "string",
+            "type": "secureString",
             "minLength": 0,
             "metadata": {
                 "description": "Public SSH key for virtual machine user given above"
