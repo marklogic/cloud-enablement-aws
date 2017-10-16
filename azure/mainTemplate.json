@@ -11,7 +11,7 @@
             }
         },
         "AdminUser": {
-            "type": "string",
+            "type": "secureString",
             "minLength": 0,
             "metadata": {
                 "description": "The MarkLogic administrator user name"
@@ -81,14 +81,14 @@
             }
         },
         "VirtualMachineUser": {
-            "type": "string",
+            "type": "secureString",
             "minLength": 0,
             "metadata": {
                 "description": "Operating system user name for virtual machines"
             }
         },
         "SSHPublicKey": {
-            "type": "string",
+            "type": "secureString",
             "minLength": 0,
             "metadata": {
                 "description": "Public SSH key for virtual machine user given above"
@@ -245,11 +245,19 @@
             "metadata": {
                 "description": "Configure local-disk failover. Only applicable to multi-node cluster"
             }
+        },
+        "baseUrl": {
+            "type": "string",
+            "metadata": {
+                "description": "The base URL for dependent assets"
+            },
+            "minLength": 0,
+            "defaultValue": "https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/cloud-enablement"
         }
     },
     "variables": {
         "templateVersion": "9.0-3",
-        "repositoryUrl": "https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/cloud-enablement/azure/",
+        "repositoryUrl": "[concat(parameters('baseUrl'),'/azure/')]",
         "templateBaseUrl": "[concat(variables('repositoryUrl'),'templates/')]",
         "scriptBaseUrl": "[concat(variables('repositoryUrl'),'scripts/')]",
         "clusterPrefix": "[replace(parameters('DeploymentName'),' ','')]",
