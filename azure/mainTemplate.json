@@ -26,7 +26,7 @@
         },
         "Licensee": {
             "type": "string",
-            "minLength": 0,
+            "minLength": 1,
             "defaultValue": "none",
             "metadata": {
                 "description": "The MarkLogic Licensee or 'none' for developer license"
@@ -34,7 +34,7 @@
         },
         "LicenseKey": {
             "type": "string",
-            "minLength": 0,
+            "minLength": 1,
             "defaultValue": "none",
             "metadata": {
                 "description": "The MarkLogic License Key or 'none' for developer license"
@@ -91,7 +91,7 @@
             "type": "secureString",
             "minLength": 0,
             "metadata": {
-                "description": "Public SSH key for virtual machine user given above"
+                "description": "Public SSH key for virtual machine user specified"
             }
         },
         "InstanceType": {

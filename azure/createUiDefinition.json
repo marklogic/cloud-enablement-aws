@@ -1,0 +1,189 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json",
+    "handler": "Microsoft.Compute.MultiVm",
+    "version": "0.1.2-preview",
+    "parameters": {
+        "basics": [
+            {
+                "name": "deploymentName",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Deployment name",
+                "toolTip": "The value will be used as prefix for all resources.",
+                "constraints": {
+                    "required": true,
+                    "regex": "^[a-z0-9A-Z]{1,10}$",
+                    "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-10 characters long."
+                },
+                "options": {},
+                "visible": true
+            },
+            {
+                "name": "numberofNodes",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "Number of Nodes",
+                "defaultValue": "3",
+                "toolTip": "Number of nodes in the cluster",
+                "constraints": {
+                    "allowedValues": [
+                        {
+                            "label": "1",
+                            "value": 1
+                        },
+                        {
+                            "label": "3",
+                            "value": 3
+                        }
+                    ]
+                },
+                "visible": true
+            },
+            {
+                "name": "marklogicConfig",
+                "type": "Microsoft.Common.Section",
+                "label": "MarkLogic Configuration",
+                "elements": [
+                    {
+                        "name": "adminUser",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Admin user",
+                        "toolTip": "The MarkLogic administrator user name.",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[a-zA-Z0-9._@-]{1,}$",
+                            "validationMessage": "Invalid MarkLogic administrator user name."
+                        },
+                        "options": {},
+                        "visible": true
+                    },
+                    {
+                        "name": "adminPassword",
+                        "type": "Microsoft.Common.PasswordBox",
+                        "label": {
+                            "password": "Admin Password",
+                            "confirmPassword": "Confirm admin password"
+                        },
+                        "toolTip": "The MarkLogic administrator password",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^.+$",
+                            "validationMessage": ""
+                        },
+                        "options": {
+                            "hideConfirmation": false
+                        },
+                        "visible": true
+                    },
+                    {
+                        "name": "licensee",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Licensee",
+                        "defaultValue": "none",
+                        "toolTip": "The MarkLogic Licensee or 'none'",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^.+$",
+                            "validationMessage": "Invalid value"
+                        },
+                        "visible": true
+                    },
+                    {
+                        "name": "licenseKey",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "License Key",
+                        "defaultValue": "none",
+                        "toolTip": "The MarkLogic Licensee or 'none'",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^.+$",
+                            "validationMessage": "Invalid value"
+                        },
+                        "visible": true
+                    }
+                ],
+                "visible": true
+            },
+            {
+                "name": "resourceConfig",
+                "type": "Microsoft.Common.Section",
+                "label": "Resource Configuration",
+                "elements": [
+                    {
+                        "name": "element1",
+                        "type": "Microsoft.Compute.CredentialsCombo",
+                        "label": {
+                            "authenticationType": "Authentication type",
+                            "password": "Password",
+                            "confirmPassword": "Confirm password",
+                            "sshPublicKey": "SSH public key"
+                        },
+                        "toolTip": {
+                            "authenticationType": "",
+                            "password": "",
+                            "sshPublicKey": "Public SSH key for virtual machine user specified"
+                        },
+                        "constraints": {
+                            "required": true
+                        },
+                        "options": {
+                            "hideConfirmation": false,
+                            "hidePassword": true
+                        },
+                        "osPlatform": "Linux",
+                        "visible": true
+                    },
+                    {
+                        "name": "storage",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Storage",
+                        "elements": [
+                            {
+                                "name": "osStorage",
+                                "type": "Microsoft.Common.OptionsGroup",
+                                "label": "OS Storage",
+                                "defaultValue": "premium",
+                                "toolTip": "Storage type for operating system of virtual machines",
+                                "constraints": {
+                                    "allowedValues": [
+                                        {
+                                            "label": "premium",
+                                            "value": "premium"
+                                        },
+                                        {
+                                            "label": "standard",
+                                            "value": "standard"
+                                        }
+                                    ]
+                                },
+                                "visible": true
+                            },
+                            {
+                                "name": "dataStorage",
+                                "type": "Microsoft.Common.OptionsGroup",
+                                "label": "Data Storage",
+                                "defaultValue": "premium",
+                                "toolTip": "Storage type for data directory of virtual machines",
+                                "constraints": {
+                                    "allowedValues": [
+                                        {
+                                            "label": "premium",
+                                            "value": "premium"
+                                        },
+                                        {
+                                            "label": "standard",
+                                            "value": "standard"
+                                        }
+                                    ]
+                                },
+                                "visible": true
+                            }
+                        ],
+                        "visible": true
+                    }
+                ],
+                "visible": true
+            }
+        ],
+        "steps": [],
+        "outputs": {}
+    }
+}
