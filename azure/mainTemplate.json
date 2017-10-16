@@ -257,7 +257,7 @@
     },
     "variables": {
         "templateVersion": "9.0-3",
-        "repositoryUrl": "[concat(parameters('baseUrl'),'/azure/']",
+        "repositoryUrl": "[concat(parameters('baseUrl'),'/azure/')]",
         "templateBaseUrl": "[concat(variables('repositoryUrl'),'templates/')]",
         "scriptBaseUrl": "[concat(variables('repositoryUrl'),'scripts/')]",
         "clusterPrefix": "[replace(parameters('DeploymentName'),' ','')]",
