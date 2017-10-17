@@ -36,11 +36,17 @@
                     ]
                 },
                 "visible": true
-            },
+            }
+        ],
+        "steps": [
             {
                 "name": "marklogic",
-                "type": "Microsoft.Common.Section",
-                "label": "MarkLogic",
+                "label": "MarkLogic Configuration",
+                "subLabel": {
+                    "preValidation": "Configure MarkLogic Server",
+                    "postValidation": "Done"
+                },
+                "bladeTitle": "MarkLogic Configuration",
                 "elements": [
                     {
                         "name": "adminUser",
@@ -99,118 +105,16 @@
                         },
                         "visible": true
                     }
-                ],
-                "visible": true
+                ]
             },
             {
-                "name": "virtualMachine",
-                "type": "Microsoft.Common.Section",
-                "label": "Virtual Machine",
-                "elements": [
-                    {
-                        "name": "vmUser",
-                        "type": "Microsoft.Compute.UserNameTextBox",
-                        "label": "User name",
-                        "defaultValue": "",
-                        "toolTip": "Operating system user name for virtual machines",
-                        "constraints": {
-                            "required": true
-                        },
-                        "osPlatform": "Linux",
-                        "visible": true
-                    },
-                    {
-                        "name": "vmCredential",
-                        "type": "Microsoft.Compute.CredentialsCombo",
-                        "label": {
-                            "authenticationType": "Authentication type",
-                            "password": "Password",
-                            "confirmPassword": "Confirm password",
-                            "sshPublicKey": "SSH public key"
-                        },
-                        "toolTip": {
-                            "authenticationType": "",
-                            "password": "",
-                            "sshPublicKey": "Public SSH key for virtual machine user specified"
-                        },
-                        "constraints": {
-                            "required": true
-                        },
-                        "options": {
-                            "hideConfirmation": false,
-                            "hidePassword": true
-                        },
-                        "osPlatform": "Linux",
-                        "visible": true
-                    }
-                ],
-                "visible": true
-            },
-            {
-                "name": "storage",
-                "type": "Microsoft.Common.Section",
-                "label": "Storage",
-                "elements": [
-                    {
-                        "name": "osStorage",
-                        "type": "Microsoft.Common.OptionsGroup",
-                        "label": "OS Storage",
-                        "defaultValue": "premium",
-                        "toolTip": "Storage type for operating system of virtual machines",
-                        "constraints": {
-                            "allowedValues": [
-                                {
-                                    "label": "premium",
-                                    "value": "premium"
-                                },
-                                {
-                                    "label": "standard",
-                                    "value": "standard"
-                                }
-                            ]
-                        },
-                        "visible": true
-                    },
-                    {
-                        "name": "dataStorage",
-                        "type": "Microsoft.Common.OptionsGroup",
-                        "label": "Data Storage",
-                        "defaultValue": "premium",
-                        "toolTip": "Storage type for data directory of virtual machines",
-                        "constraints": {
-                            "allowedValues": [
-                                {
-                                    "label": "premium",
-                                    "value": "premium"
-                                },
-                                {
-                                    "label": "standard",
-                                    "value": "standard"
-                                }
-                            ]
-                        },
-                        "visible": true
-                    }
-                ],
-                "visible": true
-            },
-            {
-                "name": "basic",
-                "type": "Microsoft.Common.Section",
-                "label": "Basic",
-                "elements": [],
-                "visible": true
-            }
-        ],
-        "steps": [
-            {
-                "name": "clusterFeatures",
-                "label": "Cluster Features",
+                "name": "resourceConfig",
+                "label": "Resource Configuration",
                 "subLabel": {
-                    "preValidation": "Configure the cluster features",
+                    "preValidation": "Configure Cluster Resources",
                     "postValidation": "Done"
                 },
-                "bladeTitle": "Cluster Features",
+                "bladeTitle": "Resource Configuration",
                 "elements": [
                     {
                         "name": "availabilitySet",
@@ -222,11 +126,11 @@
                             "allowedValues": [
                                 {
                                     "label": "enable",
-                                    "value": true
+                                    "value": "enable"
                                 },
                                 {
                                     "label": "disable",
-                                    "value": false
+                                    "value": "disable"
                                 }
                             ]
                         },
@@ -242,11 +146,11 @@
                             "allowedValues": [
                                 {
                                     "label": "enable",
-                                    "value": true
+                                    "value": "enable"
                                 },
                                 {
                                     "label": "disable",
-                                    "value": false
+                                    "value": "disable"
                                 }
                             ]
                         },
@@ -271,6 +175,98 @@
                             ]
                         },
                         "visible": "[greater(basics('numberofNodes'),1)]"
+                    },
+                    {
+                        "name": "storage",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Storage",
+                        "elements": [
+                            {
+                                "name": "osStorage",
+                                "type": "Microsoft.Common.OptionsGroup",
+                                "label": "OS Storage",
+                                "defaultValue": "premium",
+                                "toolTip": "Storage type for operating system of virtual machines",
+                                "constraints": {
+                                    "allowedValues": [
+                                        {
+                                            "label": "premium",
+                                            "value": "premium"
+                                        },
+                                        {
+                                            "label": "standard",
+                                            "value": "standard"
+                                        }
+                                    ]
+                                },
+                                "visible": true
+                            },
+                            {
+                                "name": "dataStorage",
+                                "type": "Microsoft.Common.OptionsGroup",
+                                "label": "Data Storage",
+                                "defaultValue": "premium",
+                                "toolTip": "Storage type for data directory of virtual machines",
+                                "constraints": {
+                                    "allowedValues": [
+                                        {
+                                            "label": "premium",
+                                            "value": "premium"
+                                        },
+                                        {
+                                            "label": "standard",
+                                            "value": "standard"
+                                        }
+                                    ]
+                                },
+                                "visible": true
+                            }
+                        ],
+                        "visible": true
+                    },
+                    {
+                        "name": "virtualMachine",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Virtual Machine",
+                        "elements": [
+                            {
+                                "name": "vmUser",
+                                "type": "Microsoft.Compute.UserNameTextBox",
+                                "label": "User name",
+                                "defaultValue": "",
+                                "toolTip": "Operating system user name for virtual machines",
+                                "constraints": {
+                                    "required": true
+                                },
+                                "osPlatform": "Linux",
+                                "visible": true
+                            },
+                            {
+                                "name": "vmCredential",
+                                "type": "Microsoft.Compute.CredentialsCombo",
+                                "label": {
+                                    "authenticationType": "Authentication type",
+                                    "password": "Password",
+                                    "confirmPassword": "Confirm password",
+                                    "sshPublicKey": "SSH public key"
+                                },
+                                "toolTip": {
+                                    "authenticationType": "",
+                                    "password": "",
+                                    "sshPublicKey": "Public SSH key for virtual machine user specified"
+                                },
+                                "constraints": {
+                                    "required": true
+                                },
+                                "options": {
+                                    "hideConfirmation": false,
+                                    "hidePassword": true
+                                },
+                                "osPlatform": "Linux",
+                                "visible": true
+                            }
+                        ],
+                        "visible": true
                     },
                     {
                         "name": "instanceType",
@@ -424,17 +420,27 @@
                             ]
                         },
                         "osPlatform": "Linux",
-                        "imageReference": {
-                            "publisher": "marklogic",
-                            "offer": "[if(and(equals(basics('marklogicConfig').licensee,'none'),equals(basics('marklogicConfig').licenseKey,'none')),'marklogic-developer-9','marklogic-9-byol')]",
-                            "sku": "[if(and(equals(basics('marklogicConfig').licensee,'none'),equals(basics('marklogicConfig').licenseKey,'none')),'ml903_centos','ml903_centos_byol')]"
-                        },
                         "count": "[basics('numberofNodes')]",
                         "visible": true
                     }
                 ]
             }
         ],
-        "outputs": {}
+        "outputs": {
+            "DeploymentName": "[basics('deploymentName')]",
+            "AdminUser": "[steps('marklogic').adminUser]",
+            "AdminPassword": "[steps('marklogic').adminPassword]",
+            "Licensee": "[steps('marklogic').licensee]",
+            "LicenseKey": "[steps('marklogic').licenseKey]",
+            "NumberOfNodes": "[basics('numberofNodes')]",
+            "AvailabilitySet": "[steps('resourceConfig').availabilitySet]",
+            "LoadBalancer": "[steps('resourceConfig').loadBalancer]",
+            "OSStorage": "[steps('resourceConfig').storage.osStorage]",
+            "DataStorage": "[steps('resourceConfig').storage.dataStorage]",
+            "VirtualMachineUser": "[steps('resourceConfig').virtualMachine.vmUser]",
+            "SSHPublicKey": "[steps('resourceConfig').virtualMachine.vmCredential.sshPublicKey]",
+            "InstanceType": "[steps('resourceConfig').instanceType]",
+            "HighAvailability": "[steps('resourceConfig').highAvailability]"
+        }
     }
 }
