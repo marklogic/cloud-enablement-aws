@@ -440,7 +440,8 @@
             "VirtualMachineUser": "[steps('resourceConfig').virtualMachine.vmUser]",
             "SSHPublicKey": "[steps('resourceConfig').virtualMachine.vmCredential.sshPublicKey]",
             "InstanceType": "[steps('resourceConfig').instanceType]",
-            "HighAvailability": "[steps('resourceConfig').highAvailability]"
+            "HighAvailability": "[steps('resourceConfig').highAvailability]",
+            "Location": "[location()]"
         }
     }
 }
