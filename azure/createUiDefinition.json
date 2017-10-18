@@ -1,0 +1,447 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json",
+    "handler": "Microsoft.Compute.MultiVm",
+    "version": "0.1.2-preview",
+    "parameters": {
+        "basics": [
+            {
+                "name": "deploymentName",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Deployment name",
+                "toolTip": "The value will be used as prefix for all resources.",
+                "constraints": {
+                    "required": true,
+                    "regex": "^[a-z0-9A-Z]{1,10}$",
+                    "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-10 characters long."
+                },
+                "options": {},
+                "visible": true
+            },
+            {
+                "name": "numberofNodes",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "Number of Nodes",
+                "defaultValue": "3",
+                "toolTip": "Number of nodes in the cluster",
+                "constraints": {
+                    "allowedValues": [
+                        {
+                            "label": "1",
+                            "value": 1
+                        },
+                        {
+                            "label": "3",
+                            "value": 3
+                        }
+                    ]
+                },
+                "visible": true
+            }
+        ],
+        "steps": [
+            {
+                "name": "marklogic",
+                "label": "MarkLogic Configuration",
+                "subLabel": {
+                    "preValidation": "Configure MarkLogic Server",
+                    "postValidation": "Done"
+                },
+                "bladeTitle": "MarkLogic Configuration",
+                "elements": [
+                    {
+                        "name": "adminUser",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Admin user",
+                        "toolTip": "The MarkLogic administrator user name.",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^[a-zA-Z0-9._@-]{1,}$",
+                            "validationMessage": "Invalid MarkLogic administrator user name."
+                        },
+                        "options": {},
+                        "visible": true
+                    },
+                    {
+                        "name": "adminPassword",
+                        "type": "Microsoft.Common.PasswordBox",
+                        "label": {
+                            "password": "Admin Password",
+                            "confirmPassword": "Confirm admin password"
+                        },
+                        "toolTip": "The MarkLogic administrator password",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^.+$",
+                            "validationMessage": ""
+                        },
+                        "options": {
+                            "hideConfirmation": false
+                        },
+                        "visible": true
+                    },
+                    {
+                        "name": "licensee",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "Licensee",
+                        "defaultValue": "none",
+                        "toolTip": "The MarkLogic Licensee or 'none'",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^.+$",
+                            "validationMessage": "Invalid value"
+                        },
+                        "visible": true
+                    },
+                    {
+                        "name": "licenseKey",
+                        "type": "Microsoft.Common.TextBox",
+                        "label": "License Key",
+                        "defaultValue": "none",
+                        "toolTip": "The MarkLogic Licensee or 'none'",
+                        "constraints": {
+                            "required": true,
+                            "regex": "^.+$",
+                            "validationMessage": "Invalid value"
+                        },
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "name": "resourceConfig",
+                "label": "Resource Configuration",
+                "subLabel": {
+                    "preValidation": "Configure Cluster Resources",
+                    "postValidation": "Done"
+                },
+                "bladeTitle": "Resource Configuration",
+                "elements": [
+                    {
+                        "name": "availabilitySet",
+                        "type": "Microsoft.Common.OptionsGroup",
+                        "label": "Availability set",
+                        "defaultValue": "enable",
+                        "toolTip": "Whether to put virtual machines in an Availability Set. Only applicable to multi-node cluster",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "enable",
+                                    "value": "enable"
+                                },
+                                {
+                                    "label": "disable",
+                                    "value": "disable"
+                                }
+                            ]
+                        },
+                        "visible": "[greater(basics('numberofNodes'),1)]"
+                    },
+                    {
+                        "name": "highAvailability",
+                        "type": "Microsoft.Common.OptionsGroup",
+                        "label": "MarkLogic High Availability",
+                        "defaultValue": "enable",
+                        "toolTip": "Configure local-disk failover.",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "enable",
+                                    "value": "enable"
+                                },
+                                {
+                                    "label": "disable",
+                                    "value": "disable"
+                                }
+                            ]
+                        },
+                        "visible": "[greater(basics('numberofNodes'),1)]"
+                    },
+                    {
+                        "name": "loadBalancer",
+                        "type": "Microsoft.Common.OptionsGroup",
+                        "label": "Load Balancer",
+                        "defaultValue": "public",
+                        "toolTip": "Type of load balancer to use",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "public",
+                                    "value": "public"
+                                },
+                                {
+                                    "label": "internal",
+                                    "value": "internal"
+                                }
+                            ]
+                        },
+                        "visible": "[greater(basics('numberofNodes'),1)]"
+                    },
+                    {
+                        "name": "storage",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Storage",
+                        "elements": [
+                            {
+                                "name": "osStorage",
+                                "type": "Microsoft.Common.OptionsGroup",
+                                "label": "OS Storage",
+                                "defaultValue": "premium",
+                                "toolTip": "Storage type for operating system of virtual machines",
+                                "constraints": {
+                                    "allowedValues": [
+                                        {
+                                            "label": "premium",
+                                            "value": "premium"
+                                        },
+                                        {
+                                            "label": "standard",
+                                            "value": "standard"
+                                        }
+                                    ]
+                                },
+                                "visible": true
+                            },
+                            {
+                                "name": "dataStorage",
+                                "type": "Microsoft.Common.OptionsGroup",
+                                "label": "Data Storage",
+                                "defaultValue": "premium",
+                                "toolTip": "Storage type for data directory of virtual machines",
+                                "constraints": {
+                                    "allowedValues": [
+                                        {
+                                            "label": "premium",
+                                            "value": "premium"
+                                        },
+                                        {
+                                            "label": "standard",
+                                            "value": "standard"
+                                        }
+                                    ]
+                                },
+                                "visible": true
+                            }
+                        ],
+                        "visible": true
+                    },
+                    {
+                        "name": "virtualMachine",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Virtual Machine",
+                        "elements": [
+                            {
+                                "name": "vmUser",
+                                "type": "Microsoft.Compute.UserNameTextBox",
+                                "label": "User name",
+                                "defaultValue": "",
+                                "toolTip": "Operating system user name for virtual machines",
+                                "constraints": {
+                                    "required": true
+                                },
+                                "osPlatform": "Linux",
+                                "visible": true
+                            },
+                            {
+                                "name": "vmCredential",
+                                "type": "Microsoft.Compute.CredentialsCombo",
+                                "label": {
+                                    "authenticationType": "Authentication type",
+                                    "password": "Password",
+                                    "confirmPassword": "Confirm password",
+                                    "sshPublicKey": "SSH public key"
+                                },
+                                "toolTip": {
+                                    "authenticationType": "",
+                                    "password": "",
+                                    "sshPublicKey": "Public SSH key for virtual machine user specified"
+                                },
+                                "constraints": {
+                                    "required": true
+                                },
+                                "options": {
+                                    "hideConfirmation": false,
+                                    "hidePassword": true
+                                },
+                                "osPlatform": "Linux",
+                                "visible": true
+                            }
+                        ],
+                        "visible": true
+                    },
+                    {
+                        "name": "instanceType",
+                        "type": "Microsoft.Compute.SizeSelector",
+                        "label": "Instance Type",
+                        "toolTip": "Type of virtual machine to launch. The list only includes instance types that meet minimum requirement of MarkLogic Server",
+                        "recommendedSizes": [
+                            "Standard_A7",
+                            "Standard_D13_v2",
+                            "Standard_D14_v2",
+                            "Standard_DS13",
+                            "Standard_DS14",
+                            "Standard_G3"
+                        ],
+                        "constraints": {
+                            "allowedSizes": [
+                                "Basic_A2",
+                                "Basic_A3",
+                                "Basic_A4",
+                                "Standard_A10",
+                                "Standard_A11",
+                                "Standard_A2",
+                                "Standard_A2_v2",
+                                "Standard_A2m_v2",
+                                "Standard_A3",
+                                "Standard_A4",
+                                "Standard_A4_v2",
+                                "Standard_A4m_v2",
+                                "Standard_A5",
+                                "Standard_A6",
+                                "Standard_A7",
+                                "Standard_A8",
+                                "Standard_A8_v2",
+                                "Standard_A8m_v2",
+                                "Standard_A9",
+                                "Standard_B2s",
+                                "Standard_D1",
+                                "Standard_D11",
+                                "Standard_D11_v2",
+                                "Standard_D11_v2_Promo",
+                                "Standard_D12",
+                                "Standard_D12_v2",
+                                "Standard_D12_v2_Promo",
+                                "Standard_D13",
+                                "Standard_D13_v2",
+                                "Standard_D13_v2_Promo",
+                                "Standard_D14",
+                                "Standard_D14_v2",
+                                "Standard_D14_v2_Promo",
+                                "Standard_D15_v2",
+                                "Standard_D16_v3",
+                                "Standard_D16s_v3",
+                                "Standard_D1_v2",
+                                "Standard_D2",
+                                "Standard_D2_v2",
+                                "Standard_D2_v2_Promo",
+                                "Standard_D2_v3",
+                                "Standard_D2s_v3",
+                                "Standard_D3",
+                                "Standard_D32_v3",
+                                "Standard_D32s_v3",
+                                "Standard_D3_v2",
+                                "Standard_D3_v2_Promo",
+                                "Standard_D4",
+                                "Standard_D4_v2",
+                                "Standard_D4_v2_Promo",
+                                "Standard_D4_v3",
+                                "Standard_D4s_v3",
+                                "Standard_D5_v2",
+                                "Standard_D5_v2_Promo",
+                                "Standard_D64_v3",
+                                "Standard_D64s_v3",
+                                "Standard_D8_v3",
+                                "Standard_D8s_v3",
+                                "Standard_DS1",
+                                "Standard_DS11",
+                                "Standard_DS11_v2",
+                                "Standard_DS11_v2_Promo",
+                                "Standard_DS12",
+                                "Standard_DS12_v2",
+                                "Standard_DS12_v2_Promo",
+                                "Standard_DS13",
+                                "Standard_DS13_v2",
+                                "Standard_DS13_v2_Promo",
+                                "Standard_DS14",
+                                "Standard_DS14_v2",
+                                "Standard_DS14_v2_Promo",
+                                "Standard_DS15_v2",
+                                "Standard_DS1_v2",
+                                "Standard_DS2",
+                                "Standard_DS2_v2",
+                                "Standard_DS2_v2_Promo",
+                                "Standard_DS3",
+                                "Standard_DS3_v2",
+                                "Standard_DS3_v2_Promo",
+                                "Standard_DS4",
+                                "Standard_DS4_v2",
+                                "Standard_DS4_v2_Promo",
+                                "Standard_DS5_v2",
+                                "Standard_DS5_v2_Promo",
+                                "Standard_E16_v3",
+                                "Standard_E16s_v3",
+                                "Standard_E2_v3",
+                                "Standard_E2s_v3",
+                                "Standard_E32_v3",
+                                "Standard_E32s_v3",
+                                "Standard_E4_v3",
+                                "Standard_E4s_v3",
+                                "Standard_E64_v3",
+                                "Standard_E64s_v3",
+                                "Standard_E8_v3",
+                                "Standard_E8s_v3",
+                                "Standard_F16",
+                                "Standard_F16s",
+                                "Standard_F2",
+                                "Standard_F2s",
+                                "Standard_F4",
+                                "Standard_F4s",
+                                "Standard_F8",
+                                "Standard_F8s",
+                                "Standard_G1",
+                                "Standard_G2",
+                                "Standard_G3",
+                                "Standard_G4",
+                                "Standard_G5",
+                                "Standard_GS1",
+                                "Standard_GS2",
+                                "Standard_GS3",
+                                "Standard_GS4",
+                                "Standard_GS5",
+                                "Standard_H16",
+                                "Standard_H16m",
+                                "Standard_H16mr",
+                                "Standard_H16r",
+                                "Standard_H8",
+                                "Standard_H8m",
+                                "Standard_L16s",
+                                "Standard_L32s",
+                                "Standard_L4s",
+                                "Standard_L8s",
+                                "Standard_M128s",
+                                "Standard_M64ms",
+                                "Standard_M64s",
+                                "Standard_NC12",
+                                "Standard_NC24",
+                                "Standard_NC24r",
+                                "Standard_NC6",
+                                "Standard_NV12",
+                                "Standard_NV24",
+                                "Standard_NV6"
+                            ]
+                        },
+                        "osPlatform": "Linux",
+                        "count": "[basics('numberofNodes')]",
+                        "visible": true
+                    }
+                ]
+            }
+        ],
+        "outputs": {
+            "DeploymentName": "[basics('deploymentName')]",
+            "AdminUser": "[steps('marklogic').adminUser]",
+            "AdminPassword": "[steps('marklogic').adminPassword]",
+            "Licensee": "[steps('marklogic').licensee]",
+            "LicenseKey": "[steps('marklogic').licenseKey]",
+            "NumberOfNodes": "[basics('numberofNodes')]",
+            "AvailabilitySet": "[steps('resourceConfig').availabilitySet]",
+            "LoadBalancer": "[steps('resourceConfig').loadBalancer]",
+            "OSStorage": "[steps('resourceConfig').storage.osStorage]",
+            "DataStorage": "[steps('resourceConfig').storage.dataStorage]",
+            "VirtualMachineUser": "[steps('resourceConfig').virtualMachine.vmUser]",
+            "SSHPublicKey": "[steps('resourceConfig').virtualMachine.vmCredential.sshPublicKey]",
+            "InstanceType": "[steps('resourceConfig').instanceType]",
+            "HighAvailability": "[steps('resourceConfig').highAvailability]",
+            "Location": "[location()]"
+        }
+    }
+}
