@@ -33,7 +33,7 @@
             }
         },
         "LicenseKey": {
-            "type": "string"
+            "type": "string",
             "minLength": 1,
             "defaultValue": "none",
             "metadata": {
