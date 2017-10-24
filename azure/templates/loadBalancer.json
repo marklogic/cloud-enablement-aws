@@ -24,7 +24,7 @@
         "probeId": "[concat(variables('lbId'),'/probes/',parameters('lbSetting').probeName)]",
         "vnetId": "[resourceId('Microsoft.Network/virtualNetworks',parameters('lbSetting').vnetName)]",
         "subnetId": "[concat(variables('vnetId'),'/subnets/',parameters('lbSetting').subnetName)]",
-        "externalLbProperty": [
+        "extLbPropertyWIpv6": [
             {
                 "name": "[variables('lbIpv4ConfigName')]",
                 "properties": {
@@ -37,11 +37,22 @@
                 "name": "[variables('lbIpv6ConfigName')]",
                 "properties": {
                     "publicIPAddress": {
-                        "id": "[if(parameters('publicLBIpSetting').enableIpv6,resourceId('Microsoft.Network/publicIPAddresses',variables('ipv6Name')),json('null'))]"
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('ipv6Name'))]"
                     }
                 }
             }
         ],
+        "extLbPropertyWoIpv6": [
+            {
+                "name": "[variables('lbIpv4ConfigName')]",
+                "properties": {
+                    "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('ipv4Name'))]"
+                    }
+                }
+            }
+        ],
+        "externalLbProperty": "[if(parameters('publicLBIpSetting').enableIpv6,variables('extLbPropertyWIpv6'),variables('extLbPropertyWoIpv6'))]",
         "internalLbProperty": [
             {
                 "name": "[variables('lbIpv4ConfigName')]",
