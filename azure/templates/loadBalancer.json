@@ -24,7 +24,8 @@
         "probeId": "[concat(variables('lbId'),'/probes/',parameters('lbSetting').probeName)]",
         "vnetId": "[resourceId('Microsoft.Network/virtualNetworks',parameters('lbSetting').vnetName)]",
         "subnetId": "[concat(variables('vnetId'),'/subnets/',parameters('lbSetting').subnetName)]",
-        "externalLbProperty": [
+        "enableIpv6": "[and(equals(parameters('lbSetting').type,'public'),parameters('publicLBIpSetting').enableIpv6)]",
+        "extLbPropertyWIpv6": [
             {
                 "name": "[variables('lbIpv4ConfigName')]",
                 "properties": {
@@ -37,11 +38,22 @@
                 "name": "[variables('lbIpv6ConfigName')]",
                 "properties": {
                     "publicIPAddress": {
-                        "id": "[if(parameters('publicLBIpSetting').enableIpv6,resourceId('Microsoft.Network/publicIPAddresses',variables('ipv6Name')),json('null'))]"
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('ipv6Name'))]"
                     }
                 }
             }
         ],
+        "extLbPropertyWoIpv6": [
+            {
+                "name": "[variables('lbIpv4ConfigName')]",
+                "properties": {
+                    "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('ipv4Name'))]"
+                    }
+                }
+            }
+        ],
+        "publicLbProperty": "[if(variables('enableIpv6'),variables('extLbPropertyWIpv6'),variables('extLbPropertyWoIpv6'))]",
         "internalLbProperty": [
             {
                 "name": "[variables('lbIpv4ConfigName')]",
@@ -52,7 +64,7 @@
                 }
             }
         ],
-        "externalLbRule": [
+        "lbRuleWIpv6": [
             {
                 "name": "8000-v4",
                 "properties": {
@@ -378,7 +390,7 @@
                 }
             }
         ],
-        "internalLBRule": [
+        "lbRuleWoIpv6": [
             {
                 "name": "8000-v4",
                 "properties": {
@@ -563,7 +575,7 @@
                 "[concat('Microsoft.Network/publicIPAddresses/', variables('ipv4Name'))]"
             ],
             "properties": {
-                "frontendIPConfigurations": "[if(equals(parameters('lbSetting').type,'internal'),variables('internalLbProperty'),variables('externalLbProperty'))]",
+                "frontendIPConfigurations": "[if(equals(parameters('lbSetting').type,'internal'),variables('internalLbProperty'),variables('publicLbProperty'))]",
                 "backendAddressPools": [
                     {
                         "name": "[variables('lbBackendPoolIpv4Name')]"
@@ -572,7 +584,7 @@
                         "name": "[variables('lbBackendPoolIpv6Name')]"
                     }
                 ],
-                "loadBalancingRules": "[if(equals(parameters('lbSetting').type,'internal'),variables('internalLBRule'),variables('externalLbRule'))]",
+                "loadBalancingRules": "[if(variables('enableIpv6'),variables('lbRuleWIpv6'),variables('lbRuleWoIpv6'))]",
                 "probes": [
                     {
                         "name": "[parameters('lbSetting').probeName]",
@@ -590,7 +602,7 @@
             "apiVersion": "[parameters('publicLBIpSetting').apiVersion]",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('ipv6Name')]",
-            "condition": "[and(equals(parameters('lbSetting').type,'external'),parameters('publicLBIpSetting').enableIpv6)]",
+            "condition": "[variables('enableIpv6')]",
             "location": "[parameters('publicLBIpSetting').location]",
             "properties": {
                 "publicIPAllocationMethod": "Dynamic",
@@ -604,7 +616,7 @@
             "apiVersion": "[parameters('publicLBIpSetting').apiVersion]",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[variables('ipv4Name')]",
-            "condition": "[equals(parameters('lbSetting').type,'external')]",
+            "condition": "[equals(parameters('lbSetting').type,'public')]",
             "location": "[parameters('publicLBIpSetting').location]",
             "properties": {
                 "publicIPAllocationMethod": "[parameters('publicLBIpSetting').IPAllocationMethod]",
