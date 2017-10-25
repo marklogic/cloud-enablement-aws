@@ -302,12 +302,12 @@
                         "label": "Instance Type",
                         "toolTip": "Type of virtual machine to launch. The list only includes instance types that meet minimum requirement of MarkLogic Server",
                         "recommendedSizes": [
-                            "Standard_A7",
-                            "Standard_D13_v2",
-                            "Standard_D14_v2",
-                            "Standard_DS13",
-                            "Standard_DS14",
-                            "Standard_G3"
+                            "Standard_DS13_v2",
+                            "Standard_DS14_v2",
+                            "Standard_A4",
+                            "Standard_D4_v2",
+                            "Standard_D5_v2",
+                            "Standard_GS3"
                         ],
                         "constraints": {
                             "allowedSizes": [
