@@ -117,26 +117,6 @@
                 "bladeTitle": "Resource Configuration",
                 "elements": [
                     {
-                        "name": "availabilitySet",
-                        "type": "Microsoft.Common.OptionsGroup",
-                        "label": "Availability set",
-                        "defaultValue": "enable",
-                        "toolTip": "Whether to put virtual machines in an Availability Set. Only applicable to multi-node cluster",
-                        "constraints": {
-                            "allowedValues": [
-                                {
-                                    "label": "enable",
-                                    "value": "enable"
-                                },
-                                {
-                                    "label": "disable",
-                                    "value": "disable"
-                                }
-                            ]
-                        },
-                        "visible": "[greater(basics('numberofNodes'),1)]"
-                    },
-                    {
                         "name": "highAvailability",
                         "type": "Microsoft.Common.OptionsGroup",
                         "label": "MarkLogic High Availability",
@@ -461,7 +441,6 @@
             "Licensee": "[steps('marklogic').licensee]",
             "LicenseKey": "[steps('marklogic').licenseKey]",
             "NumberOfNodes": "[basics('numberofNodes')]",
-            "AvailabilitySet": "[steps('resourceConfig').availabilitySet]",
             "LoadBalancer": "[steps('resourceConfig').loadBalancer.lbType]",
             "OSStorage": "[steps('resourceConfig').storage.osStorage]",
             "LoadBalancerIPV6": "[steps('resourceConfig').loadBalancer.lbIpv6]",

@@ -48,14 +48,6 @@
                 "description": "Number of nodes in the cluster"
             }
         },
-        "AvailabilitySet": {
-            "type": "string",
-            "defaultValue": "enable",
-            "allowedValues": ["enable", "disable"],
-            "metadata": {
-                "description": "Whether to put virtual machines in an Availability Set. Only applicable to multi-node cluster"
-            }
-        },
         "LoadBalancer": {
             "type": "string",
             "defaultValue": "public",
@@ -140,7 +132,7 @@
         "scriptBaseUrl": "[concat(variables('repositoryUrl'),'scripts/')]",
         "clusterPrefix": "[replace(parameters('DeploymentName'),' ','')]",
         "clusterLocation": "[parameters('location')]",
-        "enableAvailabilitySet": "[if(lessOrEquals(parameters('NumberOfNodes'),1),bool('false'),equals(parameters('AvailabilitySet'),'enable'))]",
+        "enableAvailabilitySet": true,
         "enableLbIpv6": "[if(equals(parameters('LoadBalancerIPv6'),'enable'),bool('true'),bool('false'))]",
         "enableHA": "[if(lessOrEquals(parameters('NumberOfNodes'),1),bool('false'),equals(parameters('HighAvailability'),'enable'))]",
         "license": "[if(and(equals(parameters('Licensee'),'none'),equals(parameters('LicenseKey'),'none')),'DEV','BYOL')]",
