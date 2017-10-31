@@ -115,7 +115,7 @@
                 "description": "The base URL for dependent assets"
             },
             "minLength": 1,
-            "defaultValue": "https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/cloud-enablement"
+            "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/9.0-3"
         },
         "location": {
             "type": "string",
