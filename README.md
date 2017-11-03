@@ -1,15 +1,18 @@
 # Cloud Enablement
 
-This is the repository contains open-source projects to enable MarkLogic running on Cloud. For general information of MarkLogic on the Cloud, please visit this [page](https://developer.marklogic.com/products/cloud).
+This is the repository contains open-source projects to enable MarkLogic running on Cloud.  
+For general information of MarkLogic on the Cloud, please visit this [page](https://developer.marklogic.com/products/cloud).
 
 ## Azure Solution Template 
 
 The Solution Template for MarkLogic on Azure helps to deloy clusters on Azure. It is publicly offered on Azure Marketplace. This repository contains templates and resources to set up and initialize MarkLogic clusters with Availability Set, Virtual Networks, Load Balancers, Managed Disks etc. Features such as MarkLogic HA will be configured for the cluster.
 
+Detailed information of this project see [README](https://github.com/marklogic/cloud-enablement/blob/master/azure/REAEME.md).
+
 ### Documentation
 
-[MarkLogic on Azure](https://developer.marklogic.com/products/cloud/azure)  
-[Deploying MarkLogic on Azure Using the Solution Template](http://pubs.marklogic.com:8011/guide/azure/Deploying)
+- [MarkLogic on Azure](https://developer.marklogic.com/products/cloud/azure)  
+- [Deploying MarkLogic on Azure Using the Solution Template](http://pubs.marklogic.com:8011/guide/azure/Deploying)
 
 ## Support
 
