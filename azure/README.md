@@ -21,4 +21,5 @@ This Solution Template deploys MarkLogic clusters on Azure with Availability Set
 
 ## Documentation
 
-Official documentation: [Deploying MarkLogic on Azure Using the Solution Template](http://pubs.marklogic.com:8011/guide/azure/Deploying)
+- [MarkLogic on Azure](https://developer.marklogic.com/products/cloud/azure)  
+- [Deploying MarkLogic on Azure Using the Solution Template](http://pubs.marklogic.com:8011/guide/azure/Deploying)
