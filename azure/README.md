@@ -1,9 +1,9 @@
 # MarkLogic Solution Template on Azure
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmarklogic%2Fcloud-enablement%2Fmaster%2Fazure%2FsolutionTemplate.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmarklogic%2Fcloud-enablement%2Fmaster%2Fazure%2FmainTemplate.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
-<a href="http://armviz.io/#/?load=https://raw.githubusercontent.com/marklogic/cloud-enablement/master/azure/solutionTemplate.json" target="_blank">
+<a href="http://armviz.io/#/?load=https://raw.githubusercontent.com/marklogic/cloud-enablement/master/azure/mainTemplate.json" target="_blank">
   <img src="http://armviz.io/visualizebutton.png"/>
 </a>
 
@@ -13,9 +13,9 @@ The Solution Template is a sample deployment for MarkLogic Clusters on Azure. Us
 
 ## Getting Started
 
-* To deploy from Azure Web Portal, go to [here]()
-* To deploy from this repository, click the `Deploy to Azure` button under the title.
-* To deploy using Azure CLI (or other APIs), clone this repository and pass the path to Azure CLI.
+* To deploy from Azure Web Portal, navigate to [Azure Marketplace]()  
+* To deploy from this repository, click the `Deploy to Azure` button under the title  
+* To deploy using Azure CLI (or other tools), refer to Azure [article](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-template-deploy-cli).
 
 ## Reference Architecture
 
@@ -25,7 +25,7 @@ The virtual machines provisioned by the template will each be initialized as a M
 
 ![](doc/typical_architecture_of_azure_cluster.png)
 
-The Solution Template consists of a mainTemplate, createUiDefinition, several sub-templates, and shell sripts for configuring MarkLogic cluster. The mainTemplate is the main entrance of the template. It links and invokes sub-templates as needed. The createUiDefinition is used to define Azure Marketplace interface, if you are deploying from this repository or using Azure CLI, createUiDefinition is unrelated. 
+The Solution Template consists of a mainTemplate, createUiDefinition, several sub-templates and shell sripts for configuring MarkLogic cluster. The mainTemplate is the main entrance of the template. It links and invokes sub-templates as needed. The createUiDefinition is used to define Azure Marketplace interface, if you are deploying from this repository or using Azure CLI, createUiDefinition is unrelated. 
 
 ## Documentation
 
