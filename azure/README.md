@@ -17,7 +17,7 @@ This Solution Template deploys MarkLogic clusters on Azure with Availability Set
 
 ## Reference Architecture
 
-
+![](doc/typical_architecture_of_azure_cluster.png)
 
 ## Documentation
 
