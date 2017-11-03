@@ -1,7 +1,7 @@
 # Cloud Enablement
 
 This is the repository contains open-source projects to enable MarkLogic running on Cloud.  
-For general information of MarkLogic on the Cloud, please visit this [page](https://developer.marklogic.com/products/cloud).
+For general information of MarkLogic on the Cloud, please visit [MarkLogic in the Cloud](https://developer.marklogic.com/products/cloud).
 
 ## Azure Solution Template 
 
