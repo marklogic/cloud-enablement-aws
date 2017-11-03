@@ -9,6 +9,10 @@ The Solution Template for MarkLogic on Azure helps to deloy clusters on Azure. I
 
 Detailed information of this project see [README](https://github.com/marklogic/cloud-enablement/blob/master/azure/REAEME.md).
 
+### Access on Azure
+
+Navigate to Azure [Marketplace](link_to_be_added).
+
 ### Documentation
 
 - [MarkLogic on Azure](https://developer.marklogic.com/products/cloud/azure)  
