@@ -115,7 +115,7 @@
                 "description": "The base URL for dependent assets"
             },
             "minLength": 1,
-            "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/9.0-3"
+            "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/pr-1844"
         },
         "location": {
             "type": "string",
