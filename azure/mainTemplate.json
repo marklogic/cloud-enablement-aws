@@ -11,7 +11,7 @@
             }
         },
         "AdminUser": {
-            "type": "secureString",
+            "type": "string",
             "minLength": 0,
             "metadata": {
                 "description": "The MarkLogic administrator user name"
@@ -81,7 +81,7 @@
             }
         },
         "VirtualMachineUser": {
-            "type": "secureString",
+            "type": "string",
             "minLength": 0,
             "metadata": {
                 "description": "Operating system user name for virtual machines"
