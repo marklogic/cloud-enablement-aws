@@ -112,7 +112,8 @@
         "baseUrl": {
             "type": "string",
             "metadata": {
-                "description": "The base URL for dependent assets"
+                "description": "The base URL for dependent assets",
+                "artifactsBaseUrl": ""
             },
             "minLength": 1,
             "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/pr-1844"
