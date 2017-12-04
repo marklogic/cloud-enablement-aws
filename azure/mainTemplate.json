@@ -116,7 +116,7 @@
                 "artifactsBaseUrl": ""
             },
             "minLength": 1,
-            "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/pr-1844"
+            "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/9.0-3"
         },
         "location": {
             "type": "string",
