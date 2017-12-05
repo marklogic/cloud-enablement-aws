@@ -13,32 +13,10 @@
   },
   "resources": [
     {
-        "apiVersion": "[parameters('vmSetting').storageApiVersion]",
-        "type": "Microsoft.Compute/disks",
-        "name": "[concat(parameters('vmSetting').dataDiskName,'-',copyIndex())]",
-        "location": "[parameters('vmSetting').location]",
-        "copy": {
-            "name": "dataDiskLoop",
-            "count": "[parameters('vmSetting').count]"
-        },
-        "sku": {
-            "name": "[parameters('vmSetting').dataDiskAcctType]"
-        },
-        "properties": {
-            "creationData": {
-                "createOption": "[parameters('vmSetting').dataDiskCreateOption]"
-            },
-            "diskSizeGB": "[parameters('vmSetting').dataDiskSizeGB]"
-        }
-    },
-    {
       "apiVersion": "[parameters('vmSetting').computeApiVersion]",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(parameters('vmSetting').vmName,'-',copyIndex())]",
       "location": "[parameters('vmSetting').location]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/disks/',concat(parameters('vmSetting').dataDiskName,'-',copyIndex()))]"
-      ],
       "copy": {
         "name": "vmLoop",
         "count": "[parameters('vmSetting').count]"
@@ -84,10 +62,10 @@
           "dataDisks": [
             {
               "lun": 0,
-              "name": "[concat(parameters('vmSetting').dataDiskName,'-',copyIndex())]",
-              "createOption": "attach",
+              "diskSizeGB": "[parameters('vmSetting').dataDiskSizeGB]",
+              "createOption": "Empty",
               "managedDisk": {
-                  "id": "[resourceId('Microsoft.Compute/disks/',concat(parameters('vmSetting').dataDiskName,'-',copyIndex()))]"
+                  "storageAccountType": "[parameters('vmSetting').dataDiskAcctType]"
               }
             }
           ]

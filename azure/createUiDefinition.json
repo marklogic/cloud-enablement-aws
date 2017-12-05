@@ -277,7 +277,64 @@
                         "visible": true
                     },
                     {
-                        "name": "instanceType",
+                        "name": "instanceTypePremium",
+                        "type": "Microsoft.Compute.SizeSelector",
+                        "label": "Instance Type",
+                        "toolTip": "Type of virtual machine to launch. The list only includes instance types that meet minimum requirement of MarkLogic Server",
+                        "recommendedSizes": [
+                            "Standard_DS13_v2",
+                            "Standard_DS14_v2",
+                            "Standard_GS3"
+                        ],
+                        "constraints": {
+                            "allowedSizes": [
+                                "Standard_DS1",
+                                "Standard_DS11",
+                                "Standard_DS11_v2",
+                                "Standard_DS11_v2_Promo",
+                                "Standard_DS12",
+                                "Standard_DS12_v2",
+                                "Standard_DS12_v2_Promo",
+                                "Standard_DS13",
+                                "Standard_DS13_v2",
+                                "Standard_DS13_v2_Promo",
+                                "Standard_DS14",
+                                "Standard_DS14_v2",
+                                "Standard_DS14_v2_Promo",
+                                "Standard_DS15_v2",
+                                "Standard_DS1_v2",
+                                "Standard_DS2",
+                                "Standard_DS2_v2",
+                                "Standard_DS2_v2_Promo",
+                                "Standard_DS3",
+                                "Standard_DS3_v2",
+                                "Standard_DS3_v2_Promo",
+                                "Standard_DS4",
+                                "Standard_DS4_v2",
+                                "Standard_DS4_v2_Promo",
+                                "Standard_DS5_v2",
+                                "Standard_DS5_v2_Promo",
+                                "Standard_F16s",
+                                "Standard_F2s",
+                                "Standard_F4s",
+                                "Standard_F8s",
+                                "Standard_GS1",
+                                "Standard_GS2",
+                                "Standard_GS3",
+                                "Standard_GS4",
+                                "Standard_GS5",
+                                "Standard_L16s",
+                                "Standard_L32s",
+                                "Standard_L4s",
+                                "Standard_L8s"
+                            ]
+                        },
+                        "osPlatform": "Linux",
+                        "count": "[basics('numberofNodes')]",
+                        "visible": "[or(equals(steps('resourceConfig').storage.dataStorage,'premium'),equals(steps('resourceConfig').storage.osStorage,'premium'))]"
+                    },
+                    {
+                        "name": "instanceTypeStandard",
                         "type": "Microsoft.Compute.SizeSelector",
                         "label": "Instance Type",
                         "toolTip": "Type of virtual machine to launch. The list only includes instance types that meet minimum requirement of MarkLogic Server",
@@ -429,7 +486,7 @@
                         },
                         "osPlatform": "Linux",
                         "count": "[basics('numberofNodes')]",
-                        "visible": true
+                        "visible": "[and(equals(steps('resourceConfig').storage.dataStorage,'standard'),equals(steps('resourceConfig').storage.osStorage,'standard'))]"
                     }
                 ]
             }
@@ -447,7 +504,7 @@
             "DataStorage": "[steps('resourceConfig').storage.dataStorage]",
             "VirtualMachineUser": "[steps('resourceConfig').virtualMachine.vmUser]",
             "SSHPublicKey": "[steps('resourceConfig').virtualMachine.vmCredential.sshPublicKey]",
-            "InstanceType": "[steps('resourceConfig').instanceType]",
+            "InstanceType": "[coalesce(steps('resourceConfig').instanceTypePremium,steps('resourceConfig').instanceTypeStandard)]",
             "HighAvailability": "[steps('resourceConfig').highAvailability]",
             "Location": "[location()]"
         }

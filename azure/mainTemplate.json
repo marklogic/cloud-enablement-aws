@@ -11,7 +11,7 @@
             }
         },
         "AdminUser": {
-            "type": "secureString",
+            "type": "string",
             "minLength": 0,
             "metadata": {
                 "description": "The MarkLogic administrator user name"
@@ -81,7 +81,7 @@
             }
         },
         "VirtualMachineUser": {
-            "type": "secureString",
+            "type": "string",
             "minLength": 0,
             "metadata": {
                 "description": "Operating system user name for virtual machines"
@@ -112,7 +112,8 @@
         "baseUrl": {
             "type": "string",
             "metadata": {
-                "description": "The base URL for dependent assets"
+                "description": "The base URL for dependent assets",
+                "artifactsBaseUrl": ""
             },
             "minLength": 1,
             "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/9.0-3"
