@@ -71,7 +71,7 @@
                         "toolTip": "The MarkLogic administrator password",
                         "constraints": {
                             "required": true,
-                            "regex": "^(?=.[A-Z])(?=.\W)(?=.[.!@#$%^&()-_=+])(?=.[0-9])(?=.*[a-z]).{12,40}$",
+                            "regex": "^(?=.[A-Z])(?=.\\W)(?=.[.!@#$%^&()-_=+])(?=.[0-9])(?=.*[a-z]).{12,40}$",
                             "validationMessage": ""
                         },
                         "options": {
