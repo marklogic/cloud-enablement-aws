@@ -116,7 +116,7 @@
                 "artifactsBaseUrl": ""
             },
             "minLength": 1,
-            "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/9.0-3/azure/"
+            "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/9.0-3/azure"
         },
         "location": {
             "type": "string",
@@ -128,8 +128,8 @@
     },
     "variables": {
         "templateVersion": "9.0-3",
-        "templateBaseUrl": "[concat(parameters('baseUrl'),'templates/')]",
-        "scriptBaseUrl": "[concat(parameters('baseUrl'),'scripts/')]",
+        "templateBaseUrl": "[concat(parameters('baseUrl'),'/templates/')]",
+        "scriptBaseUrl": "[concat(parameters('baseUrl'),'/scripts/')]",
         "clusterPrefix": "[replace(parameters('DeploymentName'),' ','')]",
         "clusterLocation": "[parameters('location')]",
         "enableAvailabilitySet": true,
