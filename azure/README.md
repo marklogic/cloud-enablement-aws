@@ -13,12 +13,12 @@ This Solution Template can be used to deploy MarkLogic clusters on Azure. It is 
 
 * To deploy from Azure Web Portal, navigate to [Azure Marketplace](https://azuremarketplace.microsoft.com/en-us/marketplace/apps?search=marklogic&page=1) 
 * To deploy from this repository, click the `Deploy to Azure` button under the title  
-* To deploy using Azure CLI (or other tools), refer to Azure [article](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-template-deploy-cli)
+* To deploy using Azure CLI (or other tools), refer to the Microsoft Azure [article](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-template-deploy-cli)
 * To see the visualization of deployment structures, click the `Visualize` button under the title
 
 ## Reference Architecture
 
-The Solution Template exposes a set of parameters enabling users to configure the MarkLogic cluster on Azure. Using the parameter values, users can choose to provision one node or three node clusters with Aazure features including Availability Set, Virtual Network, Load Balancer, Network Security Group and Virtual Machines.
+The Solution Template exposes a set of parameters enabling users to configure the MarkLogic cluster on Azure. Using the parameter values, users can choose to provision one node or three node clusters with Aazure features including Availability Set, Virtual Network, Load Balancer, Network Security Group, and Virtual Machines.
 
 The virtual machines provisioned by the template will each be initialized as a MarkLogic node and joined together as a cluster. Advanced features including MarkLogic local-disk failover can be also configured on the cluster. The following image shows a typical architecture of the cluster on Azure.
 
