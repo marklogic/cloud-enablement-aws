@@ -11,7 +11,7 @@
             }
         },
         "AdminUser": {
-            "type": "secureString",
+            "type": "string",
             "minLength": 0,
             "metadata": {
                 "description": "The MarkLogic administrator user name"
@@ -81,7 +81,7 @@
             }
         },
         "VirtualMachineUser": {
-            "type": "secureString",
+            "type": "string",
             "minLength": 0,
             "metadata": {
                 "description": "Operating system user name for virtual machines"
@@ -112,10 +112,11 @@
         "baseUrl": {
             "type": "string",
             "metadata": {
-                "description": "The base URL for dependent assets"
+                "description": "The base URL for dependent assets",
+                "artifactsBaseUrl": ""
             },
             "minLength": 1,
-            "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/9.0-3"
+            "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/9.0-3/azure"
         },
         "location": {
             "type": "string",
@@ -127,9 +128,8 @@
     },
     "variables": {
         "templateVersion": "9.0-3",
-        "repositoryUrl": "[concat(parameters('baseUrl'),'/azure/')]",
-        "templateBaseUrl": "[concat(variables('repositoryUrl'),'templates/')]",
-        "scriptBaseUrl": "[concat(variables('repositoryUrl'),'scripts/')]",
+        "templateBaseUrl": "[concat(parameters('baseUrl'),'/templates/')]",
+        "scriptBaseUrl": "[concat(parameters('baseUrl'),'/scripts/')]",
         "clusterPrefix": "[replace(parameters('DeploymentName'),' ','')]",
         "clusterLocation": "[parameters('location')]",
         "enableAvailabilitySet": true,
