@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Deploy a MarkLogic Cluster on AWS in existing VPC
+Description: Deploy a MarkLogic Cluster on AWS with a new VPC
 Metadata:
   version: 9.0-5
   binary: MarkLogic-9.0-5.x86_64.rpm # TODO
@@ -22,10 +22,10 @@ Metadata:
       - Label: 
           default: "Network Configuration"
         Parameters: 
-          - VPC
-          - Subnet1
-          - Subnet2
-          - Subnet3
+          - VpcCidr
+          - Subnet1Cidr
+          - Subnet2Cidr
+          - Subnet3Cidr
       - Label: 
           default: "MarkLogic Configuration"
         Parameters: 
@@ -67,14 +67,14 @@ Metadata:
         default: Availability Zone 2
       Zone3:
         default: Availability Zone 3
-      VPC:
-        default: VPC
-      Subnet1:
-        default: Subnet 1
-      Subnet2:
-        default: Subnet 2
-      Subnet3:
-        default: Subnet 3
+      VpcCidr:
+        default: VPC CIDR
+      Subnet1Cidr:
+        default: Subnet 1 CIDR
+      Subnet2Cidr:
+        default: Subnet 2 CIDR
+      Subnet3Cidr:
+        default: Subnet 3 CIDR
   'AWS::CloudFormation::Designer':
     e188e71e-5f01-4816-896e-9bd30b9a96c1:
       size:
@@ -250,13 +250,13 @@ Parameters:
       - hi1.4xlarge
       - hs1.8xlarge
   SpotPrice:
-    Description: Spot price for instances in USD/Hour - Optional/advanced
+    Description: Spot price for instances in USD/Hour - Optional/advanced.
     Type: Number
     MinValue: '0'
     MaxValue: '2'
     Default: '0'
   KeyName:
-    Description: Name of and existing EC2 KeyPair to enable SSH access to the instance
+    Description: Name of and existing EC2 KeyPair to enable SSH access to the instance.
     Type: String
   NodesPerZone:
     Description: Total number of nodes per Zone. Set to 0 to shutdown/hibernate
@@ -265,7 +265,7 @@ Parameters:
     MaxValue: '20'
     Default: '1'
   Zone1:
-    Description: The Availability Zone 1 (e.g. us-west-2a)
+    Description: The Availability Zone 1 (e.g. us-west-2a).
     Type: 'AWS::EC2::AvailabilityZone::Name'
   Zone2:
     Description: The Availability Zone 2. Only applicable to multi-zone cluster.
@@ -274,21 +274,36 @@ Parameters:
     Description: The Availability Zone 3. Only applicable to multi-zone cluster.
     Type: 'AWS::EC2::AvailabilityZone::Name'
   # network configuration
-  VPC:
-    Description: ID of an existing Virtual Private Cloud (VPC)
-    Type: 'AWS::EC2::VPC::Id'
-    AllowedPattern: 'vpc-[0-9a-z]{8}'
-  Subnet1:
-    Description: ID of an existing subnet in the VPC
-    Type: 'AWS::EC2::Subnet::Id'
-  Subnet2:    
-    Description: ID of an existing subnet in the VPC.
+  VpcCidr:
+    Description: CIDR Block for the Virtual Private Cloud (VPC).
+    Type: String
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    Default: 10.0.0.0/16
+    ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
+  Subnet1Cidr:
+    Description: CIDR Block for the subnet 1.
+    Type: String
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    Default: 10.0.0.0/23
+    ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
+  Subnet2Cidr:    
+    Description: CIDR Block for the subnet 2.
       Only applicable to multi-zone cluster.
-    Type: 'AWS::EC2::Subnet::Id'
-  Subnet3:
-    Description: ID of an existing subnet in the VPC.
+    Type: String
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    Default: 10.0.32.0/23
+    ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
+  Subnet3Cidr:
+    Description: CIDR Block for the subnet 3.
       Only applicable to multi-zone cluster.
-    Type: 'AWS::EC2::Subnet::Id'
+    Type: String
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    Default: 10.0.64.0/23
+    ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
   # marklogic configuration
   AdminUser:
     Description: The MarkLogic administrator username
