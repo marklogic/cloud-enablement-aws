@@ -137,7 +137,7 @@
         "enableHA": "[if(lessOrEquals(parameters('NumberOfNodes'),1),bool('false'),equals(parameters('HighAvailability'),'enable'))]",
         "license": "[if(and(equals(parameters('Licensee'),'none'),equals(parameters('LicenseKey'),'none')),'DEV','BYOL')]",
         "imageOffer": "[if(equals(variables('license'),'DEV'),'marklogic-developer-9','marklogic-9-byol')]",
-        "imageSku": "[if(equals(variables('license'),'DEV'),'ml903_centos','ml903_centos_byol')]",
+        "imageSku": "[if(equals(variables('license'),'DEV'),'ml9031_centos','ml9031_centos_byol')]",
         "apiVersions": {
             "resourcesApiVersion": "2016-09-01",
             "networkApiVersion": "2017-08-01",
