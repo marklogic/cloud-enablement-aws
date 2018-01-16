@@ -222,6 +222,10 @@ Conditions:
     - !Equals 
       - !Ref SpotPrice
       - 0
+  MultiZone:
+    !Not [!Equals [!Ref NodesPerZone, 1]]
+  EssentialEnterpris:
+    !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']]
 Mappings:
   AWSInstanceType2Arch:
     c3.2xlarge:
@@ -315,6 +319,7 @@ Resources:
       'AWS::CloudFormation::Designer':
         id: c81032f7-b0ec-47ca-a236-e24d57b49ae3
   MarklogicVolume2:
+    Condition: MultiZone
     Type: 'AWS::EC2::Volume'
     Properties:
       AvailabilityZone: !Ref Zone2
@@ -327,6 +332,7 @@ Resources:
       'AWS::CloudFormation::Designer':
         id: ddb55ae1-a00b-42ed-addd-5e03e4a2764b
   MarklogicVolume3:
+    Condition: MultiZone
     Type: 'AWS::EC2::Volume'
     Properties:
       AvailabilityZone: !Ref Zone3
@@ -380,6 +386,7 @@ Resources:
       'AWS::CloudFormation::Designer':
         id: 31621dd0-4b18-4dcd-b443-db9cef64ebb1
   MarkLogicServerGroup2:
+    Condition: MultiZone
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
       AvailabilityZones:
@@ -406,6 +413,7 @@ Resources:
       'AWS::CloudFormation::Designer':
         id: 87d75478-787a-41d5-bb21-9de6fe4b662e
   MarkLogicServerGroup3:
+    Condition: MultiZone
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
       AvailabilityZones:
@@ -497,6 +505,7 @@ Resources:
       'AWS::CloudFormation::Designer':
         id: 2efb8cfb-df53-401d-8ff2-34af0dd25993
   LaunchConfig2:
+    Condition: MultiZone
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
       BlockDeviceMappings:
@@ -562,6 +571,7 @@ Resources:
       'AWS::CloudFormation::Designer':
         id: c8296a50-a29e-4646-aa74-8f1b735a9a3f
   LaunchConfig3:
+    Condition: MultiZone
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
       BlockDeviceMappings:
@@ -634,8 +644,8 @@ Resources:
           PolicyName: MLSession
       AvailabilityZones:
         - !Ref Zone1
-        - !Ref Zone2
-        - !Ref Zone3
+        - !If [MultiZone, !Ref Zone2, !Ref Zone2]
+        - !If [MultiZone, !Ref Zone3, !Ref Zone3]
       ConnectionDrainingPolicy:
         Enabled: 'true'
         Timeout: '60'
