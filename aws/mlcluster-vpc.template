@@ -105,20 +105,24 @@ Parameters:
     Type: String
     Default: r3.8xlarge
     AllowedValues:
+      - ---- Essential Enterprise and Bring-Your-Own-License ----
+      - m3.xlarge
+      - c3.xlarge
+      - r3.xlarge
+      - --------------- Essential Enterprise Only ---------------
+      - m4.xlarge
+      - -------------- Bring-Your-Own-License Only --------------
       - m3.medium
       - m3.large
-      - m3.xlarge
       - m3.2xlarge
       - cc1.4xlarge
       - cc2.8xlarge
       - c3.large
-      - c3.xlarge
       - c3.2xlarge
       - c3.4xlarge
       - c3.8xlarge
       - cr1.8xlarge
       - r3.large
-      - r3.xlarge
       - r3.2xlarge
       - r3.4xlarge
       - r3.8xlarge
@@ -224,87 +228,40 @@ Conditions:
       - 0
   MultiZone:
     !Not [!Equals [!Ref NodesPerZone, 1]]
-  EssentialEnterpris:
+  EssentialEnterprise:
     !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']]
 Mappings:
-  AWSInstanceType2Arch:
-    c3.2xlarge:
-      Arch: HVM
-    c3.4xlarge:
-      Arch: HVM
-    c3.8xlarge:
-      Arch: HVM
-    c3.large:
-      Arch: HVM
-    c3.xlarge:
-      Arch: HVM
-    cc2.8xlarge:
-      Arch: HVM
-    cr1.8xlarge:
-      Arch: HVM
-    hi1.4xlarge:
-      Arch: HVM
-    hs1.8xlarge:
-      Arch: HVM
-    i2.2xlarge:
-      Arch: HVM
-    i2.4xlarge:
-      Arch: HVM
-    i2.8xlarge:
-      Arch: HVM
-    i2.xlarge:
-      Arch: HVM
-    m3.2xlarge:
-      Arch: HVM
-    m3.large:
-      Arch: HVM
-    m3.medium:
-      Arch: HVM
-    m3.xlarge:
-      Arch: HVM
-    r3.2xlarge:
-      Arch: HVM
-    r3.4xlarge:
-      Arch: HVM
-    r3.8xlarge:
-      Arch: HVM
-    r3.large:
-      Arch: HVM
-    r3.xlarge:
-      Arch: HVM
-    t2.medium:
-      Arch: HVM
-    t2.small:
-      Arch: HVM
-  AWSRegionArch2AMI:
-    us-east-1:
-      HVM: ami-9650fbec
-    us-east-2:
-      HVM: ami-070c2362
-    us-west-1:
-      HVM: ami-d5330cb5
-    us-west-2:
-      HVM: ami-863ff4fe
-    eu-central-1:
-      HVM: ami-152eab7a
-    eu-west-1:
-      HVM: ami-74c5650d
-    ap-south-1:
-      HVM: ami-31b6fb5e
-    ap-southeast-1:
-      HVM: ami-b4d79ad7
-    ap-southeast-2:
-      HVM: ami-b722ccd5
-    ap-northeast-1:
-      HVM: ami-46f35c20
-    ap-northeast-2:
-      HVM: ami-d9b410b7
-    sa-east-1:
-      HVM: ami-18235874
-    eu-west-2:
-      HVM: ami-2d140849
-    ca-central-1:
-      HVM: ami-3f44fc5b
+  LicenseRegion2AMI:
+    Enterprise:
+      us-east-1: ami-e95af193
+      us-east-2: ami-3a0f205f
+      us-west-1: ami-b9330cd9
+      us-west-2: ami-8e25eef6
+      eu-central-1: ami-fe23a691
+      eu-west-1: ami-34c0604d
+      ap-south-1: ami-96b0fdf9
+      ap-southeast-1: ami-5ad79a39
+      ap-southeast-2: ami-c825cbaa
+      ap-northeast-1: ami-f5e04f93
+      ap-northeast-2: ami-1eb51170
+      sa-east-1: ami-3f235853
+      eu-west-2: ami-b71b07d3
+      ca-central-1: ami-9f4ef6fb
+    BYOL:
+      us-east-1: ami-9650fbec
+      us-east-2: ami-070c2362
+      us-west-1: ami-d5330cb5
+      us-west-2: ami-863ff4fe
+      eu-central-1: ami-152eab7a
+      eu-west-1: ami-74c5650d
+      ap-south-1: ami-31b6fb5e
+      ap-southeast-1: ami-b4d79ad7
+      ap-southeast-2: ami-b722ccd5
+      ap-northeast-1: ami-46f35c20
+      ap-northeast-2: ami-d9b410b7
+      sa-east-1: ami-18235874
+      eu-west-2: ami-2d140849
+      ca-central-1: ami-3f44fc5b
 Resources:
   MarklogicVolume1:
     Type: 'AWS::EC2::Volume'
@@ -448,12 +405,9 @@ Resources:
           Ebs: {}
       KeyName: !Ref KeyName
       ImageId: !FindInMap 
-        - AWSRegionArch2AMI
+        - LicenseRegion2AMI
+        - !If [EssentialEnterprise, Enterprise, BYOL]
         - !Ref 'AWS::Region'
-        - !FindInMap 
-          - AWSInstanceType2Arch
-          - !Ref InstanceType
-          - Arch
       UserData: !Base64 
         'Fn::Join':
           - ''
@@ -514,12 +468,9 @@ Resources:
           Ebs: {}
       KeyName: !Ref KeyName
       ImageId: !FindInMap 
-        - AWSRegionArch2AMI
+        - LicenseRegion2AMI
+        - !If [EssentialEnterprise, Enterprise, BYOL]
         - !Ref 'AWS::Region'
-        - !FindInMap 
-          - AWSInstanceType2Arch
-          - !Ref InstanceType
-          - Arch
       UserData: !Base64 
         'Fn::Join':
           - ''
@@ -580,12 +531,9 @@ Resources:
           Ebs: {}
       KeyName: !Ref KeyName
       ImageId: !FindInMap 
-        - AWSRegionArch2AMI
+        - LicenseRegion2AMI
+        - !If [EssentialEnterprise, Enterprise, BYOL]
         - !Ref 'AWS::Region'
-        - !FindInMap 
-          - AWSInstanceType2Arch
-          - !Ref InstanceType
-          - Arch
       UserData: !Base64 
         'Fn::Join':
           - ''
