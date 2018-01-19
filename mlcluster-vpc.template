@@ -34,7 +34,7 @@ Metadata:
           - AdminPass
           - Licensee
           - LicenseKey
-          - HighAvailability
+          # - HighAvailability
     ParameterLabels:
       AdminUser: 
         default: Admin User
@@ -44,8 +44,8 @@ Metadata:
         default: Licensee
       LicenseKey:
         default: License Key
-      HighAvailability:
-        default: High Availability
+      # HighAvailability:
+      #   default: High Availability
       IAMRole:
         default: IAM Role
       LogSNS:
@@ -206,13 +206,13 @@ Parameters:
     Description: The MarkLogic License Key or 'none'
     Type: String
     Default: none
-  HighAvailability:
-    Description: Configure local-disk failover. Only applicable to multi-node cluster
-    Type: String
-    Default: enable
-    AllowedValues:
-      - enable
-      - disable
+  # HighAvailability:
+  #   Description: Configure local-disk failover. Only applicable to multi-node cluster
+  #   Type: String
+  #   Default: enable
+  #   AllowedValues:
+  #     - enable
+  #     - disable
 Conditions:
   UseLogSNS: !Not 
     - !Equals 
