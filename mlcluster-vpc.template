@@ -179,7 +179,7 @@ Parameters:
     Default: 10.0.0.0/23
     ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
   Subnet2Cidr:    
-    Description: CIDR Block for the subnet 2.
+    Description: CIDR Block for the subnet 2. Only applicable to multi-zone cluster.
       Only applicable to multi-zone cluster.
     Type: String
     AllowedPattern: >-
@@ -187,7 +187,7 @@ Parameters:
     Default: 10.0.32.0/23
     ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
   Subnet3Cidr:
-    Description: CIDR Block for the subnet 3.
+    Description: CIDR Block for the subnet 3. Only applicable to multi-zone cluster.
       Only applicable to multi-zone cluster.
     Type: String
     AllowedPattern: >-
