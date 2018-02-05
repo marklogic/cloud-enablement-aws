@@ -23,9 +23,9 @@ Parameters:
     Description: Whether there are the cluster will be deployed to multiple Availability Zones.
     Type: String
     AllowedValues:
-      - true
-      - false
-    Default: true
+      - 'true'
+      - 'false'
+    Default: 'true'
   Zone1:
     Description: The Availability Zone 1 (e.g. us-west-2a).
     Type: 'AWS::EC2::AvailabilityZone::Name'
@@ -75,24 +75,50 @@ Resources:
       EnableDnsHostnames: 'true'
   MarkLogicSubnet1:
     Type: AWS::EC2::Subnet
+    DependsOn:
+      - MarkLogicVPC
     Properties:
       VpcId: !Ref MarkLogicVPC
       CidrBlock: !Ref Subnet1Cidr
       AvailabilityZone: !Ref Zone1
   MarkLogicSubnet2:
     Type: AWS::EC2::Subnet
-    Condition: DeployMultiZone
+    # Condition: DeployMultiZone
+    DependsOn:
+      - MarkLogicVPC
     Properties:
       VpcId: !Ref MarkLogicVPC
       CidrBlock: !Ref Subnet2Cidr
       AvailabilityZone: !Ref Zone2
   MarkLogicSubnet3:
     Type: AWS::EC2::Subnet
-    Condition: DeployMultiZone
+    # Condition: DeployMultiZone
+    DependsOn:
+      - MarkLogicVPC
     Properties:
       VpcId: !Ref MarkLogicVPC
       CidrBlock: !Ref Subnet3Cidr
       AvailabilityZone: !Ref Zone3
+  VpcGateway:
+    Type: AWS::EC2::InternetGateway
+  VpcGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: 
+      InternetGatewayId: !Ref VpcGateway
+      VpcId: !Ref MarkLogicVPC
+  NoopHandler:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  WaitForCompletion:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn:
+      - MarkLogicVPC
+      - MarkLogicSubnet1
+      - MarkLogicSubnet2
+      - MarkLogicSubnet3
+    Properties: 
+      Handle: !Ref NoopHandler
+      Count: 0
+      Timeout: 1
 Outputs:
   VpcId:
     Description: VPC ID
