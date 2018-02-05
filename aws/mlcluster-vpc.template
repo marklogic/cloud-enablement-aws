@@ -275,6 +275,25 @@ Mappings:
         Enterprise: ami-9f4ef6fb
         BYOL: ami-3f44fc5b
 Resources:
+  VpcStack:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      NotificationARNs: 
+        - !If
+          - UseLogSNS
+          - !Ref LogSNS
+          - !Ref 'AWS::NoValue'
+      Parameters:
+        MultiZone: !If [MultiZone, 'true', 'false']
+        Zone1: !Ref Zone1
+        Zone2: !Ref Zone2
+        Zone3: !Ref Zone3
+        VpcCidr: !Ref VpcCidr
+        Subnet1Cidr: !Ref Subnet1Cidr
+        Subnet2Cidr: !Ref Subnet2Cidr
+        Subnet3Cidr: !Ref Subnet3Cidr
+      TemplateURL: 'https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-vpc.template'
+      TimeoutInMinutes: 5
   MarklogicVolume1:
     Type: 'AWS::EC2::Volume'
     Properties:
@@ -330,9 +349,10 @@ Resources:
         id: e7190602-c2de-47ab-81e7-1315f8c01e2d
   MarkLogicServerGroup1:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
+    DependsOn: VpcStack
     Properties:
-      AvailabilityZones:
-        - !Ref Zone1
+      VPCZoneIdentifier: 
+        - !GetAtt [VpcStack, Outputs.Subnet1Id]
       LaunchConfigurationName: !Ref LaunchConfig1
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -357,9 +377,10 @@ Resources:
   MarkLogicServerGroup2:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::AutoScalingGroup'
+    DependsOn: VpcStack
     Properties:
-      AvailabilityZones:
-        - !Ref Zone2
+      VPCZoneIdentifier: 
+        - !GetAtt [VpcStack, Outputs.Subnet2Id]
       LaunchConfigurationName: !Ref LaunchConfig2
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -384,9 +405,10 @@ Resources:
   MarkLogicServerGroup3:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::AutoScalingGroup'
+    DependsOn: VpcStack
     Properties:
-      AvailabilityZones:
-        - !Ref Zone3
+      VPCZoneIdentifier: 
+        - !GetAtt [VpcStack, Outputs.Subnet3Id]
       LaunchConfigurationName: !Ref LaunchConfig3
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -416,8 +438,7 @@ Resources:
           NoDevice: true
           Ebs: {}
       KeyName: !Ref KeyName
-      ImageId: 
-        - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
+      ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
       UserData: !Base64 
         'Fn::Join':
           - ''
@@ -477,8 +498,7 @@ Resources:
           NoDevice: true
           Ebs: {}
       KeyName: !Ref KeyName
-      ImageId: 
-        - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
+      ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
       UserData: !Base64 
         'Fn::Join':
           - ''
@@ -538,8 +558,7 @@ Resources:
           NoDevice: true
           Ebs: {}
       KeyName: !Ref KeyName
-      ImageId: 
-        - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
+      ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
       UserData: !Base64 
         'Fn::Join':
           - ''
@@ -592,14 +611,15 @@ Resources:
         id: 7fa68c90-39bc-4874-ad20-8cd8c974ed52
   ElasticLoadBalancer:
     Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
+    DependsOn: VpcStack
     Properties:
       AppCookieStickinessPolicy:
         - CookieName: SessionID
           PolicyName: MLSession
-      AvailabilityZones:
-        - !Ref Zone1
-        - !If [MultiZone, !Ref Zone2, !Ref Zone2]
-        - !If [MultiZone, !Ref Zone3, !Ref Zone3]
+      Subnets:
+        - !GetAtt [VpcStack, Outputs.Subnet1Id]
+        - !If [MultiZone, !GetAtt [VpcStack, Outputs.Subnet2Id], !Ref 'AWS::NoValue']
+        - !If [MultiZone, !GetAtt [VpcStack, Outputs.Subnet3Id], !Ref 'AWS::NoValue']
       ConnectionDrainingPolicy:
         Enabled: 'true'
         Timeout: '60'
@@ -661,8 +681,10 @@ Resources:
         id: e188e71e-5f01-4816-896e-9bd30b9a96c1
   InstanceSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
+    DependsOn: VpcStack
     Properties:
       GroupDescription: Enable SSH access and HTTP access on the inbound port
+      VpcId: !GetAtt [VpcStack, Outputs.VpcId]
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: '22'
@@ -672,39 +694,67 @@ Resources:
           FromPort: '7998'
           ToPort: '7998'
           CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: '8000'
-          ToPort: '8010'
-          SourceSecurityGroupOwnerId: !GetAtt 
-            - ElasticLoadBalancer
-            - SourceSecurityGroup.OwnerAlias
-          SourceSecurityGroupName: !GetAtt 
-            - ElasticLoadBalancer
-            - SourceSecurityGroup.GroupName
+        # - IpProtocol: tcp
+        #   FromPort: '8000'
+        #   ToPort: '8010'
+        #   SourceSecurityGroupOwnerId: !GetAtt 
+        #     - ElasticLoadBalancer
+        #     - SourceSecurityGroup.OwnerAlias
+        #   SourceSecurityGroupName: !GetAtt 
+        #     - ElasticLoadBalancer
+        #     - SourceSecurityGroup.GroupName
         - IpProtocol: tcp
           FromPort: '8000'
           ToPort: '8010'
           CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: '7997'
-          ToPort: '7997'
-          SourceSecurityGroupOwnerId: !GetAtt 
-            - ElasticLoadBalancer
-            - SourceSecurityGroup.OwnerAlias
-          SourceSecurityGroupName: !GetAtt 
-            - ElasticLoadBalancer
-            - SourceSecurityGroup.GroupName
+        # - IpProtocol: tcp
+        #   FromPort: '7997'
+        #   ToPort: '7997'
+        #   SourceSecurityGroupOwnerId: !GetAtt 
+        #     - ElasticLoadBalancer
+        #     - SourceSecurityGroup.OwnerAlias
+        #   SourceSecurityGroupName: !GetAtt 
+        #     - ElasticLoadBalancer
+        #     - SourceSecurityGroup.GroupName
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 509ae63b-1eb1-4707-889f-418b9a65426c
   InstanceSecurityGroupIngress:
     Type: 'AWS::EC2::SecurityGroupIngress'
+    DependsOn:
+      - InstanceSecurityGroup
     Properties:
       IpProtocol: tcp
-      GroupName: !Ref InstanceSecurityGroup
       FromPort: '7999'
       ToPort: '7999'
-      SourceSecurityGroupName: !Ref InstanceSecurityGroup
+      GroupId: !GetAtt InstanceSecurityGroup.GroupId
+      SourceSecurityGroupId: !GetAtt InstanceSecurityGroup.GroupId
+  # InstanceRecoveryAlarm:
+  #   Type: AWS::CloudWatch::Alarm
+  #   Properties:
+  #     AlarmDescription: Trigger a recovery when instance status check fails for 1
+  #       consecutive minutes.
+  #     Namespace: AWS/EC2
+  #     MetricName: StatusCheckFailed_System
+  #     Statistic: Minimum
+  #     Period: '60'
+  #     EvaluationPeriods: '1'
+  #     ComparisonOperator: GreaterThanThreshold
+  #     Threshold: '0'
+  #     AlarmActions: 
+  #       - !Sub >
+  #         "arn:aws:automate:${AWS::Region}:ec2:recover"
+  #       - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
+  #     OKActions:
+  #       - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
+  #     Dimensions:
+  #       - Name: AutoScalingGroupName
+  #         Value:
+  #           Ref: MarkLogicServerGroup1
+  #       - Name: AutoScalingGroupName
+  #         Value: !If [MultiZone, !Ref MarkLogicServerGroup2, !Ref 'AWS::NoValue']
+  #       - Name: AutoScalingGroupName
+  #         Value: !If [MultiZone, !Ref MarkLogicServerGroup3, !Ref 'AWS::NoValue']
 Outputs:
   URL:
     Description: The URL of the MarkLogic Cluster
