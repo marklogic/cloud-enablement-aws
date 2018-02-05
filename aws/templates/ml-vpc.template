@@ -93,3 +93,16 @@ Resources:
       VpcId: !Ref MarkLogicVPC
       CidrBlock: !Ref Subnet3Cidr
       AvailabilityZone: !Ref Zone3
+Outputs:
+  VpcId:
+    Description: VPC ID
+    Value: !Ref MarkLogicVPC
+  Subnet1Id:
+    Description: Subnet 1 ID
+    Value: !Ref MarkLogicSubnet1
+  Subnet2Id:
+    Description: Subnet 2 ID
+    Value: !Ref MarkLogicSubnet2
+  Subnet3Id:
+    Description: Subnet 3 ID
+    Value: !Ref MarkLogicSubnet3
