@@ -83,7 +83,7 @@ Resources:
       AvailabilityZone: !Ref Zone1
   MarkLogicSubnet2:
     Type: AWS::EC2::Subnet
-    # Condition: DeployMultiZone
+    Condition: DeployMultiZone
     DependsOn:
       - MarkLogicVPC
     Properties:
@@ -92,7 +92,7 @@ Resources:
       AvailabilityZone: !Ref Zone2
   MarkLogicSubnet3:
     Type: AWS::EC2::Subnet
-    # Condition: DeployMultiZone
+    Condition: DeployMultiZone
     DependsOn:
       - MarkLogicVPC
     Properties:

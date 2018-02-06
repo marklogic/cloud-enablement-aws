@@ -226,10 +226,8 @@ Conditions:
     - !Equals 
       - !Ref SpotPrice
       - 0
-  MultiZone:
-    !Not [!Equals [!Ref NodesPerZone, 1]]
-  EssentialEnterprise:
-    !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']]
+  MultiZone: !Not [!Equals [!Ref NumberOfZones, 1]]
+  EssentialEnterprise: !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']]
 Mappings:
   LicenseRegion2AMI:
       us-east-1: 
@@ -694,28 +692,28 @@ Resources:
           FromPort: '7998'
           ToPort: '7998'
           CidrIp: 0.0.0.0/0
-        # - IpProtocol: tcp
-        #   FromPort: '8000'
-        #   ToPort: '8010'
-        #   SourceSecurityGroupOwnerId: !GetAtt 
-        #     - ElasticLoadBalancer
-        #     - SourceSecurityGroup.OwnerAlias
-        #   SourceSecurityGroupName: !GetAtt 
-        #     - ElasticLoadBalancer
-        #     - SourceSecurityGroup.GroupName
+        - IpProtocol: tcp
+          FromPort: '8000'
+          ToPort: '8010'
+          SourceSecurityGroupOwnerId: !GetAtt 
+            - ElasticLoadBalancer
+            - SourceSecurityGroup.OwnerAlias
+          SourceSecurityGroupName: !GetAtt 
+            - ElasticLoadBalancer
+            - SourceSecurityGroup.GroupName
         - IpProtocol: tcp
           FromPort: '8000'
           ToPort: '8010'
           CidrIp: 0.0.0.0/0
-        # - IpProtocol: tcp
-        #   FromPort: '7997'
-        #   ToPort: '7997'
-        #   SourceSecurityGroupOwnerId: !GetAtt 
-        #     - ElasticLoadBalancer
-        #     - SourceSecurityGroup.OwnerAlias
-        #   SourceSecurityGroupName: !GetAtt 
-        #     - ElasticLoadBalancer
-        #     - SourceSecurityGroup.GroupName
+        - IpProtocol: tcp
+          FromPort: '7997'
+          ToPort: '7997'
+          SourceSecurityGroupOwnerId: !GetAtt 
+            - ElasticLoadBalancer
+            - SourceSecurityGroup.OwnerAlias
+          SourceSecurityGroupName: !GetAtt 
+            - ElasticLoadBalancer
+            - SourceSecurityGroup.GroupName
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 509ae63b-1eb1-4707-889f-418b9a65426c
@@ -729,32 +727,30 @@ Resources:
       ToPort: '7999'
       GroupId: !GetAtt InstanceSecurityGroup.GroupId
       SourceSecurityGroupId: !GetAtt InstanceSecurityGroup.GroupId
-  # InstanceRecoveryAlarm:
-  #   Type: AWS::CloudWatch::Alarm
-  #   Properties:
-  #     AlarmDescription: Trigger a recovery when instance status check fails for 1
-  #       consecutive minutes.
-  #     Namespace: AWS/EC2
-  #     MetricName: StatusCheckFailed_System
-  #     Statistic: Minimum
-  #     Period: '60'
-  #     EvaluationPeriods: '1'
-  #     ComparisonOperator: GreaterThanThreshold
-  #     Threshold: '0'
-  #     AlarmActions: 
-  #       - !Sub >
-  #         "arn:aws:automate:${AWS::Region}:ec2:recover"
-  #       - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
-  #     OKActions:
-  #       - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
-  #     Dimensions:
-  #       - Name: AutoScalingGroupName
-  #         Value:
-  #           Ref: MarkLogicServerGroup1
-  #       - Name: AutoScalingGroupName
-  #         Value: !If [MultiZone, !Ref MarkLogicServerGroup2, !Ref 'AWS::NoValue']
-  #       - Name: AutoScalingGroupName
-  #         Value: !If [MultiZone, !Ref MarkLogicServerGroup3, !Ref 'AWS::NoValue']
+  InstanceRecoveryAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Trigger a recovery when instance status check fails for 1 consecutive minutes.
+      Namespace: AWS/EC2
+      MetricName: StatusCheckFailed_System
+      Statistic: Minimum
+      Period: '60'
+      EvaluationPeriods: '1'
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: '0'
+      AlarmActions: 
+        - !Join ['',["arn:aws:automate:", !Ref "AWS::Region", ":ec2:recover"]]
+        - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
+      OKActions:
+        - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
+      Dimensions:
+        - Name: AutoScalingGroupName
+          Value:
+            Ref: MarkLogicServerGroup1
+        - Name: AutoScalingGroupName
+          Value: !If [MultiZone, !Ref MarkLogicServerGroup2, !Ref 'AWS::NoValue']
+        - Name: AutoScalingGroupName
+          Value: !If [MultiZone, !Ref MarkLogicServerGroup3, !Ref 'AWS::NoValue']
 Outputs:
   URL:
     Description: The URL of the MarkLogic Cluster
