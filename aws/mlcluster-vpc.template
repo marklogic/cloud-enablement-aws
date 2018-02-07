@@ -695,25 +695,11 @@ Resources:
         - IpProtocol: tcp
           FromPort: '8000'
           ToPort: '8010'
-          SourceSecurityGroupOwnerId: !GetAtt 
-            - ElasticLoadBalancer
-            - SourceSecurityGroup.OwnerAlias
-          SourceSecurityGroupName: !GetAtt 
-            - ElasticLoadBalancer
-            - SourceSecurityGroup.GroupName
-        - IpProtocol: tcp
-          FromPort: '8000'
-          ToPort: '8010'
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: '7997'
           ToPort: '7997'
-          SourceSecurityGroupOwnerId: !GetAtt 
-            - ElasticLoadBalancer
-            - SourceSecurityGroup.OwnerAlias
-          SourceSecurityGroupName: !GetAtt 
-            - ElasticLoadBalancer
-            - SourceSecurityGroup.GroupName
+          CidrIp: 0.0.0.0/0
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 509ae63b-1eb1-4707-889f-418b9a65426c
@@ -744,12 +730,12 @@ Resources:
       OKActions:
         - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
       Dimensions:
-        - Name: AutoScalingGroupName
+        - Name: ASG1
           Value:
             Ref: MarkLogicServerGroup1
-        - Name: AutoScalingGroupName
+        - Name: ASG2
           Value: !If [MultiZone, !Ref MarkLogicServerGroup2, !Ref 'AWS::NoValue']
-        - Name: AutoScalingGroupName
+        - Name: ASG3
           Value: !If [MultiZone, !Ref MarkLogicServerGroup3, !Ref 'AWS::NoValue']
 Outputs:
   URL:
