@@ -17,16 +17,12 @@ Metadata:
           - KeyName
           - NumberOfZones
           - NodesPerZone
-          - Zone1
-          - Zone2
-          - Zone3
+          - AZ
       - Label: 
           default: "Network Configuration"
         Parameters: 
           - VPC
-          - Subnet1
-          - Subnet2
-          - Subnet3
+          - Subnets
       - Label: 
           default: "MarkLogic Configuration"
         Parameters: 
@@ -64,20 +60,12 @@ Metadata:
         default: Number of Zones
       NodesPerZone:
         default: Nodes per Zone
-      Zone1:
-        default: Availability Zone 1
-      Zone2:
-        default: Availability Zone 2
-      Zone3:
-        default: Availability Zone 3
+      AZ:
+        default: Availability Zone
       VPC:
         default: VPC
-      Subnet1:
-        default: Subnet 1
-      Subnet2:
-        default: Subnet 2
-      Subnet3:
-        default: Subnet 3
+      Subnets:
+        default: Subnets
 Parameters:
   # resource configuration
   IAMRole:
@@ -154,31 +142,17 @@ Parameters:
     MinValue: '0'
     MaxValue: '20'
     Default: '1'
-  Zone1:
-    Description: The Availability Zone 1 for EBS volume. (e.g. us-west-2a).
-    Type: 'AWS::EC2::AvailabilityZone::Name'
-  Zone2:
-    Description: The Availability Zone 2 for EBS volume. Only applicable to multi-zone cluster.
-    Type: 'AWS::EC2::AvailabilityZone::Name'
-  Zone3:
-    Description: The Availability Zone 3 for EBS volume. Only applicable to multi-zone cluster.
-    Type: 'AWS::EC2::AvailabilityZone::Name'
+  AZ:
+    Description: The Availability Zones for subnets. Accept either 1 zone or 3 zones.
+    Type: 'List<AWS::EC2::AvailabilityZone::Name>'
   # network configuration
   VPC:
     Description: ID of an existing Virtual Private Cloud (VPC)
     Type: 'AWS::EC2::VPC::Id'
     AllowedPattern: 'vpc-[0-9a-z]{8}'
-  Subnet1:
-    Description: ID of an existing subnet in the VPC
-    Type: 'AWS::EC2::Subnet::Id'
-  Subnet2:    
-    Description: ID of an existing subnet in the VPC.
-      Only applicable to multi-zone cluster.
-    Type: 'AWS::EC2::Subnet::Id'
-  Subnet3:
-    Description: ID of an existing subnet in the VPC.
-      Only applicable to multi-zone cluster.
-    Type: 'AWS::EC2::Subnet::Id'
+  Subnets:
+    Description: Subnets in the VPC. Accept either 1 subnet or 3 subnets.
+    Type: 'List<AWS::EC2::Subnet::Id>'
   # marklogic configuration
   AdminUser:
     Description: The MarkLogic administrator username
@@ -263,7 +237,7 @@ Resources:
   MarklogicVolume1:
     Type: 'AWS::EC2::Volume'
     Properties:
-      AvailabilityZone: !Ref Zone1
+      AvailabilityZone: !Select [0, !Ref AZ]
       Size: !Ref VolumeSize
       Tags:
         - Key: Name
@@ -276,7 +250,7 @@ Resources:
     Condition: MultiZone
     Type: 'AWS::EC2::Volume'
     Properties:
-      AvailabilityZone: !Ref Zone2
+      AvailabilityZone: !Select [1, !Ref AZ]
       Size: !Ref VolumeSize
       Tags:
         - Key: Name
@@ -289,7 +263,7 @@ Resources:
     Condition: MultiZone
     Type: 'AWS::EC2::Volume'
     Properties:
-      AvailabilityZone: !Ref Zone3
+      AvailabilityZone: !Select [2, !Ref AZ]
       Size: !Ref VolumeSize
       Tags:
         - Key: Name
@@ -317,7 +291,7 @@ Resources:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
       VPCZoneIdentifier:
-        - !Ref Subnet1
+        - !Select [0, !Ref Subnets]
       LaunchConfigurationName: !Ref LaunchConfig1
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -344,7 +318,7 @@ Resources:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
       VPCZoneIdentifier:
-        - !Ref Subnet2
+        - !Select [0, !Ref Subnets]
       LaunchConfigurationName: !Ref LaunchConfig2
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -371,7 +345,7 @@ Resources:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     Properties:
       VPCZoneIdentifier:
-        - !Ref Subnet3
+        - !Select [0, !Ref Subnets]
       LaunchConfigurationName: !Ref LaunchConfig3
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -579,9 +553,9 @@ Resources:
         - CookieName: SessionID
           PolicyName: MLSession
       Subnets:
-        - !Ref Subnet1
-        - !If [MultiZone, !Ref Subnet2, !Ref 'AWS::NoValue']
-        - !If [MultiZone, !Ref Subnet3, !Ref 'AWS::NoValue']
+        - !Select [0, !Ref Subnets]
+        - !If [MultiZone, !Select [1, !Ref Subnets], !Ref 'AWS::NoValue']
+        - !If [MultiZone, !Select [2, !Ref Subnets], !Ref 'AWS::NoValue']
       ConnectionDrainingPolicy:
         Enabled: 'true'
         Timeout: '60'
@@ -676,7 +650,7 @@ Resources:
       FromPort: '7999'
       ToPort: '7999'
       SourceSecurityGroupId: !GetAtt InstanceSecurityGroup.GroupId
- InstanceRecoveryAlarm:
+  InstanceRecoveryAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmDescription: Trigger a recovery when instance status check fails for 1 consecutive minutes.
@@ -699,7 +673,8 @@ Resources:
         - Name: ASG2
           Value: !If [MultiZone, !Ref MarkLogicServerGroup2, !Ref 'AWS::NoValue']
         - Name: ASG3
-          Value: !If [MultiZone, !Ref MarkLogicServerGroup3, !Ref 'AWS::NoValue']Outputs:
+          Value: !If [MultiZone, !Ref MarkLogicServerGroup3, !Ref 'AWS::NoValue']
+Outputs:
   URL:
     Description: The URL of the MarkLogic Cluster
     Value: !Join 
