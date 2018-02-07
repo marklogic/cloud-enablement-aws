@@ -3,21 +3,29 @@ Description: Create a VPC for MarkLogic cluster
 Metadata:
   version: 9.0-5
   AWS::CloudFormation::Interface:
-    ParameterLabels:
-      Zone1:
-        default: Availability Zone 1
-      Zone2:
-        default: Availability Zone 2
-      Zone3:
-        default: Availability Zone 3
+    ParameterGroups:
+      - Label:
+          default: 'VPC Configuration'
+        Parameters:
+          - MultiZone
+          - AZ
+          - VpcCidr
+          - Subnet1Cidr
+          - Subnet2Cidr
+          - Subnet3Cidr
+    ParameterLabels:      
+      MultiZone:
+        default: Multiple Zone
+      AZ:
+        default: Availability Zone
       VpcCidr:
-        default: VPC CIDR
+        default: 'VPC CIDR'
       Subnet1Cidr:
-        default: Subnet 1 CIDR
+        default: 'Subnet 1 CIDR'
       Subnet2Cidr:
-        default: Subnet 2 CIDR
+        default: 'Subnet 2 CIDR'
       Subnet3Cidr:
-        default: Subnet 3 CIDR
+        default: 'Subnet 3 CIDR'
 Parameters:
   MultiZone:
     Description: Whether there are the cluster will be deployed to multiple Availability Zones.
@@ -26,15 +34,9 @@ Parameters:
       - 'true'
       - 'false'
     Default: 'true'
-  Zone1:
-    Description: The Availability Zone 1 (e.g. us-west-2a).
-    Type: 'AWS::EC2::AvailabilityZone::Name'
-  Zone2:
-    Description: The Availability Zone 2. Only applicable to multi-zone cluster.
-    Type: 'AWS::EC2::AvailabilityZone::Name'
-  Zone3:
-    Description: The Availability Zone 3. Only applicable to multi-zone cluster.
-    Type: 'AWS::EC2::AvailabilityZone::Name'
+  AZ:
+    Description: The Availability Zones for subnets. Accept either 1 zone or 3 different zones.
+    Type: 'List<AWS::EC2::AvailabilityZone::Name>'
   VpcCidr:
     Description: CIDR Block for the Virtual Private Cloud (VPC).
     Type: String
@@ -80,7 +82,7 @@ Resources:
     Properties:
       VpcId: !Ref MarkLogicVPC
       CidrBlock: !Ref Subnet1Cidr
-      AvailabilityZone: !Ref Zone1
+      AvailabilityZone: !Select [0, !Ref AZ]
   MarkLogicSubnet2:
     Type: AWS::EC2::Subnet
     Condition: DeployMultiZone
@@ -89,7 +91,7 @@ Resources:
     Properties:
       VpcId: !Ref MarkLogicVPC
       CidrBlock: !Ref Subnet2Cidr
-      AvailabilityZone: !Ref Zone2
+      AvailabilityZone: !Select [1, !Ref AZ]
   MarkLogicSubnet3:
     Type: AWS::EC2::Subnet
     Condition: DeployMultiZone
@@ -98,7 +100,7 @@ Resources:
     Properties:
       VpcId: !Ref MarkLogicVPC
       CidrBlock: !Ref Subnet3Cidr
-      AvailabilityZone: !Ref Zone3
+      AvailabilityZone: !Select [2, !Ref AZ]
   VpcGateway:
     Type: AWS::EC2::InternetGateway
   VpcGatewayAttachment:
@@ -106,19 +108,6 @@ Resources:
     Properties: 
       InternetGatewayId: !Ref VpcGateway
       VpcId: !Ref MarkLogicVPC
-  NoopHandler:
-    Type: AWS::CloudFormation::WaitConditionHandle
-  WaitForCompletion:
-    Type: AWS::CloudFormation::WaitCondition
-    DependsOn:
-      - MarkLogicVPC
-      - MarkLogicSubnet1
-      - MarkLogicSubnet2
-      - MarkLogicSubnet3
-    Properties: 
-      Handle: !Ref NoopHandler
-      Count: 0
-      Timeout: 1
 Outputs:
   VpcId:
     Description: VPC ID
@@ -128,7 +117,7 @@ Outputs:
     Value: !Ref MarkLogicSubnet1
   Subnet2Id:
     Description: Subnet 2 ID
-    Value: !Ref MarkLogicSubnet2
+    Value: !If [DeployMultiZone, !Ref MarkLogicSubnet2, '']
   Subnet3Id:
     Description: Subnet 3 ID
-    Value: !Ref MarkLogicSubnet3
+    Value: !If [DeployMultiZone, !Ref MarkLogicSubnet3, '']

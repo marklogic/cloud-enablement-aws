@@ -17,9 +17,7 @@ Metadata:
           - KeyName
           - NumberOfZones
           - NodesPerZone
-          - Zone1
-          - Zone2
-          - Zone3
+          - AZ
       - Label: 
           default: "Network Configuration"
         Parameters: 
@@ -64,12 +62,8 @@ Metadata:
         default: Number of Zones
       NodesPerZone:
         default: Nodes per Zone
-      Zone1:
-        default: Availability Zone 1
-      Zone2:
-        default: Availability Zone 2
-      Zone3:
-        default: Availability Zone 3
+      AZ:
+        default: Availability Zone
       VpcCidr:
         default: VPC CIDR
       Subnet1Cidr:
@@ -154,15 +148,9 @@ Parameters:
     MinValue: '0'
     MaxValue: '20'
     Default: '1'
-  Zone1:
-    Description: The Availability Zone 1 (e.g. us-west-2a).
-    Type: 'AWS::EC2::AvailabilityZone::Name'
-  Zone2:
-    Description: The Availability Zone 2. Only applicable to multi-zone cluster.
-    Type: 'AWS::EC2::AvailabilityZone::Name'
-  Zone3:
-    Description: The Availability Zone 3. Only applicable to multi-zone cluster.
-    Type: 'AWS::EC2::AvailabilityZone::Name'
+  AZ:
+    Description: The Availability Zones for subnets. Accept either 1 zone or 3 zones.
+    Type: 'List<AWS::EC2::AvailabilityZone::Name>'
   # network configuration
   VpcCidr:
     Description: CIDR Block for the Virtual Private Cloud (VPC).
@@ -283,19 +271,17 @@ Resources:
           - !Ref 'AWS::NoValue'
       Parameters:
         MultiZone: !If [MultiZone, 'true', 'false']
-        Zone1: !Ref Zone1
-        Zone2: !Ref Zone2
-        Zone3: !Ref Zone3
+        AZ: !Join [',', !Ref AZ]
         VpcCidr: !Ref VpcCidr
         Subnet1Cidr: !Ref Subnet1Cidr
         Subnet2Cidr: !Ref Subnet2Cidr
         Subnet3Cidr: !Ref Subnet3Cidr
-      TemplateURL: 'https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-vpc.template'
+      TemplateURL: 'https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-vpc.template' # TODO
       TimeoutInMinutes: 5
   MarklogicVolume1:
     Type: 'AWS::EC2::Volume'
     Properties:
-      AvailabilityZone: !Ref Zone1
+      AvailabilityZone: !Select [0, !Ref AZ]
       Size: !Ref VolumeSize
       Tags:
         - Key: Name
@@ -308,7 +294,7 @@ Resources:
     Condition: MultiZone
     Type: 'AWS::EC2::Volume'
     Properties:
-      AvailabilityZone: !Ref Zone2
+      AvailabilityZone: !Select [1, !Ref AZ]
       Size: !Ref VolumeSize
       Tags:
         - Key: Name
@@ -321,7 +307,7 @@ Resources:
     Condition: MultiZone
     Type: 'AWS::EC2::Volume'
     Properties:
-      AvailabilityZone: !Ref Zone3
+      AvailabilityZone: !Select [2, !Ref AZ]
       Size: !Ref VolumeSize
       Tags:
         - Key: Name
