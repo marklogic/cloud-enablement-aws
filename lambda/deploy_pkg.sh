@@ -1,13 +1,14 @@
 #!/bin/sh
 
+# Lauch a MarkLogic AMI on AWS to prepare the lambda package
 PEM_KEY=/space/workspace/aws/qa-builder.pem
-HOST=
-SRC_DIR=
-DEST_DIR=
-PKG_NAME=
+HOST=ec2-54-160-90-78.compute-1.amazonaws.com
+SRC_DIR=/space/workspace/cloud-enablement/aws/lambda/managed_eni.py
+DEST_DIR=/tmp
+PKG_NAME=managed_eni
 
 # copy file to EC2 machine
-scp -i $PEM_KEY -r $SRC_DIR ec2-user@:$DEST_DIR
+scp -i $PEM_KEY -r $SRC_DIR ec2-user@$HOST:$DEST_DIR
 # log in
 ssh -i $PEM_KEY ec2-user@$HOST
 # install system dependencies
@@ -19,8 +20,8 @@ cd Python-3.6.1 && ./configure && make
 sudo make install
 sudo /usr/local/bin/pip3 install virtualenv
 # Choose the virtual environment that was installed via pip3
-/usr/local/bin/virtualenv ~/shrink_venv
-source ~/shrink_venv/bin/activate
+/usr/local/bin/virtualenv ~/ml_venv
+source ~/ml_venv/bin/activate
 # Install libraries in the virtual environment
 pip install boto3
 # Add the contents of lib and lib64 site-packages to .zip file
