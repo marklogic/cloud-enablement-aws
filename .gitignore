@@ -1,2 +1,4 @@
 azure/mainTemplate.parameters.json
 aws/lambda/.idea
+aws/lambda/*.zip
+aws/.idea/
