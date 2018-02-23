@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# ref: https://goo.gl/nKULqB
 # Lauch a MarkLogic AMI on AWS to prepare the lambda package
 PEM_KEY=/space/workspace/aws/qa-builder.pem
 HOST=ec2-54-160-90-78.compute-1.amazonaws.com
