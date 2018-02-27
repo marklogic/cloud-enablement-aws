@@ -143,7 +143,7 @@ Parameters:
     MaxValue: '20'
     Default: '1'
   AZ:
-    Description: The Availability Zones for existing VPC subnets. Accept either 1 zone or 3 zones.
+    Description: The Availability Zones for existing VPC subnets. Accept either 1 zone or 3 zones. The order must be same as Availability Zone(s) selected.
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
   # network configuration
   VPC:
@@ -186,7 +186,7 @@ Conditions:
       - !Ref SpotPrice
       - 0
   MultiZone:
-    !Not [!Equals [!Ref NodesPerZone, 1]]
+    !Not [!Equals [!Ref NumberOfZones, 1]]
   EssentialEnterprise:
     !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']]
 Mappings:
@@ -289,6 +289,9 @@ Resources:
         id: e7190602-c2de-47ab-81e7-1315f8c01e2d
   MarkLogicServerGroup1:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
+    DependsOn: 
+      - NodeManagerExecRole
+      - NodeManagerSnsTopic
     Properties:
       VPCZoneIdentifier:
         - !Select [0, !Ref Subnets]
@@ -310,15 +313,31 @@ Resources:
             - 'autoscaling:EC2_INSTANCE_TERMINATE'
             - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
         - !Ref 'AWS::NoValue'
+      Tags:
+        - Key: stack_name
+          Value: !Ref 'AWS::StackName'
+          PropagateAtLaunch: 'true'
+        - Key: stack_id
+          Value: !Ref 'AWS::StackId'
+          PropagateAtLaunch: 'true'
+      LifecycleHookSpecificationList:
+        - LifecycleTransition: 'autoscaling:EC2_INSTANCE_LAUNCHING'
+          LifecycleHookName: NodeManager
+          HeartbeatTimeout: 4800
+          NotificationTargetARN: !Ref NodeManagerSnsTopic
+          RoleARN: !GetAtt [NodeManagerExecRole, Arn]
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 31621dd0-4b18-4dcd-b443-db9cef64ebb1
   MarkLogicServerGroup2:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::AutoScalingGroup'
+    DependsOn: 
+      - NodeManagerExecRole
+      - NodeManagerSnsTopic
     Properties:
       VPCZoneIdentifier:
-        - !Select [0, !Ref Subnets]
+        - !Select [1, !Ref Subnets]
       LaunchConfigurationName: !Ref LaunchConfig2
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -337,15 +356,31 @@ Resources:
             - 'autoscaling:EC2_INSTANCE_TERMINATE'
             - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
         - !Ref 'AWS::NoValue'
+      Tags:
+        - Key: stack_name
+          Value: !Ref 'AWS::StackName'
+          PropagateAtLaunch: 'true'
+        - Key: stack_id
+          Value: !Ref 'AWS::StackId'
+          PropagateAtLaunch: 'true'
+      LifecycleHookSpecificationList:
+        - LifecycleTransition: 'autoscaling:EC2_INSTANCE_LAUNCHING'
+          LifecycleHookName: NodeManager
+          HeartbeatTimeout: 4800
+          NotificationTargetARN: !Ref NodeManagerSnsTopic
+          RoleARN: !GetAtt [NodeManagerExecRole, Arn]
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 87d75478-787a-41d5-bb21-9de6fe4b662e
   MarkLogicServerGroup3:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::AutoScalingGroup'
+    DependsOn: 
+      - NodeManagerExecRole
+      - NodeManagerSnsTopic
     Properties:
       VPCZoneIdentifier:
-        - !Select [0, !Ref Subnets]
+        - !Select [2, !Ref Subnets]
       LaunchConfigurationName: !Ref LaunchConfig3
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -364,12 +399,26 @@ Resources:
             - 'autoscaling:EC2_INSTANCE_TERMINATE'
             - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
         - !Ref 'AWS::NoValue'
+      Tags:
+        - Key: stack_name
+          Value: !Ref 'AWS::StackName'
+          PropagateAtLaunch: 'true'
+        - Key: stack_id
+          Value: !Ref 'AWS::StackId'
+          PropagateAtLaunch: 'true'
+      LifecycleHookSpecificationList:
+        - LifecycleTransition: 'autoscaling:EC2_INSTANCE_LAUNCHING'
+          LifecycleHookName: NodeManager
+          HeartbeatTimeout: 4800
+          NotificationTargetARN: !Ref NodeManagerSnsTopic
+          RoleARN: !GetAtt [NodeManagerExecRole, Arn]
     Metadata:
       'AWS::CloudFormation::Designer':
         id: bbd8314a-6e59-4102-9ed5-232739dd0dfa
   LaunchConfig1:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
+      AssociatePublicIpAddress: true
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
@@ -430,6 +479,7 @@ Resources:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
+      AssociatePublicIpAddress: true
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
@@ -490,6 +540,7 @@ Resources:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
+      AssociatePublicIpAddress: true
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
@@ -674,6 +725,132 @@ Resources:
           Value: !If [MultiZone, !Ref MarkLogicServerGroup2, !Ref 'AWS::NoValue']
         - Name: ASG3
           Value: !If [MultiZone, !Ref MarkLogicServerGroup3, !Ref 'AWS::NoValue']
+  ManagedEni:
+    Type: 'Custom::ManagedEni'
+    Properties:
+      ServiceToken: !GetAtt [ManagedEniFunction, Arn]
+      Region: !Ref 'AWS::Region'
+      NodesPerZone: !Ref NodesPerZone
+      NumberOfZones: !Ref NumberOfZones
+      StackName: !Ref 'AWS::StackName'
+      Subnets: !Ref Subnets
+  ManagedEniFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: "mattsun-s3-bucket" # TODO
+        S3Key: managed_eni.zip
+      Handler: managed_eni.handler
+      Role: !GetAtt [ManagedEniExecRole, Arn]
+      Runtime: python3.6
+      Timeout: '30'
+  ManagedEniExecRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: eni
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ec2:CreateNetworkInterface"
+                  - "ec2:DeleteNetworkInterface"
+                  - "ec2:DescribeNetworkInterfaces"
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - "ec2:CreateTags"
+                Resource: 'arn:aws:ec2:*:*:network-interface/*'
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:*:*:*'
+  # Node Manager
+  NodeManagerExecRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+          - Effect: Allow
+            Principal:
+              Service:
+                - autoscaling.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: NodeManager
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "sns:Publish"
+                Resource: "arn:aws:sns:*:*:*"
+              - Effect: Allow
+                Action:
+                  - "ec2:DescribeNetworkInterfaces"
+                  - "ec2:AttachNetworkInterface"
+                  - "ec2:DescribeInstances"
+                  - "autoscaling:CompleteLifecycleAction"
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - "ec2:CreateTags"
+                Resource: 'arn:aws:ec2:*:*:network-interface/*'
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:*:*:*'
+  NodeManagerFunction:
+    Type: 'AWS::Lambda::Function'
+    DependsOn: NodeManagerExecRole
+    Properties:
+      Code:
+        S3Bucket: "mattsun-s3-bucket" # TODO
+        S3Key: node_manager.zip
+      Handler: node_manager.handler
+      Role: !GetAtt [NodeManagerExecRole, Arn]
+      Runtime: python3.6
+      Timeout: '30'
+  NodeManagerSnsTopic:
+    Type: "AWS::SNS::Topic"
+    DependsOn: NodeManagerFunction
+    Properties:       
+      TopicName: NodeManagerSnsTopic-238sf
+      Subscription:
+        - Endpoint: !GetAtt [NodeManagerFunction, Arn]
+          Protocol: "lambda"
+  NodeManagerInvokePerm:
+    Type: "AWS::Lambda::Permission"
+    DependsOn:
+      - NodeManagerFunction
+      - NodeManagerSnsTopic
+    Properties: 
+      Action: "lambda:InvokeFunction"
+      FunctionName: !GetAtt [NodeManagerFunction, Arn]
+      Principal: "sns.amazonaws.com"
+      SourceArn: !Ref NodeManagerSnsTopic
 Outputs:
   URL:
     Description: The URL of the MarkLogic Cluster
