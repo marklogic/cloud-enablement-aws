@@ -35,7 +35,7 @@ Parameters:
       - 'false'
     Default: 'true'
   AZ:
-    Description: The Availability Zones for subnets. Accept either 1 zone or 3 different zones.
+    Description: The Availability Zones for subnets. Accept either 1 zone or 3 different zones. In the order of Subnet 1, Subnet 2 and Subnet 3 (if applicable).
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
   VpcCidr:
     Description: CIDR Block for the Virtual Private Cloud (VPC).
@@ -101,6 +101,43 @@ Resources:
       VpcId: !Ref MarkLogicVPC
       CidrBlock: !Ref Subnet3Cidr
       AvailabilityZone: !Select [2, !Ref AZ]
+  VpcRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    Properties: 
+      VpcId: !Ref MarkLogicVPC
+  Subnet1RouteTableAssoc:
+    DependsOn:
+      - VpcRouteTable
+      - MarkLogicSubnet1
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties: 
+      RouteTableId: !Ref VpcRouteTable
+      SubnetId: !Ref MarkLogicSubnet1
+  Subnet2RouteTableAssoc:
+    DependsOn:
+      - VpcRouteTable
+      - MarkLogicSubnet2
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties: 
+      RouteTableId: !Ref VpcRouteTable
+      SubnetId: !Ref MarkLogicSubnet2
+  Subnet3RouteTableAssoc:
+    DependsOn:
+      - VpcRouteTable
+      - MarkLogicSubnet3
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties: 
+      RouteTableId: !Ref VpcRouteTable
+      SubnetId: !Ref MarkLogicSubnet3
+  VpcRoute:
+    Type: AWS::EC2::Route
+    DependsOn: 
+      - VpcGateway
+      - VpcRouteTable
+    Properties:
+      RouteTableId: !Ref VpcRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref VpcGateway
   VpcGateway:
     Type: AWS::EC2::InternetGateway
   VpcGatewayAttachment:
