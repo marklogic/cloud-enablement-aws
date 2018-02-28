@@ -261,8 +261,20 @@ Mappings:
         Enterprise: ami-9f4ef6fb
         BYOL: ami-3f44fc5b
 Resources:
+  NodeMgrLambdaStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      NotificationARNs: 
+        - !If
+          - UseLogSNS
+          - !Ref LogSNS
+          - !Ref 'AWS::NoValue'
+      Parameters:
+        S3Bucket: mattsun-s3-bucket # TODO
+      TemplateURL: https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-lambda-nodemanager.template # TODO
+      TimeoutInMinutes: 5
   VpcStack:
-    Type: 'AWS::CloudFormation::Stack'
+    Type: AWS::CloudFormation::Stack
     Properties:
       NotificationARNs: 
         - !If
@@ -335,8 +347,7 @@ Resources:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     DependsOn: 
       - VpcStack
-      - NodeManagerExecRole
-      - NodeManagerSnsTopic
+      - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier: 
         - !GetAtt [VpcStack, Outputs.Subnet1Id]
@@ -369,8 +380,8 @@ Resources:
         - LifecycleTransition: 'autoscaling:EC2_INSTANCE_LAUNCHING'
           LifecycleHookName: NodeManager
           HeartbeatTimeout: 4800
-          NotificationTargetARN: !Ref NodeManagerSnsTopic          
-          RoleARN: !GetAtt [NodeManagerExecRole, Arn]
+          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn]
+          RoleARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrIamArn]
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 31621dd0-4b18-4dcd-b443-db9cef64ebb1
@@ -379,8 +390,7 @@ Resources:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     DependsOn: 
       - VpcStack
-      - NodeManagerExecRole
-      - NodeManagerSnsTopic
+      - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier: 
         - !GetAtt [VpcStack, Outputs.Subnet2Id]
@@ -413,8 +423,8 @@ Resources:
         - LifecycleTransition: 'autoscaling:EC2_INSTANCE_LAUNCHING'
           LifecycleHookName: NodeManager
           HeartbeatTimeout: 4800
-          NotificationTargetARN: !Ref NodeManagerSnsTopic          
-          RoleARN: !GetAtt [NodeManagerExecRole, Arn]
+          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn]
+          RoleARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrIamArn]
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 87d75478-787a-41d5-bb21-9de6fe4b662e
@@ -423,8 +433,7 @@ Resources:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     DependsOn: 
       - VpcStack
-      - NodeManagerExecRole
-      - NodeManagerSnsTopic
+      - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier: 
         - !GetAtt [VpcStack, Outputs.Subnet3Id]
@@ -457,8 +466,8 @@ Resources:
         - LifecycleTransition: 'autoscaling:EC2_INSTANCE_LAUNCHING'
           LifecycleHookName: NodeManager
           HeartbeatTimeout: 4800
-          NotificationTargetARN: !Ref NodeManagerSnsTopic
-          RoleARN: !GetAtt [NodeManagerExecRole, Arn]
+          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn]
+          RoleARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrIamArn]
     Metadata:
       'AWS::CloudFormation::Designer':
         id: bbd8314a-6e59-4102-9ed5-232739dd0dfa
@@ -829,80 +838,6 @@ Resources:
                   - 'logs:CreateLogStream'
                   - 'logs:PutLogEvents'
                 Resource: 'arn:aws:logs:*:*:*'
-  # Node Manager
-  NodeManagerExecRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-          - Effect: Allow
-            Principal:
-              Service:
-                - autoscaling.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      Policies:
-        - PolicyName: NodeManager
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "sns:Publish"
-                Resource: "arn:aws:sns:*:*:*"
-              - Effect: Allow
-                Action:
-                  - "ec2:DescribeNetworkInterfaces"
-                  - "ec2:AttachNetworkInterface"
-                  - "ec2:DescribeInstances"
-                  - "autoscaling:CompleteLifecycleAction"
-                Resource: '*'
-              - Effect: Allow
-                Action:
-                  - "ec2:CreateTags"
-                Resource: 'arn:aws:ec2:*:*:network-interface/*'
-              - Effect: Allow
-                Action:
-                  - 'logs:CreateLogGroup'
-                  - 'logs:CreateLogStream'
-                  - 'logs:PutLogEvents'
-                Resource: 'arn:aws:logs:*:*:*'
-  NodeManagerFunction:
-    Type: 'AWS::Lambda::Function'
-    DependsOn: NodeManagerExecRole
-    Properties:
-      Code:
-        S3Bucket: "mattsun-s3-bucket" # TODO
-        S3Key: node_manager.zip
-      Handler: node_manager.handler
-      Role: !GetAtt [NodeManagerExecRole, Arn]
-      Runtime: python3.6
-      Timeout: '30'
-  NodeManagerSnsTopic:
-    Type: "AWS::SNS::Topic"
-    DependsOn: NodeManagerFunction
-    Properties:       
-      TopicName: NodeManagerSnsTopic-23dsf2359
-      Subscription:
-        - Endpoint: !GetAtt [NodeManagerFunction, Arn]
-          Protocol: "lambda"
-  NodeManagerInvokePerm:
-    Type: "AWS::Lambda::Permission"
-    DependsOn:
-      - NodeManagerFunction
-      - NodeManagerSnsTopic
-    Properties: 
-      Action: "lambda:InvokeFunction"
-      FunctionName: !GetAtt [NodeManagerFunction, Arn]
-      Principal: "sns.amazonaws.com"
-      SourceArn: !Ref NodeManagerSnsTopic
 Outputs:
   URL:
     Description: The URL of the MarkLogic Cluster
