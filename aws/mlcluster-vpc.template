@@ -261,7 +261,7 @@ Mappings:
         Enterprise: ami-9f4ef6fb
         BYOL: ami-3f44fc5b
 Resources:
-  NodeMgrLambdaStack:
+  ManagedEniStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       NotificationARNs: 
@@ -271,7 +271,20 @@ Resources:
           - !Ref 'AWS::NoValue'
       Parameters:
         S3Bucket: mattsun-s3-bucket # TODO
-      TemplateURL: https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-lambda-nodemanager.template # TODO
+      TemplateURL: https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-managedeni.template # TODO
+      TimeoutInMinutes: 5
+  NodeMgrLambdaStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: ManagedEniStack
+    Properties:
+      NotificationARNs: 
+        - !If
+          - UseLogSNS
+          - !Ref LogSNS
+          - !Ref 'AWS::NoValue'
+      Parameters:
+        S3Bucket: mattsun-s3-bucket # TODO
+      TemplateURL: https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-nodemanager.template # TODO
       TimeoutInMinutes: 5
   VpcStack:
     Type: AWS::CloudFormation::Stack
@@ -347,6 +360,7 @@ Resources:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     DependsOn: 
       - VpcStack
+      - ManagedEniStack
       - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier: 
@@ -390,6 +404,7 @@ Resources:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     DependsOn: 
       - VpcStack
+      - ManagedEniStack
       - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier: 
@@ -433,6 +448,7 @@ Resources:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     DependsOn: 
       - VpcStack
+      - ManagedEniStack
       - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier: 
@@ -783,61 +799,6 @@ Resources:
           Value: !If [MultiZone, !Ref MarkLogicServerGroup2, !Ref 'AWS::NoValue']
         - Name: ASG3
           Value: !If [MultiZone, !Ref MarkLogicServerGroup3, !Ref 'AWS::NoValue']
-  ManagedEni:
-    Type: 'Custom::ManagedEni'
-    Properties:
-      ServiceToken: !GetAtt [ManagedEniFunction, Arn]
-      Region: !Ref 'AWS::Region'
-      NodesPerZone: !Ref NodesPerZone
-      NumberOfZones: !Ref NumberOfZones
-      StackName: !Ref 'AWS::StackName'
-      Subnets:
-        - !GetAtt [VpcStack, Outputs.Subnet1Id]
-        - !If [MultiZone, !GetAtt [VpcStack, Outputs.Subnet2Id], !Ref 'AWS::NoValue']
-        - !If [MultiZone, !GetAtt [VpcStack, Outputs.Subnet3Id], !Ref 'AWS::NoValue']
-  ManagedEniFunction:
-    Type: 'AWS::Lambda::Function'
-    Properties:
-      Code:
-        S3Bucket: "mattsun-s3-bucket" # TODO
-        S3Key: managed_eni.zip
-      Handler: managed_eni.handler
-      Role: !GetAtt [ManagedEniExecRole, Arn]
-      Runtime: python3.6
-      Timeout: '30'
-  ManagedEniExecRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      Policies:
-        - PolicyName: eni
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "ec2:CreateNetworkInterface"
-                  - "ec2:DeleteNetworkInterface"
-                  - "ec2:DescribeNetworkInterfaces"
-                Resource: '*'
-              - Effect: Allow
-                Action:
-                  - "ec2:CreateTags"
-                Resource: 'arn:aws:ec2:*:*:network-interface/*'
-              - Effect: Allow
-                Action:
-                  - 'logs:CreateLogGroup'
-                  - 'logs:CreateLogStream'
-                  - 'logs:PutLogEvents'
-                Resource: 'arn:aws:logs:*:*:*'
 Outputs:
   URL:
     Description: The URL of the MarkLogic Cluster

@@ -1,0 +1,93 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Launch Managed ENI for MarkLogic Cluster on AWS
+Metadata:
+  version: 9.0-5
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: 'Managed ENI Configuration'
+        Parameters:
+          - S3Bucket
+          - NodesPerZone
+          - NumberOfZones
+          - Subnets
+    ParameterLabels:      
+      S3Bucket:
+        default: S3 Bucket Name
+      NodesPerZone:
+        default: Nodes per Zone
+      NumberOfZones:
+        default: Number of Zones
+      Subnets:
+        default: Subnets
+Parameters:
+  S3Bucket:
+    Description: The S3 bucket name that contains the lambda package. Must be in the same region.
+    Type: String
+  NodesPerZone:
+    Description: Nodes per zone
+    Type: Number
+    Default: 1
+    ConstraintDescription: Must be a valid EC2 instance type.
+  NumberOfZones:
+    Description: Number of Zones
+    Type: Number
+    Default: 3
+  Subnets:
+    Description: Subnets in the VPC. Accept either 1 subnet or 3 subnets.
+    Type: 'List<AWS::EC2::Subnet::Id>'
+Resources:
+  ManagedEniExecRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: eni
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ec2:CreateNetworkInterface"
+                  - "ec2:DeleteNetworkInterface"
+                  - "ec2:DescribeNetworkInterfaces"
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - "ec2:CreateTags"
+                Resource: 'arn:aws:ec2:*:*:network-interface/*'
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:*:*:*'
+  ManagedEniFunction:
+    Type: 'AWS::Lambda::Function'
+    DependsOn: ManagedEniExecRole
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: managed_eni.zip
+      Handler: managed_eni.handler
+      Role: !GetAtt [ManagedEniExecRole, Arn]
+      Runtime: python3.6
+      Timeout: '30'
+  ManagedEni:
+    Type: 'Custom::ManagedEni'
+    DependsOn: ManagedEniFunction
+    Properties:
+      ServiceToken: !GetAtt [ManagedEniFunction, Arn]
+      Region: !Ref 'AWS::Region'
+      NodesPerZone: !Ref NodesPerZone
+      NumberOfZones: !Ref NumberOfZones
+      StackName: !Ref 'AWS::StackName'
+      Subnets: !Ref Subnets
