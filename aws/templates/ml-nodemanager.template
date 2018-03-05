@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Launch Lambda function for MarkLogic Node Manager on AWSTemplateFormatVersion
+Description: Launch Lambda function for MarkLogic Node Manager on AWS
 Metadata:
   version: 9.0-5
   AWS::CloudFormation::Interface:
@@ -75,7 +75,7 @@ Resources:
     Type: "AWS::SNS::Topic"
     DependsOn: NodeManagerFunction
     Properties:       
-      TopicName: NodeManagerSnsTopic-r3dsf
+      # TopicName: !Join ['-', ['NodeManagerSnsTopic', !Ref 'AWS::StackId']]
       Subscription:
         - Endpoint: !GetAtt [NodeManagerFunction, Arn]
           Protocol: "lambda"
