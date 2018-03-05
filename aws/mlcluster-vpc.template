@@ -260,32 +260,7 @@ Mappings:
       ca-central-1:
         Enterprise: ami-9f4ef6fb
         BYOL: ami-3f44fc5b
-Resources:
-  ManagedEniStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      NotificationARNs: 
-        - !If
-          - UseLogSNS
-          - !Ref LogSNS
-          - !Ref 'AWS::NoValue'
-      Parameters:
-        S3Bucket: mattsun-s3-bucket # TODO
-      TemplateURL: https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-managedeni.template # TODO
-      TimeoutInMinutes: 5
-  NodeMgrLambdaStack:
-    Type: AWS::CloudFormation::Stack
-    DependsOn: ManagedEniStack
-    Properties:
-      NotificationARNs: 
-        - !If
-          - UseLogSNS
-          - !Ref LogSNS
-          - !Ref 'AWS::NoValue'
-      Parameters:
-        S3Bucket: mattsun-s3-bucket # TODO
-      TemplateURL: https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-nodemanager.template # TODO
-      TimeoutInMinutes: 5
+Resources:  
   VpcStack:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -302,6 +277,40 @@ Resources:
         Subnet2Cidr: !Ref Subnet2Cidr
         Subnet3Cidr: !Ref Subnet3Cidr
       TemplateURL: 'https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-vpc.template' # TODO
+      TimeoutInMinutes: 5
+  ManagedEniStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: VpcStack
+    Properties:
+      NotificationARNs: 
+        - !If
+          - UseLogSNS
+          - !Ref LogSNS
+          - !Ref 'AWS::NoValue'
+      Parameters:
+        S3Bucket: mattsun-s3-bucket # TODO        
+        NodesPerZone: !Ref NodesPerZone
+        NumberOfZones: !Ref NumberOfZones
+        # Subnets: !Join [',', !Ref Subnets]
+        Subnets: !Join
+          - ','
+          - - !GetAtt [VpcStack, Outputs.Subnet1Id]
+            - !GetAtt [VpcStack, Outputs.Subnet2Id]
+            - !GetAtt [VpcStack, Outputs.Subnet3Id]
+      TemplateURL: https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-managedeni.template # TODO
+      TimeoutInMinutes: 5
+  NodeMgrLambdaStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: ManagedEniStack
+    Properties:
+      NotificationARNs: 
+        - !If
+          - UseLogSNS
+          - !Ref LogSNS
+          - !Ref 'AWS::NoValue'
+      Parameters:
+        S3Bucket: mattsun-s3-bucket # TODO
+      TemplateURL: https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-nodemanager.template # TODO
       TimeoutInMinutes: 5
   MarklogicVolume1:
     Type: 'AWS::EC2::Volume'
