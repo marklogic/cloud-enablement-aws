@@ -3,8 +3,8 @@
 # ref: https://goo.gl/nKULqB
 # Lauch a MarkLogic AMI on AWS to prepare the lambda package
 PEM_KEY=/space/workspace/aws/qa-builder.pem
-HOST=ec2-54-160-90-78.compute-1.amazonaws.com
-SRC_DIR=/space/workspace/cloud-enablement/aws/lambda/managed_eni.py
+HOST=ec2-54-218-255-45.us-west-2.compute.amazonaws.com
+SRC_DIR=/space/workspace/cloud-enablement/aws/lambda/managed_eni/managed_eni.py
 DEST_DIR=/tmp
 PKG_NAME=managed_eni
 
@@ -12,6 +12,10 @@ PKG_NAME=managed_eni
 scp -i $PEM_KEY -r $SRC_DIR ec2-user@$HOST:$DEST_DIR
 # log in
 ssh -i $PEM_KEY ec2-user@$HOST
+
+DEST_DIR=/tmp
+PKG_NAME=managed_eni
+
 # install system dependencies
 sudo yum install -y gcc zlib zlib-devel openssl openssl-devel
 cd /tmp
@@ -24,7 +28,8 @@ sudo /usr/local/bin/pip3 install virtualenv
 /usr/local/bin/virtualenv ~/ml_venv
 source ~/ml_venv/bin/activate
 # Install libraries in the virtual environment
-pip install boto3
+pip install cfn-resource-timeout
+
 # Add the contents of lib and lib64 site-packages to .zip file
 cd $VIRTUAL_ENV/lib/python3.6/site-packages
 zip -r9 $DEST_DIR/$PKG_NAME.zip *
