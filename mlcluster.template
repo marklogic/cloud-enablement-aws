@@ -244,6 +244,9 @@ Resources:
           - !Ref 'AWS::NoValue'
       Parameters:
         S3Bucket: mattsun-s3-bucket # TODO
+        NodesPerZone: !Ref NodesPerZone
+        NumberOfZones: !Ref NumberOfZones
+        Subnets: !Join [',', !Ref Subnets]
       TemplateURL: https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-managedeni.template # TODO
       TimeoutInMinutes: 5
   NodeMgrLambdaStack:
