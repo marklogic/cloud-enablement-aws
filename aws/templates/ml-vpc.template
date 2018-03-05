@@ -1,0 +1,160 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create a VPC for MarkLogic cluster
+Metadata:
+  version: 9.0-5
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: 'VPC Configuration'
+        Parameters:
+          - MultiZone
+          - AZ
+          - VpcCidr
+          - Subnet1Cidr
+          - Subnet2Cidr
+          - Subnet3Cidr
+    ParameterLabels:      
+      MultiZone:
+        default: Multiple Zone
+      AZ:
+        default: Availability Zone
+      VpcCidr:
+        default: 'VPC CIDR'
+      Subnet1Cidr:
+        default: 'Subnet 1 CIDR'
+      Subnet2Cidr:
+        default: 'Subnet 2 CIDR'
+      Subnet3Cidr:
+        default: 'Subnet 3 CIDR'
+Parameters:
+  MultiZone:
+    Description: Whether there are the cluster will be deployed to multiple Availability Zones.
+    Type: String
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'true'
+  AZ:
+    Description: The Availability Zones for subnets. Accept either 1 zone or 3 different zones. In the order of Subnet 1, Subnet 2 and Subnet 3 (if applicable).
+    Type: 'List<AWS::EC2::AvailabilityZone::Name>'
+  VpcCidr:
+    Description: CIDR Block for the Virtual Private Cloud (VPC).
+    Type: String
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    Default: 10.0.0.0/16
+    ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
+  Subnet1Cidr:
+    Description: CIDR Block for the subnet 1.
+    Type: String
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    Default: 10.0.0.0/23
+    ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
+  Subnet2Cidr:    
+    Description: CIDR Block for the subnet 2. Only applicable to multi-zone cluster.
+      Only applicable to multi-zone cluster.
+    Type: String
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    Default: 10.0.32.0/23
+    ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
+  Subnet3Cidr:
+    Description: CIDR Block for the subnet 3. Only applicable to multi-zone cluster.
+      Only applicable to multi-zone cluster.
+    Type: String
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    Default: 10.0.64.0/23
+    ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
+Conditions:
+  DeployMultiZone: !Equals [!Ref MultiZone, 'true']
+Resources:
+  MarkLogicVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsHostnames: 'true'
+  MarkLogicSubnet1:
+    Type: AWS::EC2::Subnet
+    DependsOn:
+      - MarkLogicVPC
+    Properties:
+      VpcId: !Ref MarkLogicVPC
+      CidrBlock: !Ref Subnet1Cidr
+      AvailabilityZone: !Select [0, !Ref AZ]
+  MarkLogicSubnet2:
+    Type: AWS::EC2::Subnet
+    Condition: DeployMultiZone
+    DependsOn:
+      - MarkLogicVPC
+    Properties:
+      VpcId: !Ref MarkLogicVPC
+      CidrBlock: !Ref Subnet2Cidr
+      AvailabilityZone: !Select [1, !Ref AZ]
+  MarkLogicSubnet3:
+    Type: AWS::EC2::Subnet
+    Condition: DeployMultiZone
+    DependsOn:
+      - MarkLogicVPC
+    Properties:
+      VpcId: !Ref MarkLogicVPC
+      CidrBlock: !Ref Subnet3Cidr
+      AvailabilityZone: !Select [2, !Ref AZ]
+  VpcRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    Properties: 
+      VpcId: !Ref MarkLogicVPC
+  Subnet1RouteTableAssoc:
+    DependsOn:
+      - VpcRouteTable
+      - MarkLogicSubnet1
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties: 
+      RouteTableId: !Ref VpcRouteTable
+      SubnetId: !Ref MarkLogicSubnet1
+  Subnet2RouteTableAssoc:
+    DependsOn:
+      - VpcRouteTable
+      - MarkLogicSubnet2
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties: 
+      RouteTableId: !Ref VpcRouteTable
+      SubnetId: !Ref MarkLogicSubnet2
+  Subnet3RouteTableAssoc:
+    DependsOn:
+      - VpcRouteTable
+      - MarkLogicSubnet3
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties: 
+      RouteTableId: !Ref VpcRouteTable
+      SubnetId: !Ref MarkLogicSubnet3
+  VpcRoute:
+    Type: AWS::EC2::Route
+    DependsOn: 
+      - VpcGateway
+      - VpcRouteTable
+    Properties:
+      RouteTableId: !Ref VpcRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref VpcGateway
+  VpcGateway:
+    Type: AWS::EC2::InternetGateway
+  VpcGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: 
+      InternetGatewayId: !Ref VpcGateway
+      VpcId: !Ref MarkLogicVPC
+Outputs:
+  VpcId:
+    Description: VPC ID
+    Value: !Ref MarkLogicVPC
+  Subnet1Id:
+    Description: Subnet 1 ID
+    Value: !Ref MarkLogicSubnet1
+  Subnet2Id:
+    Description: Subnet 2 ID
+    Value: !If [DeployMultiZone, !Ref MarkLogicSubnet2, '']
+  Subnet3Id:
+    Description: Subnet 3 ID
+    Value: !If [DeployMultiZone, !Ref MarkLogicSubnet3, '']

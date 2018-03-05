@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Launch Lambda function for MarkLogic Node Manager on AWS
+Metadata:
+  version: 9.0-5
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: 'Node Manager Lambda'
+        Parameters:
+          - S3Bucket
+    ParameterLabels:      
+      S3Bucket:
+        default: S3 Bucket Name
+Parameters:
+  S3Bucket:
+    Description: The S3 bucket name that contains the lambda package. Must be in the same region.
+    Type: String
+Resources:
+  NodeManagerExecRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+          - Effect: Allow
+            Principal:
+              Service:
+                - autoscaling.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: NodeManager
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "sns:Publish"
+                Resource: "arn:aws:sns:*:*:*"
+              - Effect: Allow
+                Action:
+                  - "ec2:DescribeNetworkInterfaces"
+                  - "ec2:AttachNetworkInterface"
+                  - "ec2:DescribeInstances"
+                  - "autoscaling:CompleteLifecycleAction"
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - "ec2:CreateTags"
+                Resource: 'arn:aws:ec2:*:*:network-interface/*'
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:*:*:*'
+  NodeManagerFunction:
+    Type: 'AWS::Lambda::Function'
+    DependsOn: NodeManagerExecRole
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: node_manager.zip
+      Handler: node_manager.handler
+      Role: !GetAtt [NodeManagerExecRole, Arn]
+      Runtime: python3.6
+      Timeout: '30'
+  NodeManagerSnsTopic:
+    Type: "AWS::SNS::Topic"
+    DependsOn: NodeManagerFunction
+    Properties:       
+      # TopicName: !Join ['-', ['NodeManagerSnsTopic', !Ref 'AWS::StackId']]
+      Subscription:
+        - Endpoint: !GetAtt [NodeManagerFunction, Arn]
+          Protocol: "lambda"
+  NodeManagerInvokePerm:
+    Type: "AWS::Lambda::Permission"
+    DependsOn:
+      - NodeManagerFunction
+      - NodeManagerSnsTopic
+    Properties: 
+      Action: "lambda:InvokeFunction"
+      FunctionName: !GetAtt [NodeManagerFunction, Arn]
+      Principal: "sns.amazonaws.com"
+      SourceArn: !Ref NodeManagerSnsTopic
+Outputs:
+  NodeMgrIamArn:
+    Description: Node Manager Execution IAM Role ARN
+    Value: !GetAtt [NodeManagerExecRole, Arn]
+  NodeMgrSnsArn:
+    Description: Node Manager SNS Topic ARN
+    Value: !Ref NodeManagerSnsTopic

@@ -1,0 +1,820 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Deploy a MarkLogic Cluster on AWS with a new VPC
+Metadata:
+  version: 9.0-5
+  binary: MarkLogic-9.0-5.x86_64.rpm # TODO
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label: 
+          default: "Resource Configuration"
+        Parameters: 
+          - IAMRole
+          - LogSNS
+          - VolumeSize
+          - VolumeType
+          - InstanceType
+          - SpotPrice
+          - KeyName
+          - NumberOfZones
+          - NodesPerZone
+          - AZ
+      - Label: 
+          default: "Network Configuration"
+        Parameters: 
+          - VpcCidr
+          - Subnet1Cidr
+          - Subnet2Cidr
+          - Subnet3Cidr
+      - Label: 
+          default: "MarkLogic Configuration"
+        Parameters: 
+          - AdminUser
+          - AdminPass
+          - Licensee
+          - LicenseKey
+          # - HighAvailability
+    ParameterLabels:
+      AdminUser: 
+        default: Admin User
+      AdminPass:
+        default: Admin password
+      Licensee:
+        default: Licensee
+      LicenseKey:
+        default: License Key
+      # HighAvailability:
+      #   default: High Availability
+      IAMRole:
+        default: IAM Role
+      LogSNS:
+        default: Logging SNS ARN
+      VolumeSize:
+        default: Volume Size
+      VolumeType:
+        default: Volume Type
+      InstanceType:
+        default: Instance Type
+      SpotPrice:
+        default: Spot Price
+      KeyName:
+        default: SSH Key Name
+      NumberOfZones:
+        default: Number of Zones
+      NodesPerZone:
+        default: Nodes per Zone
+      AZ:
+        default: Availability Zone
+      VpcCidr:
+        default: VPC CIDR
+      Subnet1Cidr:
+        default: Subnet 1 CIDR
+      Subnet2Cidr:
+        default: Subnet 2 CIDR
+      Subnet3Cidr:
+        default: Subnet 3 CIDR
+Parameters:
+  # resource configuration
+  IAMRole:
+    Description: IAM Role
+    Type: String
+  LogSNS:
+    Description: SNS Topic for logging - optional/advanced
+    Type: String
+    Default: none
+  VolumeSize:
+    Description: The EBS Data volume size (GB) for all nodes
+    Type: Number
+    MinValue: '10'
+    MaxValue: '1000'
+    Default: '10'
+  VolumeType:
+    Description: The EBS Data volume Type
+    Type: String
+    AllowedValues:
+      - standard
+      - gp2
+    Default: gp2
+  InstanceType:
+    Description: Type of EC2 instance to launch
+    Type: String
+    Default: r3.8xlarge
+    AllowedValues:
+      - ---- Essential Enterprise and Bring-Your-Own-License ----
+      - m3.xlarge
+      - c3.xlarge
+      - r3.xlarge
+      - --------------- Essential Enterprise Only ---------------
+      - m4.xlarge
+      - -------------- Bring-Your-Own-License Only --------------
+      - m3.medium
+      - m3.large
+      - m3.2xlarge
+      - cc1.4xlarge
+      - cc2.8xlarge
+      - c3.large
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - cr1.8xlarge
+      - r3.large
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+      - hi1.4xlarge
+      - hs1.8xlarge
+  SpotPrice:
+    Description: Spot price for instances in USD/Hour - Optional/advanced.
+    Type: Number
+    MinValue: '0'
+    MaxValue: '2'
+    Default: '0'
+  KeyName:
+    Description: Name of and existing EC2 KeyPair to enable SSH access to the instance.
+    Type: String
+  NumberOfZones:
+    Description: Total number of Availability Zones. 1 or 3.
+    Type: Number
+    AllowedValues:
+      - 1
+      - 3
+    Default: 3
+  NodesPerZone:
+    Description: Total number of nodes per Zone. Set to 0 to shutdown/hibernate
+    Type: Number
+    MinValue: '0'
+    MaxValue: '20'
+    Default: '1'
+  AZ:
+    Description: The Availability Zones for subnets. Accept either 1 zone or 3 zones. In the order of Subnet 1, Subnet 2 and Subnet 3 (if applicable).
+    Type: 'List<AWS::EC2::AvailabilityZone::Name>'
+  # network configuration
+  VpcCidr:
+    Description: CIDR Block for the Virtual Private Cloud (VPC).
+    Type: String
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    Default: 10.0.0.0/16
+    ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
+  Subnet1Cidr:
+    Description: CIDR Block for the subnet 1.
+    Type: String
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    Default: 10.0.0.0/23
+    ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
+  Subnet2Cidr:    
+    Description: CIDR Block for the subnet 2. Only applicable to multi-zone cluster.
+      Only applicable to multi-zone cluster.
+    Type: String
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    Default: 10.0.32.0/23
+    ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
+  Subnet3Cidr:
+    Description: CIDR Block for the subnet 3. Only applicable to multi-zone cluster.
+      Only applicable to multi-zone cluster.
+    Type: String
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    Default: 10.0.64.0/23
+    ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
+  # marklogic configuration
+  AdminUser:
+    Description: The MarkLogic administrator username
+    Type: String
+  AdminPass:
+    Description: The MarkLogic administrator password
+    Type: String
+    NoEcho: 'true'
+  Licensee:
+    Description: The MarkLogic Licensee or 'none'
+    Type: String
+    Default: none
+  LicenseKey:
+    Description: The MarkLogic License Key or 'none'
+    Type: String
+    Default: none
+  # HighAvailability:
+  #   Description: Configure local-disk failover. Only applicable to multi-node cluster
+  #   Type: String
+  #   Default: enable
+  #   AllowedValues:
+  #     - enable
+  #     - disable
+Conditions:
+  UseLogSNS: !Not 
+    - !Equals 
+      - !Ref LogSNS
+      - none
+  UseSpot: !Not 
+    - !Equals 
+      - !Ref SpotPrice
+      - 0
+  MultiZone: !Not [!Equals [!Ref NumberOfZones, 1]]
+  EssentialEnterprise: !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']]
+Mappings:
+  LicenseRegion2AMI:
+      us-east-1: 
+        Enterprise: ami-e95af193
+        BYOL: ami-9650fbec
+      us-east-2: 
+        Enterprise: ami-3a0f205f
+        BYOL: ami-070c2362
+      us-west-1:
+        Enterprise: ami-b9330cd9
+        BYOL: ami-d5330cb5
+      us-west-2:
+        Enterprise: ami-8e25eef6
+        BYOL: ami-863ff4fe
+      eu-central-1:
+        Enterprise: ami-fe23a691
+        BYOL: ami-152eab7a
+      eu-west-1:
+        Enterprise: ami-34c0604d
+        BYOL: ami-74c5650d
+      ap-south-1:
+        Enterprise: ami-96b0fdf9
+        BYOL: ami-31b6fb5e
+      ap-southeast-1:
+        Enterprise: ami-5ad79a39
+        BYOL: ami-b4d79ad7
+      ap-southeast-2:
+        Enterprise: ami-c825cbaa
+        BYOL: ami-b722ccd5
+      ap-northeast-1:
+        Enterprise: ami-f5e04f93
+        BYOL: ami-46f35c20
+      ap-northeast-2:
+        Enterprise: ami-1eb51170
+        BYOL: ami-d9b410b7
+      sa-east-1:
+        Enterprise: ami-3f235853
+        BYOL: ami-18235874
+      eu-west-2:
+        Enterprise: ami-b71b07d3
+        BYOL: ami-2d140849
+      ca-central-1:
+        Enterprise: ami-9f4ef6fb
+        BYOL: ami-3f44fc5b
+Resources:  
+  VpcStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      NotificationARNs: 
+        - !If
+          - UseLogSNS
+          - !Ref LogSNS
+          - !Ref 'AWS::NoValue'
+      Parameters:
+        MultiZone: !If [MultiZone, 'true', 'false']
+        AZ: !Join [',', !Ref AZ]
+        VpcCidr: !Ref VpcCidr
+        Subnet1Cidr: !Ref Subnet1Cidr
+        Subnet2Cidr: !Ref Subnet2Cidr
+        Subnet3Cidr: !Ref Subnet3Cidr
+      TemplateURL: 'https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-vpc.template' # TODO
+      TimeoutInMinutes: 5
+  ManagedEniStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: VpcStack
+    Properties:
+      NotificationARNs: 
+        - !If
+          - UseLogSNS
+          - !Ref LogSNS
+          - !Ref 'AWS::NoValue'
+      Parameters:
+        S3Bucket: mattsun-s3-bucket # TODO        
+        NodesPerZone: !Ref NodesPerZone
+        NumberOfZones: !Ref NumberOfZones
+        # Subnets: !Join [',', !Ref Subnets]
+        Subnets: !Join
+          - ','
+          - - !GetAtt [VpcStack, Outputs.Subnet1Id]
+            - !GetAtt [VpcStack, Outputs.Subnet2Id]
+            - !GetAtt [VpcStack, Outputs.Subnet3Id]
+      TemplateURL: https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-managedeni.template # TODO
+      TimeoutInMinutes: 5
+  NodeMgrLambdaStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: ManagedEniStack
+    Properties:
+      NotificationARNs: 
+        - !If
+          - UseLogSNS
+          - !Ref LogSNS
+          - !Ref 'AWS::NoValue'
+      Parameters:
+        S3Bucket: mattsun-s3-bucket # TODO
+      TemplateURL: https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-nodemanager.template # TODO
+      TimeoutInMinutes: 5
+  MarklogicVolume1:
+    Type: 'AWS::EC2::Volume'
+    Properties:
+      AvailabilityZone: !Select [0, !Ref AZ]
+      Size: !Ref VolumeSize
+      Tags:
+        - Key: Name
+          Value: MarkLogicData 1
+      VolumeType: !Ref VolumeType
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: c81032f7-b0ec-47ca-a236-e24d57b49ae3
+  MarklogicVolume2:
+    Condition: MultiZone
+    Type: 'AWS::EC2::Volume'
+    Properties:
+      AvailabilityZone: !Select [1, !Ref AZ]
+      Size: !Ref VolumeSize
+      Tags:
+        - Key: Name
+          Value: MarkLogicData 2
+      VolumeType: !Ref VolumeType
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: ddb55ae1-a00b-42ed-addd-5e03e4a2764b
+  MarklogicVolume3:
+    Condition: MultiZone
+    Type: 'AWS::EC2::Volume'
+    Properties:
+      AvailabilityZone: !Select [2, !Ref AZ]
+      Size: !Ref VolumeSize
+      Tags:
+        - Key: Name
+          Value: MarkLogicData 3
+      VolumeType: !Ref VolumeType
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 9094a65e-9d01-4c4c-9586-c33720e2cc9c
+  MarkLogicDDBTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: node
+          AttributeType: S
+      KeySchema:
+        - KeyType: HASH
+          AttributeName: node
+      ProvisionedThroughput:
+        WriteCapacityUnits: '10'
+        ReadCapacityUnits: '10'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: e7190602-c2de-47ab-81e7-1315f8c01e2d
+  MarkLogicServerGroup1:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    DependsOn: 
+      - VpcStack
+      - ManagedEniStack
+      - NodeMgrLambdaStack
+    Properties:
+      VPCZoneIdentifier: 
+        - !GetAtt [VpcStack, Outputs.Subnet1Id]
+      LaunchConfigurationName: !Ref LaunchConfig1
+      MinSize: '0'
+      MaxSize: !Ref NodesPerZone
+      DesiredCapacity: !Ref NodesPerZone
+      Cooldown: '300'
+      HealthCheckType: EC2
+      HealthCheckGracePeriod: '300'
+      LoadBalancerNames:
+        - !Ref ElasticLoadBalancer
+      NotificationConfiguration: !If 
+        - UseLogSNS
+        - TopicARN: !Ref LogSNS
+          NotificationTypes:
+            - 'autoscaling:EC2_INSTANCE_LAUNCH'
+            - 'autoscaling:EC2_INSTANCE_LAUNCH_ERROR'
+            - 'autoscaling:EC2_INSTANCE_TERMINATE'
+            - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
+        - !Ref 'AWS::NoValue'      
+      Tags:
+        - Key: stack_name
+          Value: !Ref 'AWS::StackName'
+          PropagateAtLaunch: 'true'
+        - Key: stack_id
+          Value: !Ref 'AWS::StackId'
+          PropagateAtLaunch: 'true'
+      LifecycleHookSpecificationList:
+        - LifecycleTransition: 'autoscaling:EC2_INSTANCE_LAUNCHING'
+          LifecycleHookName: NodeManager
+          HeartbeatTimeout: 4800
+          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn]
+          RoleARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrIamArn]
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 31621dd0-4b18-4dcd-b443-db9cef64ebb1
+  MarkLogicServerGroup2:
+    Condition: MultiZone
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    DependsOn: 
+      - VpcStack
+      - ManagedEniStack
+      - NodeMgrLambdaStack
+    Properties:
+      VPCZoneIdentifier: 
+        - !GetAtt [VpcStack, Outputs.Subnet2Id]
+      LaunchConfigurationName: !Ref LaunchConfig2
+      MinSize: '0'
+      MaxSize: !Ref NodesPerZone
+      DesiredCapacity: !Ref NodesPerZone
+      Cooldown: '300'
+      HealthCheckType: EC2
+      HealthCheckGracePeriod: '300'
+      LoadBalancerNames:
+        - !Ref ElasticLoadBalancer
+      NotificationConfiguration: !If 
+        - UseLogSNS
+        - TopicARN: !Ref LogSNS
+          NotificationTypes:
+            - 'autoscaling:EC2_INSTANCE_LAUNCH'
+            - 'autoscaling:EC2_INSTANCE_LAUNCH_ERROR'
+            - 'autoscaling:EC2_INSTANCE_TERMINATE'
+            - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
+        - !Ref 'AWS::NoValue'      
+      Tags:
+        - Key: stack_name
+          Value: !Ref 'AWS::StackName'
+          PropagateAtLaunch: 'true'
+        - Key: stack_id
+          Value: !Ref 'AWS::StackId'
+          PropagateAtLaunch: 'true'
+      LifecycleHookSpecificationList:
+        - LifecycleTransition: 'autoscaling:EC2_INSTANCE_LAUNCHING'
+          LifecycleHookName: NodeManager
+          HeartbeatTimeout: 4800
+          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn]
+          RoleARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrIamArn]
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 87d75478-787a-41d5-bb21-9de6fe4b662e
+  MarkLogicServerGroup3:
+    Condition: MultiZone
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    DependsOn: 
+      - VpcStack
+      - ManagedEniStack
+      - NodeMgrLambdaStack
+    Properties:
+      VPCZoneIdentifier: 
+        - !GetAtt [VpcStack, Outputs.Subnet3Id]
+      LaunchConfigurationName: !Ref LaunchConfig3
+      MinSize: '0'
+      MaxSize: !Ref NodesPerZone
+      DesiredCapacity: !Ref NodesPerZone
+      Cooldown: '300'
+      HealthCheckType: EC2
+      HealthCheckGracePeriod: '300'
+      LoadBalancerNames:
+        - !Ref ElasticLoadBalancer
+      NotificationConfiguration: !If 
+        - UseLogSNS
+        - TopicARN: !Ref LogSNS
+          NotificationTypes:
+            - 'autoscaling:EC2_INSTANCE_LAUNCH'
+            - 'autoscaling:EC2_INSTANCE_LAUNCH_ERROR'
+            - 'autoscaling:EC2_INSTANCE_TERMINATE'
+            - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
+        - !Ref 'AWS::NoValue'      
+      Tags:
+        - Key: stack_name
+          Value: !Ref 'AWS::StackName'
+          PropagateAtLaunch: 'true'
+        - Key: stack_id
+          Value: !Ref 'AWS::StackId'
+          PropagateAtLaunch: 'true'
+      LifecycleHookSpecificationList:
+        - LifecycleTransition: 'autoscaling:EC2_INSTANCE_LAUNCHING'
+          LifecycleHookName: NodeManager
+          HeartbeatTimeout: 4800
+          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn]
+          RoleARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrIamArn]
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: bbd8314a-6e59-4102-9ed5-232739dd0dfa
+  LaunchConfig1:
+    Type: 'AWS::AutoScaling::LaunchConfiguration'
+    Properties:
+      AssociatePublicIpAddress: true
+      BlockDeviceMappings:
+        - DeviceName: /dev/sdf
+          NoDevice: true
+          Ebs: {}
+      KeyName: !Ref KeyName
+      ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
+      UserData: !Base64 
+        'Fn::Join':
+          - ''
+          - - MARKLOGIC_CLUSTER_NAME=
+            - !Ref MarkLogicDDBTable
+            - |+
+
+            - MARKLOGIC_EBS_VOLUME=
+            - !Ref MarklogicVolume1
+            - ',:'
+            - !Ref VolumeSize
+            - '::'
+            - !Ref VolumeType
+            - |
+              ::,*
+            - |
+              MARKLOGIC_NODE_NAME=NodeA#
+            - MARKLOGIC_ADMIN_USERNAME=
+            - !Ref AdminUser
+            - |+
+
+            - MARKLOGIC_ADMIN_PASSWORD=
+            - !Ref AdminPass
+            - |+
+
+            - |
+              MARKLOGIC_CLUSTER_MASTER=1
+            - MARKLOGIC_LICENSEE=
+            - !Ref Licensee
+            - |+
+
+            - MARKLOGIC_LICENSE_KEY=
+            - !Ref LicenseKey
+            - |+
+
+            - MARKLOGIC_LOG_SNS=
+            - !Ref LogSNS
+            - |+
+
+      SecurityGroups:
+        - !Ref InstanceSecurityGroup
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref IAMRole
+      SpotPrice: !If 
+        - UseSpot
+        - !Ref SpotPrice
+        - !Ref 'AWS::NoValue'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 2efb8cfb-df53-401d-8ff2-34af0dd25993
+  LaunchConfig2:
+    Condition: MultiZone
+    Type: 'AWS::AutoScaling::LaunchConfiguration'
+    Properties:
+      AssociatePublicIpAddress: true
+      BlockDeviceMappings:
+        - DeviceName: /dev/sdf
+          NoDevice: true
+          Ebs: {}
+      KeyName: !Ref KeyName
+      ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
+      UserData: !Base64 
+        'Fn::Join':
+          - ''
+          - - MARKLOGIC_CLUSTER_NAME=
+            - !Ref MarkLogicDDBTable
+            - |+
+
+            - MARKLOGIC_EBS_VOLUME=
+            - !Ref MarklogicVolume2
+            - ',:'
+            - !Ref VolumeSize
+            - '::'
+            - !Ref VolumeType
+            - |
+              ::,*
+            - |
+              MARKLOGIC_NODE_NAME=NodeB#
+            - MARKLOGIC_ADMIN_USERNAME=
+            - !Ref AdminUser
+            - |+
+
+            - MARKLOGIC_ADMIN_PASSWORD=
+            - !Ref AdminPass
+            - |+
+
+            - |
+              MARKLOGIC_CLUSTER_MASTER=0
+            - MARKLOGIC_LICENSEE=
+            - !Ref Licensee
+            - |+
+
+            - MARKLOGIC_LICENSE_KEY=
+            - !Ref LicenseKey
+            - |+
+
+            - MARKLOGIC_LOG_SNS=
+            - !Ref LogSNS
+            - |+
+
+      SecurityGroups:
+        - !Ref InstanceSecurityGroup
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref IAMRole
+      SpotPrice: !If 
+        - UseSpot
+        - !Ref SpotPrice
+        - !Ref 'AWS::NoValue'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: c8296a50-a29e-4646-aa74-8f1b735a9a3f
+  LaunchConfig3:
+    Condition: MultiZone
+    Type: 'AWS::AutoScaling::LaunchConfiguration'
+    Properties:
+      AssociatePublicIpAddress: true
+      BlockDeviceMappings:
+        - DeviceName: /dev/sdf
+          NoDevice: true
+          Ebs: {}
+      KeyName: !Ref KeyName
+      ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
+      UserData: !Base64 
+        'Fn::Join':
+          - ''
+          - - MARKLOGIC_CLUSTER_NAME=
+            - !Ref MarkLogicDDBTable
+            - |+
+
+            - MARKLOGIC_EBS_VOLUME=
+            - !Ref MarklogicVolume3
+            - ',:'
+            - !Ref VolumeSize
+            - '::'
+            - !Ref VolumeType
+            - |
+              ::,*
+            - |
+              MARKLOGIC_NODE_NAME=NodeC#
+            - MARKLOGIC_ADMIN_USERNAME=
+            - !Ref AdminUser
+            - |+
+
+            - MARKLOGIC_ADMIN_PASSWORD=
+            - !Ref AdminPass
+            - |+
+
+            - |
+              MARKLOGIC_CLUSTER_MASTER=0
+            - MARKLOGIC_LICENSEE=
+            - !Ref Licensee
+            - |+
+
+            - MARKLOGIC_LICENSE_KEY=
+            - !Ref LicenseKey
+            - |+
+
+            - MARKLOGIC_LOG_SNS=
+            - !Ref LogSNS
+            - |+
+
+      SecurityGroups:
+        - !Ref InstanceSecurityGroup
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref IAMRole
+      SpotPrice: !If 
+        - UseSpot
+        - !Ref SpotPrice
+        - !Ref 'AWS::NoValue'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 7fa68c90-39bc-4874-ad20-8cd8c974ed52
+  ElasticLoadBalancer:
+    Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
+    DependsOn: VpcStack
+    Properties:
+      AppCookieStickinessPolicy:
+        - CookieName: SessionID
+          PolicyName: MLSession
+      Subnets:
+        - !GetAtt [VpcStack, Outputs.Subnet1Id]
+        - !If [MultiZone, !GetAtt [VpcStack, Outputs.Subnet2Id], !Ref 'AWS::NoValue']
+        - !If [MultiZone, !GetAtt [VpcStack, Outputs.Subnet3Id], !Ref 'AWS::NoValue']
+      ConnectionDrainingPolicy:
+        Enabled: 'true'
+        Timeout: '60'
+      CrossZone: 'true'
+      Listeners:
+        - LoadBalancerPort: '8000'
+          InstancePort: '8000'
+          Protocol: HTTP
+          PolicyNames:
+            - MLSession
+        - LoadBalancerPort: '8001'
+          InstancePort: '8001'
+          Protocol: HTTP
+          PolicyNames:
+            - MLSession
+        - LoadBalancerPort: '8002'
+          InstancePort: '8002'
+          Protocol: HTTP
+          PolicyNames:
+            - MLSession
+        - LoadBalancerPort: '8003'
+          InstancePort: '8003'
+          Protocol: HTTP
+          PolicyNames:
+            - MLSession
+        - LoadBalancerPort: '8004'
+          InstancePort: '8004'
+          Protocol: HTTP
+          PolicyNames:
+            - MLSession
+        - LoadBalancerPort: '8005'
+          InstancePort: '8005'
+          Protocol: HTTP
+          PolicyNames:
+            - MLSession
+        - LoadBalancerPort: '8006'
+          InstancePort: '8006'
+          Protocol: HTTP
+          PolicyNames:
+            - MLSession
+        - LoadBalancerPort: '8007'
+          InstancePort: '8007'
+          Protocol: HTTP
+          PolicyNames:
+            - MLSession
+        - LoadBalancerPort: '8008'
+          InstancePort: '8008'
+          Protocol: HTTP
+          PolicyNames:
+            - MLSession
+      HealthCheck:
+        Target: 'HTTP:7997/'
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '5'
+        Interval: '10'
+        Timeout: '5'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: e188e71e-5f01-4816-896e-9bd30b9a96c1
+  InstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    DependsOn: VpcStack
+    Properties:
+      GroupDescription: Enable SSH access and HTTP access on the inbound port
+      VpcId: !GetAtt [VpcStack, Outputs.VpcId]
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '7998'
+          ToPort: '7998'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '8000'
+          ToPort: '8010'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '7997'
+          ToPort: '7997'
+          CidrIp: 0.0.0.0/0
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 509ae63b-1eb1-4707-889f-418b9a65426c
+  InstanceSecurityGroupIngress:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    DependsOn:
+      - InstanceSecurityGroup
+    Properties:
+      IpProtocol: tcp
+      FromPort: '7999'
+      ToPort: '7999'
+      GroupId: !GetAtt InstanceSecurityGroup.GroupId
+      SourceSecurityGroupId: !GetAtt InstanceSecurityGroup.GroupId
+  InstanceRecoveryAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Trigger a recovery when instance status check fails for 1 consecutive minutes.
+      Namespace: AWS/EC2
+      MetricName: StatusCheckFailed_System
+      Statistic: Minimum
+      Period: '60'
+      EvaluationPeriods: '1'
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: '0'
+      AlarmActions: 
+        - !Join ['',["arn:aws:automate:", !Ref "AWS::Region", ":ec2:recover"]]
+        - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
+      OKActions:
+        - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
+      Dimensions:
+        - Name: ASG1
+          Value:
+            Ref: MarkLogicServerGroup1
+        - Name: ASG2
+          Value: !If [MultiZone, !Ref MarkLogicServerGroup2, !Ref 'AWS::NoValue']
+        - Name: ASG3
+          Value: !If [MultiZone, !Ref MarkLogicServerGroup3, !Ref 'AWS::NoValue']
+Outputs:
+  URL:
+    Description: The URL of the MarkLogic Cluster
+    Value: !Join 
+      - ''
+      - - 'http://'
+        - !GetAtt 
+          - ElasticLoadBalancer
+          - DNSName
+        - ':8001'

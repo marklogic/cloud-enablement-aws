@@ -1,1 +1,5 @@
 azure/mainTemplate.parameters.json
+aws/lambda/.idea
+aws/.idea/
+aws/lambda/managed_eni/*.zip
+aws/lambda/node_manager/*.zip
