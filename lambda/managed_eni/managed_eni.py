@@ -105,13 +105,14 @@ def on_create(event, context):
     stack_id = event["StackId"]
     nodes_per_zone = int(props["NodesPerZone"])
     zone_count = int(props["NumberOfZones"])
-    stack_name = props["StackName"]
+    parent_stack_name = props["ParentStackName"]
+    parent_stack_id = props["ParentStackId"]
     subnets = props["Subnets"]
     log.info("Event: %s" % str(event))
 
     # prepare ENI meta information
-    id_hash = hashlib.md5(stack_id.encode()).hexdigest()
-    eni_tag_prefix = stack_name + "-" + id_hash + "_"
+    id_hash = hashlib.md5(parent_stack_id.encode()).hexdigest()
+    eni_tag_prefix = parent_stack_name + "-" + id_hash + "_"
 
     # craete ENIs
     for i in range(0,zone_count):
@@ -143,12 +144,13 @@ def on_delete(event, context):
     stack_id = event["StackId"]
     nodes_per_zone = int(props["NodesPerZone"])
     zone_count = int(props["NumberOfZones"])
-    stack_name = props["StackName"]
+    parent_stack_name = props["ParentStackName"]
+    parent_stack_id = props["ParentStackId"]
     log.info("Event: %s" % str(event))
 
     # prepare ENI meta information
-    id_hash = hashlib.md5(stack_id.encode()).hexdigest()
-    eni_tag_prefix = stack_name + "-" + id_hash + "_"
+    id_hash = hashlib.md5(parent_stack_id.encode()).hexdigest()
+    eni_tag_prefix = parent_stack_name + "-" + id_hash + "_"
 
     # delete ENIs
     for i in range(0,zone_count):
