@@ -49,9 +49,9 @@ def on_launch(msg):
     stack_name = None
     stack_id = None
     for tag in tags:
-        if tag["Key"] == "stack_name":
+        if tag["Key"] == "marklogic:stack:name":
             stack_name = tag["Value"]
-        if tag["Key"] == "stack_id":
+        if tag["Key"] == "marklogic:stack:id":
             stack_id = tag["Value"]
     if stack_name and stack_id:
         log.info("Subnet: %s, Stack Name: %s, Stack Id: %s" % (str(subnet_id), stack_name, stack_id))
