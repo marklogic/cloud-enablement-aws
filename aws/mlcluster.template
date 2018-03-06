@@ -247,6 +247,8 @@ Resources:
         NodesPerZone: !Ref NodesPerZone
         NumberOfZones: !Ref NumberOfZones
         Subnets: !Join [',', !Ref Subnets]
+        ParentStackName: !Ref 'AWS::StackName'
+        ParentStackId: !Ref 'AWS::StackId'
       TemplateURL: https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-managedeni.template # TODO
       TimeoutInMinutes: 5
   NodeMgrLambdaStack:
@@ -342,10 +344,10 @@ Resources:
             - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
         - !Ref 'AWS::NoValue'
       Tags:
-        - Key: stack_name
+        - Key: marklogic:stack:name
           Value: !Ref 'AWS::StackName'
           PropagateAtLaunch: 'true'
-        - Key: stack_id
+        - Key: marklogic:stack:id
           Value: !Ref 'AWS::StackId'
           PropagateAtLaunch: 'true'
       LifecycleHookSpecificationList:
@@ -385,10 +387,10 @@ Resources:
             - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
         - !Ref 'AWS::NoValue'
       Tags:
-        - Key: stack_name
+        - Key: marklogic:stack:name
           Value: !Ref 'AWS::StackName'
           PropagateAtLaunch: 'true'
-        - Key: stack_id
+        - Key: marklogic:stack:id
           Value: !Ref 'AWS::StackId'
           PropagateAtLaunch: 'true'
       LifecycleHookSpecificationList:
@@ -428,10 +430,10 @@ Resources:
             - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
         - !Ref 'AWS::NoValue'
       Tags:
-        - Key: stack_name
+        - Key: marklogic:stack:name
           Value: !Ref 'AWS::StackName'
           PropagateAtLaunch: 'true'
-        - Key: stack_id
+        - Key: marklogic:stack:id
           Value: !Ref 'AWS::StackId'
           PropagateAtLaunch: 'true'
       LifecycleHookSpecificationList:

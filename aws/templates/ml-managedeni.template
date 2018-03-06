@@ -11,6 +11,8 @@ Metadata:
           - NodesPerZone
           - NumberOfZones
           - Subnets
+          - ParentStackName
+          - ParentStackId
     ParameterLabels:      
       S3Bucket:
         default: S3 Bucket Name
@@ -20,6 +22,10 @@ Metadata:
         default: Number of Zones
       Subnets:
         default: Subnets
+      ParentStackName:
+        default: Parent Stack Name
+      ParentStackId:
+        default: Parent Stack ID
 Parameters:
   S3Bucket:
     Description: The S3 bucket name that contains the lambda package. Must be in the same region.
@@ -36,6 +42,14 @@ Parameters:
   Subnets:
     Description: Subnets in the VPC. Accept either 1 subnet or 3 subnets.
     Type: 'List<AWS::EC2::Subnet::Id>'
+  ParentStackName:
+    Description: Name of the parent stack. Used to tag Managed ENI resources.
+    Type: String
+    Default: ''
+  ParentStackId:
+    Description: ID of the parent stack. Used to tag Managed ENI resources.
+    Type: String
+    Default: ''
 Resources:
   ManagedEniExecRole:
     Type: 'AWS::IAM::Role'
@@ -89,5 +103,6 @@ Resources:
       Region: !Ref 'AWS::Region'
       NodesPerZone: !Ref NodesPerZone
       NumberOfZones: !Ref NumberOfZones
-      StackName: !Ref 'AWS::StackName'
+      ParentStackName: !Ref ParentStackName
+      ParentStackId: !Ref ParentStackId
       Subnets: !Ref Subnets
