@@ -143,7 +143,7 @@ Parameters:
     MaxValue: '20'
     Default: '1'
   AZ:
-    Description: The Availability Zones for existing VPC subnets. Accept either 1 zone or 3 zones.
+    Description: The Availability Zones for VPC subnets. Accept either 1 zone or 3 zones. In the order of Subnet 1, Subnet 2 and Subnet 3 (if applicable).
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
   # network configuration
   VPC:
