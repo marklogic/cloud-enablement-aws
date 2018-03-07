@@ -149,7 +149,7 @@ Parameters:
     MaxValue: '20'
     Default: '1'
   AZ:
-    Description: The Availability Zones for subnets. Accept either 1 zone or 3 zones. In the order of Subnet 1, Subnet 2 and Subnet 3 (if applicable).
+    Description: The Availability Zones for VPC subnets. Accept either 1 zone or 3 zones. In the order of Subnet 1, Subnet 2 and Subnet 3 (if applicable).
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
   # network configuration
   VpcCidr:
@@ -291,12 +291,13 @@ Resources:
         S3Bucket: mattsun-s3-bucket # TODO        
         NodesPerZone: !Ref NodesPerZone
         NumberOfZones: !Ref NumberOfZones
-        # Subnets: !Join [',', !Ref Subnets]
         Subnets: !Join
           - ','
           - - !GetAtt [VpcStack, Outputs.Subnet1Id]
             - !GetAtt [VpcStack, Outputs.Subnet2Id]
             - !GetAtt [VpcStack, Outputs.Subnet3Id]
+        ParentStackName: !Ref 'AWS::StackName'
+        ParentStackId: !Ref 'AWS::StackId'
       TemplateURL: https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-managedeni.template # TODO
       TimeoutInMinutes: 5
   NodeMgrLambdaStack:
@@ -393,10 +394,10 @@ Resources:
             - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
         - !Ref 'AWS::NoValue'      
       Tags:
-        - Key: stack_name
+        - Key: marklogic:stack:name
           Value: !Ref 'AWS::StackName'
           PropagateAtLaunch: 'true'
-        - Key: stack_id
+        - Key: marklogic:stack:id
           Value: !Ref 'AWS::StackId'
           PropagateAtLaunch: 'true'
       LifecycleHookSpecificationList:
@@ -437,10 +438,10 @@ Resources:
             - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
         - !Ref 'AWS::NoValue'      
       Tags:
-        - Key: stack_name
+        - Key: marklogic:stack:name
           Value: !Ref 'AWS::StackName'
           PropagateAtLaunch: 'true'
-        - Key: stack_id
+        - Key: marklogic:stack:id
           Value: !Ref 'AWS::StackId'
           PropagateAtLaunch: 'true'
       LifecycleHookSpecificationList:
@@ -481,10 +482,10 @@ Resources:
             - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
         - !Ref 'AWS::NoValue'      
       Tags:
-        - Key: stack_name
+        - Key: marklogic:stack:name
           Value: !Ref 'AWS::StackName'
           PropagateAtLaunch: 'true'
-        - Key: stack_id
+        - Key: marklogic:stack:id
           Value: !Ref 'AWS::StackId'
           PropagateAtLaunch: 'true'
       LifecycleHookSpecificationList:
