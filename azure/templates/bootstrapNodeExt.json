@@ -27,7 +27,7 @@
           ]
         },
         "protectedSettings": {
-          "commandToExecute": "[concat("bootstrapNodeDns": "[concat(parameters('extSetting').dnsPrefix,'0',variables('dnsPostFix'))]"' ',reference(resourceId('Microsoft.Network/publicIpAddresses/',concat(parameters('extSetting').nodePublicIpName,'0')), '2017-11-01').dnsSettings.fqdn)]"
+          "commandToExecute": "[concat(parameters('extSetting').cmdPrefix,' ',reference(resourceId('Microsoft.Network/publicIpAddresses/',concat(parameters('extSetting').nodePublicIpName,'0')), '2017-11-01').dnsSettings.fqdn)]"
         }
       }
     }

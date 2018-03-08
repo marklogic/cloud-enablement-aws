@@ -200,7 +200,7 @@
             "count":  "[parameters('NumberOfNodes')]",
             "vnetName": "[variables('vnetSetting').name]",
             "subnetName": "[variables('vnetSetting').vnetSubnetName]",
-            "nodePublicIpName": "[variables('nodePublicIpSetting').name]",
+            "nodePublicIpName": "[variables('nodePublicIpSetting').namev4]",
             "nsgName": "[variables('nsgSetting').name]",
             "lbName": "[variables('lbSetting').name]",
             "lbBackendPoolIpv4Name": "[concat(variables('lbSetting').lbBackendPoolName,'-v4')]",

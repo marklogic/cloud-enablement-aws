@@ -7,10 +7,8 @@
     }
   },
   "variables": {
-        "dnsPostFix": "[concat('.',parameters('extSetting').vmLocation,'.cloudapp.azure.com')]",
-        "bootstrapNodeDns": "[concat(parameters('extSetting').dnsPrefix,'0',variables('dnsPostFix'))]",
-        "bootstrapNodeDns": "[reference(resourceId('Microsoft.Network/publicIpAddresses/',concat(parameters('extSetting').nodePublicIpName,'0')), '2017-11-01').dnsSettings.fqdn]"
-    },
+        "dnsPostFix": "[concat('.',parameters('extSetting').vmLocation,'.cloudapp.azure.com')]"
+  },
   "resources": [
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
@@ -35,7 +33,7 @@
           ]
         },
         "protectedSettings": {
-          "commandToExecute": "[concat(parameters('extSetting').cmdPrefix,' ',variables('bootstrapNodeDns'),' ',reference(resourceId('Microsoft.Network/publicIpAddresses/',concat(parameters('extSetting').nodePublicIpName,copyIndex(1))), '2017-11-01').dnsSettings.fqdn)]"
+          "commandToExecute": "[concat(parameters('extSetting').cmdPrefix,' ',reference(resourceId('Microsoft.Network/publicIpAddresses/',concat(parameters('extSetting').nodePublicIpName,'0')), '2017-11-01').dnsSettings.fqdn,' ',reference(resourceId('Microsoft.Network/publicIpAddresses/',concat(parameters('extSetting').nodePublicIpName,copyIndex(1))), '2017-11-01').dnsSettings.fqdn)]"
         }
       }
     }
