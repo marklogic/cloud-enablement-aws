@@ -129,6 +129,57 @@ Resources:
     Properties: 
       RouteTableId: !Ref VpcRouteTable
       SubnetId: !Ref MarkLogicSubnet3
+  DDBEndPoint:
+    Type: 'AWS::EC2::VPCEndpoint'
+    DependsOn:
+      - MarkLogicVPC
+      - VpcRouteTable
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: '*'
+            Resource: '*'
+      RouteTableIds:
+        - !Ref VpcRouteTable
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.dynamodb"
+      VpcId: !Ref MarkLogicVPC
+  S3EndPoint:
+    Type: 'AWS::EC2::VPCEndpoint'
+    DependsOn:
+      - MarkLogicVPC
+      - VpcRouteTable
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: '*'
+            Resource: '*'
+      RouteTableIds:
+        - !Ref VpcRouteTable
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
+      VpcId: !Ref MarkLogicVPC
+  # EC2EndPoint:
+  #   Type: 'AWS::EC2::VPCEndpoint'
+  #   DependsOn:
+  #     - MarkLogicVPC
+  #     - VpcRouteTable
+  #   Properties:
+  #     PolicyDocument:
+  #       Version: 2012-10-17
+  #       Statement:
+  #         - Effect: Allow
+  #           Principal: '*'
+  #           Action: '*'
+  #           Resource: '*'
+  #     RouteTableIds:
+  #       - !Ref VpcRouteTable
+  #     ServiceName: !Sub "com.amazonaws.${AWS::Region}.ec2"
+  #     VpcId: !Ref MarkLogicVPC
   VpcRoute:
     Type: AWS::EC2::Route
     DependsOn: 
