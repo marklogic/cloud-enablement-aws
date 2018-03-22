@@ -13,7 +13,7 @@ handler = cfn_resource.Resource()
 ec2_client = boto3.client('ec2')
 ec2_resource = boto3.resource('ec2')
 
-def create_eni(subnet_id, tag):
+def create_eni(subnet_id, security_group_id, tag):
     """
     Create ENI and populate the description with the tag content.
     This is a temporarily work around because of AWS SDK bug.
@@ -26,7 +26,7 @@ def create_eni(subnet_id, tag):
     eni_id = None
     try:
         eni = ec2_client.create_network_interface(
-            Groups=[],
+            Groups=[security_group_id],
             SubnetId=subnet_id,
             Description=tag
         )
@@ -108,6 +108,7 @@ def on_create(event, context):
     parent_stack_name = props["ParentStackName"]
     parent_stack_id = props["ParentStackId"]
     subnets = props["Subnets"]
+    security_group_id = props["SecurityGroup"]
     log.info("Event: %s" % str(event))
 
     # prepare ENI meta information
@@ -119,7 +120,7 @@ def on_create(event, context):
         for j in range(0,nodes_per_zone):
             eni_idx = i * nodes_per_zone + j
             tag = eni_tag_prefix + str(eni_idx)
-            eni_id = create_eni(subnets[i], tag)
+            eni_id = create_eni(subnets[i], security_group_id, tag)
             # TODO AWS SDK bug #1450
             # eni_assgin_tag(eni_id=eni_id, tag=tag)
 
