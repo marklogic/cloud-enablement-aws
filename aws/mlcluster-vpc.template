@@ -280,7 +280,9 @@ Resources:
       TimeoutInMinutes: 5
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
-    DependsOn: VpcStack
+    DependsOn:
+      - VpcStack
+      - InstanceSecurityGroup
     Properties:
       NotificationARNs: 
         - !If
@@ -298,6 +300,7 @@ Resources:
             - !GetAtt [VpcStack, Outputs.Subnet3Id]
         ParentStackName: !Ref 'AWS::StackName'
         ParentStackId: !Ref 'AWS::StackId'
+        SecurityGroup: !Ref InstanceSecurityGroup
       TemplateURL: https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-managedeni.template # TODO
       TimeoutInMinutes: 5
   NodeMgrLambdaStack:

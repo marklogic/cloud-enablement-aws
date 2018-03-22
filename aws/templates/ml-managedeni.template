@@ -50,6 +50,10 @@ Parameters:
     Description: ID of the parent stack. Used to tag Managed ENI resources.
     Type: String
     Default: ''
+  SecurityGroup:
+    Description: ID of the security group.
+    Type: String
+    Default: ''
 Resources:
   ManagedEniExecRole:
     Type: 'AWS::IAM::Role'
@@ -106,3 +110,4 @@ Resources:
       ParentStackName: !Ref ParentStackName
       ParentStackId: !Ref ParentStackId
       Subnets: !Ref Subnets
+      SecurityGroup: !Ref SecurityGroup
