@@ -3,6 +3,7 @@ import botocore
 import logging
 import hashlib
 import json
+import time
 from botocore.exceptions import ClientError
 
 log = logging.getLogger()
@@ -11,6 +12,43 @@ log.setLevel(logging.INFO)
 # global variables
 ec2_client = boto3.client('ec2')
 asg_client = boto3.client('autoscaling')
+
+def get_network_interface_by_id(eni_id):
+    """
+    Use describe network interfaces function instead of ec2_resource.NetworkInterface
+    AWS SDK bug #1450
+    :param eni_id:
+    :return:
+    """
+    response = ec2_client.describe_network_interfaces(
+        Filters=[{
+            "Name": "network-interface-id",
+            "Values": [eni_id]
+        }]
+    )
+    if len(response["NetworkInterfaces"]) == 1:
+        return response["NetworkInterfaces"][0]
+    else:
+        log.error("Get network interface by id %s failed: %s" % (eni_id, str(response)))
+
+def wait_for_completion_attachment(eni_id):
+    max_rety = 50
+    retries = 0
+    while True and retries < max_rety:
+        eni_info = get_network_interface_by_id(eni_id)
+        if eni_info["Attachment"]["Status"] == "attached":
+            break
+        elif eni_info["Attachment"]["Status"] == "attaching":
+            time.sleep(1)
+            retries += 1
+        else:
+            log.warning(
+                "Network interface in unexpected status: %s" % eni_id
+            )
+    else:
+        log.warning(
+            "Waiting for network interface %s attachment failed" % eni_id
+        )
 
 def handler(event, context):
     log.info("Event: " + str(event))
@@ -58,7 +96,7 @@ def on_launch(msg):
         id_hash = hashlib.md5(stack_id.encode()).hexdigest()
         eni_tag_prefix = stack_name + "-" + id_hash + "_"
 
-        for i in range(0,300):
+        for i in range(0,200):
             tag = eni_tag_prefix + str(i)
             log.info("Query unattached ENI with tag %s" % tag)
             # query
@@ -95,7 +133,8 @@ def on_launch(msg):
                         InstanceId=instance_id,
                         DeviceIndex=1
                     )
-                    log.info("Successfully attached ENI %s to instance %s" % (eni_id, instance_id))
+                    log.info("Attaching ENI %s to instance %s" % (eni_id, instance_id))
+                    wait_for_completion_attachment(eni_id)
                 except botocore.exceptions.ClientError as e:
                     log.error("Error attaching network interface: {}".format(e.response['Error']['Code']))
                 break
