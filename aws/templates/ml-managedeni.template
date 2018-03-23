@@ -13,7 +13,7 @@ Metadata:
           - Subnets
           - ParentStackName
           - ParentStackId
-    ParameterLabels:      
+    ParameterLabels:
       S3Bucket:
         default: S3 Bucket Name
       NodesPerZone:
@@ -95,7 +95,7 @@ Resources:
       Code:
         S3Bucket: !Ref S3Bucket
         S3Key: managed_eni.zip
-      Handler: managed_eni.handler
+      Handler: managedeni.handler
       Role: !GetAtt [ManagedEniExecRole, Arn]
       Runtime: python3.6
       Timeout: '30'

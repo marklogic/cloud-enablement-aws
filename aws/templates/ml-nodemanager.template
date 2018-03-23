@@ -67,7 +67,7 @@ Resources:
       Code:
         S3Bucket: !Ref S3Bucket
         S3Key: node_manager.zip
-      Handler: node_manager.handler
+      Handler: nodemanager.handler
       Role: !GetAtt [NodeManagerExecRole, Arn]
       Runtime: python3.6
       Timeout: '30'
