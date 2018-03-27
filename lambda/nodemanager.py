@@ -16,19 +16,20 @@ log.setLevel(logging.INFO)
 ec2_client = boto3.client('ec2')
 asg_client = boto3.client('autoscaling')
 
-def wait_for_completion_attachment(eni_id):
-    max_rety = 50
+def eni_wait_for_attachment(eni_id):
+    max_rety = 10
     retries = 0
     while True and retries < max_rety:
         eni_info = get_network_interface_by_id(eni_id)
-        if eni_info["Attachment"]["Status"] == "attached":
+        status = eni_info["Attachment"]["Status"]
+        if status == "attached":
             break
-        elif eni_info["Attachment"]["Status"] == "attaching":
-            time.sleep(1)
+        elif status == "attaching":
+            time.sleep(5)
             retries += 1
         else:
             log.warning(
-                "Network interface in unexpected status: %s" % eni_id
+                "Network interface %s in unexpected status: %s" % (eni_id, status)
             )
     else:
         log.warning(
@@ -119,7 +120,7 @@ def on_launch(msg):
                         DeviceIndex=1
                     )
                     log.info("Attaching ENI %s to instance %s" % (eni_id, instance_id))
-                    wait_for_completion_attachment(eni_id)
+                    eni_wait_for_attachment(eni_id)
                 except botocore.exceptions.ClientError as e:
                     log.error("Error attaching network interface: {}".format(e.response['Error']['Code']))
                 break
