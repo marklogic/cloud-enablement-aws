@@ -116,7 +116,7 @@
                 "artifactsBaseUrl": ""
             },
             "minLength": 1,
-            "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/9.0-3/azure"
+            "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/9.0-3.1/azure"
         },
         "location": {
             "type": "string",
@@ -183,7 +183,8 @@
             "apiVersion": "[variables('apiVersions').networkApiVersion]"
         },
         "nodePublicIpSetting": {
-            "name": "[concat(variables('clusterPrefix'),'-ip')]",
+            "namev4": "[concat(variables('clusterPrefix'),'-ipv4-node')]",
+            "namev6": "[concat(variables('clusterPrefix'),'-ipv6-node')]",
             "location": "[variables('clusterLocation')]",
             "domainNameLabel": "[concat(variables('clusterPrefix'),'-',uniqueString(concat(variables('clusterPrefix'),resourceGroup().id)),'-')]",
             "IPv4AllocationMethod": "Static",
@@ -199,7 +200,7 @@
             "count":  "[parameters('NumberOfNodes')]",
             "vnetName": "[variables('vnetSetting').name]",
             "subnetName": "[variables('vnetSetting').vnetSubnetName]",
-            "nodePublicIpName": "[variables('nodePublicIpSetting').name]",
+            "nodePublicIpName": "[variables('nodePublicIpSetting').namev4]",
             "nsgName": "[variables('nsgSetting').name]",
             "lbName": "[variables('lbSetting').name]",
             "lbBackendPoolIpv4Name": "[concat(variables('lbSetting').lbBackendPoolName,'-v4')]",
@@ -257,7 +258,7 @@
             "location": "[variables('clusterLocation')]",
             "bootstrapNodeScriptUrl": "[variables('scriptUrls').bootstrapNodeScriptUrl]",
             "initScriptUrl": "[variables('scriptUrls').initScriptUrl]",
-            "dnsPrefix": "[variables('nodePublicIpSetting').domainNameLabel]",
+            "nodePublicIpName": "[variables('nodePublicIpSetting').namev4]",
             "cmdPrefix": "[concat('sudo sh config-bootstrap-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 public ',parameters('LicenseKey'),' ',parameters('Licensee'))]"
         },
         "additionalNodeExtSetting": {
@@ -268,7 +269,7 @@
             "additionalNodeScriptUrl": "[variables('scriptUrls').additionalNodeScriptUrl]",
             "initScriptUrl": "[variables('scriptUrls').initScriptUrl]",
             "vmLocation": "[variables('vmSetting').location]",
-            "dnsPrefix": "[variables('nodePublicIpSetting').domainNameLabel]",
+            "nodePublicIpName": "[variables('nodePublicIpSetting').namev4]",
             "haExtXqyUrl": "[variables('scriptUrls').haExtXqyUrl]",
             "highAvailabilityScriptUrl": "[variables('scriptUrls').highAvailabilityScriptUrl]",
             "cmdPrefix": "[concat('sudo sh config-additional-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 ',string(variables('enableHA')),' ',parameters('LicenseKey'),' ',parameters('Licensee'))]"

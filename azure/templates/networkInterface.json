@@ -34,7 +34,7 @@
                             "primary": true,
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIpAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIpAddresses',concat(parameters('networkInterfaceSetting').nodePublicIpName,'v4-node',copyIndex()))]"
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses',concat(parameters('networkInterfaceSetting').nodePublicIpName,copyIndex()))]"
                             },
                             "loadBalancerBackendAddressPools": [
                               {
