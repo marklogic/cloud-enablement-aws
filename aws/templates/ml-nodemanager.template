@@ -8,7 +8,7 @@ Metadata:
           default: 'Node Manager Lambda'
         Parameters:
           - S3Bucket
-    ParameterLabels:      
+    ParameterLabels:
       S3Bucket:
         default: S3 Bucket Name
 Parameters:
@@ -74,7 +74,7 @@ Resources:
   NodeManagerSnsTopic:
     Type: "AWS::SNS::Topic"
     DependsOn: NodeManagerFunction
-    Properties:       
+    Properties:
       # TopicName: !Join ['-', ['NodeManagerSnsTopic', !Ref 'AWS::StackId']]
       Subscription:
         - Endpoint: !GetAtt [NodeManagerFunction, Arn]
@@ -84,7 +84,7 @@ Resources:
     DependsOn:
       - NodeManagerFunction
       - NodeManagerSnsTopic
-    Properties: 
+    Properties:
       Action: "lambda:InvokeFunction"
       FunctionName: !GetAtt [NodeManagerFunction, Arn]
       Principal: "sns.amazonaws.com"
