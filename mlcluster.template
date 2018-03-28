@@ -5,9 +5,9 @@ Metadata:
   binary: MarkLogic-9.0-5.x86_64.rpm # TODO
   AWS::CloudFormation::Interface:
     ParameterGroups:
-      - Label: 
+      - Label:
           default: "Resource Configuration"
-        Parameters: 
+        Parameters:
           - IAMRole
           - LogSNS
           - VolumeSize
@@ -18,21 +18,21 @@ Metadata:
           - NumberOfZones
           - NodesPerZone
           - AZ
-      - Label: 
+      - Label:
           default: "Network Configuration"
-        Parameters: 
+        Parameters:
           - VPC
           - Subnets
-      - Label: 
+      - Label:
           default: "MarkLogic Configuration"
-        Parameters: 
+        Parameters:
           - AdminUser
           - AdminPass
           - Licensee
           - LicenseKey
           # - HighAvailability
     ParameterLabels:
-      AdminUser: 
+      AdminUser:
         default: Admin User
       AdminPass:
         default: Admin password
@@ -177,12 +177,12 @@ Parameters:
   #     - enable
   #     - disable
 Conditions:
-  UseLogSNS: !Not 
-    - !Equals 
+  UseLogSNS: !Not
+    - !Equals
       - !Ref LogSNS
       - none
-  UseSpot: !Not 
-    - !Equals 
+  UseSpot: !Not
+    - !Equals
       - !Ref SpotPrice
       - 0
   MultiZone:
@@ -190,11 +190,16 @@ Conditions:
   EssentialEnterprise:
     !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']]
 Mappings:
+  Variable:
+    LambdaPackageBucket:
+      base: 'cloud-enablement-devevlop-' # update when release
+    TemplateUrl:
+      base: 'https://s3-us-west-2.amazonaws.com/cloud-enablement-devevlop-us-west-2/aws/templates/' # update when release
   LicenseRegion2AMI:
-      us-east-1: 
+      us-east-1:
         Enterprise: "ami-e95af193"
         BYOL: "ami-9650fbec"
-      us-east-2: 
+      us-east-2:
         Enterprise: "ami-3a0f205f"
         BYOL: "ami-070c2362"
       us-west-1:
@@ -239,33 +244,33 @@ Resources:
     DependsOn:
       - InstanceSecurityGroup
     Properties:
-      NotificationARNs: 
+      NotificationARNs:
         - !If
           - UseLogSNS
           - !Ref LogSNS
           - !Ref 'AWS::NoValue'
       Parameters:
-        S3Bucket: mattsun-s3-bucket # TODO
+        S3Bucket: !Join [ "", [!FindInMap [Variable,"LambdaPackageBucket","base"], !Ref 'AWS::Region']]
         NodesPerZone: !Ref NodesPerZone
         NumberOfZones: !Ref NumberOfZones
         Subnets: !Join [',', !Ref Subnets]
         ParentStackName: !Ref 'AWS::StackName'
         ParentStackId: !Ref 'AWS::StackId'
         SecurityGroup: !Ref InstanceSecurityGroup
-      TemplateURL: https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-managedeni.template # TODO
+      TemplateURL: !Join ['', [!FindInMap [Variable,"TemplateUrl","base"],'ml-managedeni.template']]
       TimeoutInMinutes: 5
   NodeMgrLambdaStack:
     Type: AWS::CloudFormation::Stack
     DependsOn: ManagedEniStack
     Properties:
-      NotificationARNs: 
+      NotificationARNs:
         - !If
           - UseLogSNS
           - !Ref LogSNS
           - !Ref 'AWS::NoValue'
       Parameters:
-        S3Bucket: mattsun-s3-bucket # TODO
-      TemplateURL: https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-nodemanager.template # TODO
+        S3Bucket: !Join [ "", [!FindInMap [Variable,"LambdaPackageBucket","base"], !Ref 'AWS::Region']]
+      TemplateURL: !Join ['', [!FindInMap [Variable,"TemplateUrl","base"],'ml-nodemanager.template']]
       TimeoutInMinutes: 5
   MarklogicVolume1:
     Type: 'AWS::EC2::Volume'
@@ -337,7 +342,7 @@ Resources:
       HealthCheckGracePeriod: '300'
       LoadBalancerNames:
         - !Ref ElasticLoadBalancer
-      NotificationConfiguration: !If 
+      NotificationConfiguration: !If
         - UseLogSNS
         - TopicARN: !Ref LogSNS
           NotificationTypes:
@@ -380,7 +385,7 @@ Resources:
       HealthCheckGracePeriod: '300'
       LoadBalancerNames:
         - !Ref ElasticLoadBalancer
-      NotificationConfiguration: !If 
+      NotificationConfiguration: !If
         - UseLogSNS
         - TopicARN: !Ref LogSNS
           NotificationTypes:
@@ -423,7 +428,7 @@ Resources:
       HealthCheckGracePeriod: '300'
       LoadBalancerNames:
         - !Ref ElasticLoadBalancer
-      NotificationConfiguration: !If 
+      NotificationConfiguration: !If
         - UseLogSNS
         - TopicARN: !Ref LogSNS
           NotificationTypes:
@@ -458,7 +463,7 @@ Resources:
           Ebs: {}
       KeyName: !Ref KeyName
       ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Join':
           - ''
           - - MARKLOGIC_CLUSTER_NAME=
@@ -501,7 +506,7 @@ Resources:
         - !Ref InstanceSecurityGroup
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref IAMRole
-      SpotPrice: !If 
+      SpotPrice: !If
         - UseSpot
         - !Ref SpotPrice
         - !Ref 'AWS::NoValue'
@@ -519,7 +524,7 @@ Resources:
           Ebs: {}
       KeyName: !Ref KeyName
       ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Join':
           - ''
           - - MARKLOGIC_CLUSTER_NAME=
@@ -562,7 +567,7 @@ Resources:
         - !Ref InstanceSecurityGroup
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref IAMRole
-      SpotPrice: !If 
+      SpotPrice: !If
         - UseSpot
         - !Ref SpotPrice
         - !Ref 'AWS::NoValue'
@@ -580,7 +585,7 @@ Resources:
           Ebs: {}
       KeyName: !Ref KeyName
       ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Join':
           - ''
           - - MARKLOGIC_CLUSTER_NAME=
@@ -623,7 +628,7 @@ Resources:
         - !Ref InstanceSecurityGroup
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref IAMRole
-      SpotPrice: !If 
+      SpotPrice: !If
         - UseSpot
         - !Ref SpotPrice
         - !Ref 'AWS::NoValue'
@@ -745,7 +750,7 @@ Resources:
       EvaluationPeriods: '1'
       ComparisonOperator: GreaterThanThreshold
       Threshold: '0'
-      AlarmActions: 
+      AlarmActions:
         - !Join ['',["arn:aws:automate:", !Ref "AWS::Region", ":ec2:recover"]]
         - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
       OKActions:
@@ -761,10 +766,10 @@ Resources:
 Outputs:
   URL:
     Description: The URL of the MarkLogic Cluster
-    Value: !Join 
+    Value: !Join
       - ''
       - - 'http://'
-        - !GetAtt 
+        - !GetAtt
           - ElasticLoadBalancer
           - DNSName
         - ':8001'
