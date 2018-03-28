@@ -276,6 +276,7 @@ Resources:
         Subnet1Cidr: !Ref Subnet1Cidr
         Subnet2Cidr: !Ref Subnet2Cidr
         Subnet3Cidr: !Ref Subnet3Cidr
+        S3Bucket: mattsun-s3-bucket # TODO
       TemplateURL: 'https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-vpc.template' # TODO
       TimeoutInMinutes: 5
   ManagedEniStack:
@@ -290,7 +291,7 @@ Resources:
           - !Ref LogSNS
           - !Ref 'AWS::NoValue'
       Parameters:
-        S3Bucket: mattsun-s3-bucket # TODO        
+        S3Bucket: mattsun-s3-bucket # TODO
         NodesPerZone: !Ref NodesPerZone
         NumberOfZones: !Ref NumberOfZones
         Subnets: !Join
