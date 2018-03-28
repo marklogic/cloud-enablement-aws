@@ -15,6 +15,7 @@ Metadata:
           - Subnet3Cidr
           # - SecurityGroup
           - S3Bucket
+          - TemplateURLBase
     ParameterLabels:
       MultiZone:
         default: Multiple Zone
@@ -32,6 +33,8 @@ Metadata:
       #   default: 'Security Group'
       S3Bucket:
         default: 'S3 Bucket Name'
+      TemplateURLBase:
+        default: 'Template URL Base'
 Parameters:
   MultiZone:
     Description: Whether there are the cluster will be deployed to multiple Availability Zones.
@@ -78,6 +81,9 @@ Parameters:
   #   Type: "AWS::EC2::SecurityGroup::Id"
   S3Bucket:
     Description: The S3 bucket name that contains the lambda package. Must be in the same region.
+    Type: String
+  TemplateURLBase:
+    Description: The base URL for sub-templates.
     Type: String
 Conditions:
   DeployMultiZone: !Equals [!Ref MultiZone, 'true']
@@ -175,25 +181,25 @@ Resources:
         - !Ref VpcRouteTable
       ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
       VpcId: !Ref MarkLogicVPC
-  # Ec2EndPointStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   DependsOn:
-  #     - MarkLogicVPC
-  #     - MarkLogicSubnet1
-  #     - MarkLogicSubnet2
-  #     - MarkLogicSubnet3
-  #   Properties:
-  #     Parameters:
-  #       S3Bucket: !Ref S3Bucket
-  #       Vpc: !Ref MarkLogicVPC
-  #       # SecurityGroup: !Ref SecurityGroup
-  #       Subnets: !Join
-  #         - ','
-  #         - - !Ref MarkLogicSubnet1
-  #           - !Ref MarkLogicSubnet2
-  #           - !Ref MarkLogicSubnet3
-  #     TemplateURL: 'https://s3-us-west-2.amazonaws.com/mattsun-s3-bucket/ml-endpoint.template' # TODO
-  #     TimeoutInMinutes: 5
+  Ec2EndPointStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - MarkLogicVPC
+      - MarkLogicSubnet1
+      - MarkLogicSubnet2
+      - MarkLogicSubnet3
+    Properties:
+      Parameters:
+        S3Bucket: !Ref S3Bucket
+        Vpc: !Ref MarkLogicVPC
+        # SecurityGroup: !Ref SecurityGroup
+        Subnets: !Join
+          - ','
+          - - !Ref MarkLogicSubnet1
+            - !Ref MarkLogicSubnet2
+            - !Ref MarkLogicSubnet3
+      TemplateURL: !Join ["", [!Ref TemplateURLBase,'ml-endpoint.template']]
+      TimeoutInMinutes: 5
   VpcRoute:
     Type: AWS::EC2::Route
     DependsOn:

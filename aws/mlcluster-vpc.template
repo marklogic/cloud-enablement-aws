@@ -272,6 +272,7 @@ Resources:
         Subnet2Cidr: !Ref Subnet2Cidr
         Subnet3Cidr: !Ref Subnet3Cidr
         S3Bucket: !Join [ "", [!FindInMap [Variable,"LambdaPackageBucket","base"], !Ref 'AWS::Region']]
+        TemplateURLBase: !FindInMap [Variable,"TemplateUrl","base"]
       TemplateURL: !Join ["", [!FindInMap [Variable,"TemplateUrl","base"],'ml-vpc.template']]
       TimeoutInMinutes: 5
   ManagedEniStack:
