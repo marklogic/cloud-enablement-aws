@@ -9,17 +9,17 @@ Metadata:
         Parameters:
           - S3Bucket
           - Vpc
-          - SecurityGroup
+          # - SecurityGroup
           - Subnets
     ParameterLabels:
       S3Bucket:
-        default: S3 Bucket Name
+        default: 'S3 Bucket Name'
       Vpc:
-        default: VPC
-      SecurityGroup:
-        default: Security Group
+        default: 'VPC'
+      # SecurityGroup:
+      #   default: 'Security Group'
       Subnets:
-        default: Subnets
+        default: 'Subnets'
 Parameters:
   S3Bucket:
     Description: The S3 bucket name that contains the lambda package. Must be in the same region.
@@ -27,9 +27,9 @@ Parameters:
   Vpc:
     Description: ID for the VPC for which endpoint will be created
     Type: 'AWS::EC2::VPC::Id'
-  SecurityGroup:
-    Description: ID for the Security Group that the endpoint belongs to
-    Type: "AWS::EC2::SecurityGroup::Id"
+  # SecurityGroup:
+  #   Description: ID for the Security Group that the endpoint belongs to. Must be in the same VPC with the subnets.
+  #   Type: "AWS::EC2::SecurityGroup::Id"
   Subnets:
     Description: IDs of Subnets associated with endpoint. Accept either 1 subnet or 3 subnets.
     Type: 'List<AWS::EC2::Subnet::Id>'
@@ -80,4 +80,4 @@ Resources:
       Vpc: !Ref Vpc
       ServiceName: "com.amazonaws.us-west-2.ec2"
       Subnets: !Ref Subnets
-      SecurityGroup: !Ref SecurityGroup
+      # SecurityGroup: !Ref SecurityGroup
