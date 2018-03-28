@@ -13,7 +13,7 @@ Metadata:
           - Subnet1Cidr
           - Subnet2Cidr
           - Subnet3Cidr
-    ParameterLabels:      
+    ParameterLabels:
       MultiZone:
         default: Multiple Zone
       AZ:
@@ -51,7 +51,7 @@ Parameters:
       ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     Default: 10.0.0.0/23
     ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
-  Subnet2Cidr:    
+  Subnet2Cidr:
     Description: CIDR Block for the subnet 2. Only applicable to multi-zone cluster.
       Only applicable to multi-zone cluster.
     Type: String
@@ -103,14 +103,14 @@ Resources:
       AvailabilityZone: !Select [2, !Ref AZ]
   VpcRouteTable:
     Type: "AWS::EC2::RouteTable"
-    Properties: 
+    Properties:
       VpcId: !Ref MarkLogicVPC
   Subnet1RouteTableAssoc:
     DependsOn:
       - VpcRouteTable
       - MarkLogicSubnet1
     Type: "AWS::EC2::SubnetRouteTableAssociation"
-    Properties: 
+    Properties:
       RouteTableId: !Ref VpcRouteTable
       SubnetId: !Ref MarkLogicSubnet1
   Subnet2RouteTableAssoc:
@@ -118,7 +118,7 @@ Resources:
       - VpcRouteTable
       - MarkLogicSubnet2
     Type: "AWS::EC2::SubnetRouteTableAssociation"
-    Properties: 
+    Properties:
       RouteTableId: !Ref VpcRouteTable
       SubnetId: !Ref MarkLogicSubnet2
   Subnet3RouteTableAssoc:
@@ -126,7 +126,7 @@ Resources:
       - VpcRouteTable
       - MarkLogicSubnet3
     Type: "AWS::EC2::SubnetRouteTableAssociation"
-    Properties: 
+    Properties:
       RouteTableId: !Ref VpcRouteTable
       SubnetId: !Ref MarkLogicSubnet3
   DDBEndPoint:
@@ -182,7 +182,7 @@ Resources:
   #     VpcId: !Ref MarkLogicVPC
   VpcRoute:
     Type: AWS::EC2::Route
-    DependsOn: 
+    DependsOn:
       - VpcGateway
       - VpcRouteTable
     Properties:
@@ -193,7 +193,7 @@ Resources:
     Type: AWS::EC2::InternetGateway
   VpcGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
-    Properties: 
+    Properties:
       InternetGatewayId: !Ref VpcGateway
       VpcId: !Ref MarkLogicVPC
 Outputs:

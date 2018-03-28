@@ -5,9 +5,9 @@ Metadata:
   binary: MarkLogic-9.0-5.x86_64.rpm # TODO
   AWS::CloudFormation::Interface:
     ParameterGroups:
-      - Label: 
+      - Label:
           default: "Resource Configuration"
-        Parameters: 
+        Parameters:
           - IAMRole
           - LogSNS
           - VolumeSize
@@ -18,22 +18,22 @@ Metadata:
           - NumberOfZones
           - NodesPerZone
           - AZ
-      - Label: 
+      - Label:
           default: "Network Configuration"
-        Parameters: 
+        Parameters:
           - VpcCidr
           - Subnet1Cidr
           - Subnet2Cidr
           - Subnet3Cidr
-      - Label: 
+      - Label:
           default: "MarkLogic Configuration"
-        Parameters: 
+        Parameters:
           - AdminUser
           - AdminPass
           - Licensee
           - LicenseKey
     ParameterLabels:
-      AdminUser: 
+      AdminUser:
         default: Admin User
       AdminPass:
         default: Admin password
@@ -163,7 +163,7 @@ Parameters:
       ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     Default: 10.0.0.0/23
     ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
-  Subnet2Cidr:    
+  Subnet2Cidr:
     Description: CIDR Block for the subnet 2. Only applicable to multi-zone cluster.
       Only applicable to multi-zone cluster.
     Type: String
@@ -196,12 +196,12 @@ Parameters:
     Type: String
     Default: none
 Conditions:
-  UseLogSNS: !Not 
-    - !Equals 
+  UseLogSNS: !Not
+    - !Equals
       - !Ref LogSNS
       - none
-  UseSpot: !Not 
-    - !Equals 
+  UseSpot: !Not
+    - !Equals
       - !Ref SpotPrice
       - 0
   MultiZone: !Not [!Equals [!Ref NumberOfZones, 1]]
@@ -255,11 +255,11 @@ Mappings:
     ca-central-1:
       Enterprise: ami-9f4ef6fb
       BYOL: ami-3f44fc5b
-Resources:  
+Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      NotificationARNs: 
+      NotificationARNs:
         - !If
           - UseLogSNS
           - !Ref LogSNS
@@ -279,7 +279,7 @@ Resources:
       - VpcStack
       - InstanceSecurityGroup
     Properties:
-      NotificationARNs: 
+      NotificationARNs:
         - !If
           - UseLogSNS
           - !Ref LogSNS
@@ -302,7 +302,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     DependsOn: ManagedEniStack
     Properties:
-      NotificationARNs: 
+      NotificationARNs:
         - !If
           - UseLogSNS
           - !Ref LogSNS
@@ -366,12 +366,12 @@ Resources:
         id: e7190602-c2de-47ab-81e7-1315f8c01e2d
   MarkLogicServerGroup1:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
-    DependsOn: 
+    DependsOn:
       - VpcStack
       - ManagedEniStack
       - NodeMgrLambdaStack
     Properties:
-      VPCZoneIdentifier: 
+      VPCZoneIdentifier:
         - !GetAtt [VpcStack, Outputs.Subnet1Id]
       LaunchConfigurationName: !Ref LaunchConfig1
       MinSize: '0'
@@ -382,7 +382,7 @@ Resources:
       HealthCheckGracePeriod: '300'
       LoadBalancerNames:
         - !Ref ElasticLoadBalancer
-      NotificationConfiguration: !If 
+      NotificationConfiguration: !If
         - UseLogSNS
         - TopicARN: !Ref LogSNS
           NotificationTypes:
@@ -390,7 +390,7 @@ Resources:
             - 'autoscaling:EC2_INSTANCE_LAUNCH_ERROR'
             - 'autoscaling:EC2_INSTANCE_TERMINATE'
             - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
-        - !Ref 'AWS::NoValue'      
+        - !Ref 'AWS::NoValue'
       Tags:
         - Key: marklogic:stack:name
           Value: !Ref 'AWS::StackName'
@@ -410,12 +410,12 @@ Resources:
   MarkLogicServerGroup2:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::AutoScalingGroup'
-    DependsOn: 
+    DependsOn:
       - VpcStack
       - ManagedEniStack
       - NodeMgrLambdaStack
     Properties:
-      VPCZoneIdentifier: 
+      VPCZoneIdentifier:
         - !GetAtt [VpcStack, Outputs.Subnet2Id]
       LaunchConfigurationName: !Ref LaunchConfig2
       MinSize: '0'
@@ -426,7 +426,7 @@ Resources:
       HealthCheckGracePeriod: '300'
       LoadBalancerNames:
         - !Ref ElasticLoadBalancer
-      NotificationConfiguration: !If 
+      NotificationConfiguration: !If
         - UseLogSNS
         - TopicARN: !Ref LogSNS
           NotificationTypes:
@@ -434,7 +434,7 @@ Resources:
             - 'autoscaling:EC2_INSTANCE_LAUNCH_ERROR'
             - 'autoscaling:EC2_INSTANCE_TERMINATE'
             - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
-        - !Ref 'AWS::NoValue'      
+        - !Ref 'AWS::NoValue'
       Tags:
         - Key: marklogic:stack:name
           Value: !Ref 'AWS::StackName'
@@ -454,12 +454,12 @@ Resources:
   MarkLogicServerGroup3:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::AutoScalingGroup'
-    DependsOn: 
+    DependsOn:
       - VpcStack
       - ManagedEniStack
       - NodeMgrLambdaStack
     Properties:
-      VPCZoneIdentifier: 
+      VPCZoneIdentifier:
         - !GetAtt [VpcStack, Outputs.Subnet3Id]
       LaunchConfigurationName: !Ref LaunchConfig3
       MinSize: '0'
@@ -470,7 +470,7 @@ Resources:
       HealthCheckGracePeriod: '300'
       LoadBalancerNames:
         - !Ref ElasticLoadBalancer
-      NotificationConfiguration: !If 
+      NotificationConfiguration: !If
         - UseLogSNS
         - TopicARN: !Ref LogSNS
           NotificationTypes:
@@ -478,7 +478,7 @@ Resources:
             - 'autoscaling:EC2_INSTANCE_LAUNCH_ERROR'
             - 'autoscaling:EC2_INSTANCE_TERMINATE'
             - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
-        - !Ref 'AWS::NoValue'      
+        - !Ref 'AWS::NoValue'
       Tags:
         - Key: marklogic:stack:name
           Value: !Ref 'AWS::StackName'
@@ -505,7 +505,7 @@ Resources:
           Ebs: {}
       KeyName: !Ref KeyName
       ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Join':
           - ''
           - - MARKLOGIC_CLUSTER_NAME=
@@ -548,7 +548,7 @@ Resources:
         - !Ref InstanceSecurityGroup
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref IAMRole
-      SpotPrice: !If 
+      SpotPrice: !If
         - UseSpot
         - !Ref SpotPrice
         - !Ref 'AWS::NoValue'
@@ -566,7 +566,7 @@ Resources:
           Ebs: {}
       KeyName: !Ref KeyName
       ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Join':
           - ''
           - - MARKLOGIC_CLUSTER_NAME=
@@ -609,7 +609,7 @@ Resources:
         - !Ref InstanceSecurityGroup
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref IAMRole
-      SpotPrice: !If 
+      SpotPrice: !If
         - UseSpot
         - !Ref SpotPrice
         - !Ref 'AWS::NoValue'
@@ -627,7 +627,7 @@ Resources:
           Ebs: {}
       KeyName: !Ref KeyName
       ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
-      UserData: !Base64 
+      UserData: !Base64
         'Fn::Join':
           - ''
           - - MARKLOGIC_CLUSTER_NAME=
@@ -670,7 +670,7 @@ Resources:
         - !Ref InstanceSecurityGroup
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref IAMRole
-      SpotPrice: !If 
+      SpotPrice: !If
         - UseSpot
         - !Ref SpotPrice
         - !Ref 'AWS::NoValue'
@@ -794,7 +794,7 @@ Resources:
       EvaluationPeriods: '1'
       ComparisonOperator: GreaterThanThreshold
       Threshold: '0'
-      AlarmActions: 
+      AlarmActions:
         - !Join ['',["arn:aws:automate:", !Ref "AWS::Region", ":ec2:recover"]]
         - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
       OKActions:
@@ -810,10 +810,10 @@ Resources:
 Outputs:
   URL:
     Description: The URL of the MarkLogic Cluster
-    Value: !Join 
+    Value: !Join
       - ''
       - - 'http://'
-        - !GetAtt 
+        - !GetAtt
           - ElasticLoadBalancer
           - DNSName
         - ':8001'
