@@ -32,7 +32,6 @@ Metadata:
           - AdminPass
           - Licensee
           - LicenseKey
-          # - HighAvailability
     ParameterLabels:
       AdminUser: 
         default: Admin User
@@ -42,8 +41,6 @@ Metadata:
         default: Licensee
       LicenseKey:
         default: License Key
-      # HighAvailability:
-      #   default: High Availability
       IAMRole:
         default: IAM Role
       LogSNS:
@@ -198,13 +195,6 @@ Parameters:
     Description: The MarkLogic License Key or 'none'
     Type: String
     Default: none
-  # HighAvailability:
-  #   Description: Configure local-disk failover. Only applicable to multi-node cluster
-  #   Type: String
-  #   Default: enable
-  #   AllowedValues:
-  #     - enable
-  #     - disable
 Conditions:
   UseLogSNS: !Not 
     - !Equals 
@@ -218,48 +208,48 @@ Conditions:
   EssentialEnterprise: !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']]
 Mappings:
   LicenseRegion2AMI:
-      us-east-1: 
-        Enterprise: ami-e95af193
-        BYOL: ami-9650fbec
-      us-east-2: 
-        Enterprise: ami-3a0f205f
-        BYOL: ami-070c2362
-      us-west-1:
-        Enterprise: ami-b9330cd9
-        BYOL: ami-d5330cb5
-      us-west-2:
-        Enterprise: ami-8e25eef6
-        BYOL: ami-863ff4fe
-      eu-central-1:
-        Enterprise: ami-fe23a691
-        BYOL: ami-152eab7a
-      eu-west-1:
-        Enterprise: ami-34c0604d
-        BYOL: ami-74c5650d
-      ap-south-1:
-        Enterprise: ami-96b0fdf9
-        BYOL: ami-31b6fb5e
-      ap-southeast-1:
-        Enterprise: ami-5ad79a39
-        BYOL: ami-b4d79ad7
-      ap-southeast-2:
-        Enterprise: ami-c825cbaa
-        BYOL: ami-b722ccd5
-      ap-northeast-1:
-        Enterprise: ami-f5e04f93
-        BYOL: ami-46f35c20
-      ap-northeast-2:
-        Enterprise: ami-1eb51170
-        BYOL: ami-d9b410b7
-      sa-east-1:
-        Enterprise: ami-3f235853
-        BYOL: ami-18235874
-      eu-west-2:
-        Enterprise: ami-b71b07d3
-        BYOL: ami-2d140849
-      ca-central-1:
-        Enterprise: ami-9f4ef6fb
-        BYOL: ami-3f44fc5b
+    us-east-1:
+      Enterprise: ami-e95af193
+      BYOL: ami-9650fbec
+    us-east-2:
+      Enterprise: ami-3a0f205f
+      BYOL: ami-070c2362
+    us-west-1:
+      Enterprise: ami-b9330cd9
+      BYOL: ami-d5330cb5
+    us-west-2:
+      Enterprise: ami-8e25eef6
+      BYOL: ami-d0ff67a8
+    eu-central-1:
+      Enterprise: ami-fe23a691
+      BYOL: ami-152eab7a
+    eu-west-1:
+      Enterprise: ami-34c0604d
+      BYOL: ami-74c5650d
+    ap-south-1:
+      Enterprise: ami-96b0fdf9
+      BYOL: ami-31b6fb5e
+    ap-southeast-1:
+      Enterprise: ami-5ad79a39
+      BYOL: ami-b4d79ad7
+    ap-southeast-2:
+      Enterprise: ami-c825cbaa
+      BYOL: ami-b722ccd5
+    ap-northeast-1:
+      Enterprise: ami-f5e04f93
+      BYOL: ami-46f35c20
+    ap-northeast-2:
+      Enterprise: ami-1eb51170
+      BYOL: ami-d9b410b7
+    sa-east-1:
+      Enterprise: ami-3f235853
+      BYOL: ami-18235874
+    eu-west-2:
+      Enterprise: ami-b71b07d3
+      BYOL: ami-2d140849
+    ca-central-1:
+      Enterprise: ami-9f4ef6fb
+      BYOL: ami-3f44fc5b
 Resources:  
   VpcStack:
     Type: AWS::CloudFormation::Stack
@@ -290,7 +280,7 @@ Resources:
           - !Ref LogSNS
           - !Ref 'AWS::NoValue'
       Parameters:
-        S3Bucket: mattsun-s3-bucket # TODO        
+        S3Bucket: mattsun-s3-bucket # TODO
         NodesPerZone: !Ref NodesPerZone
         NumberOfZones: !Ref NumberOfZones
         Subnets: !Join
