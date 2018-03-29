@@ -9,7 +9,6 @@ Metadata:
           default: "Resource Configuration"
         Parameters:
           - IAMRole
-          - LogSNS
           - VolumeSize
           - VolumeType
           - InstanceType
@@ -18,6 +17,8 @@ Metadata:
           - NumberOfZones
           - NodesPerZone
           - AZ
+          - InstancePublicIp
+          - LogSNS
       - Label:
           default: "Network Configuration"
         Parameters:
@@ -43,6 +44,8 @@ Metadata:
         default: License Key
       IAMRole:
         default: IAM Role
+      InstancePublicIp:
+        default: Instance Public IP
       LogSNS:
         default: Logging SNS ARN
       VolumeSize:
@@ -74,10 +77,6 @@ Parameters:
   IAMRole:
     Description: IAM Role
     Type: String
-  LogSNS:
-    Description: SNS Topic for logging - optional/advanced
-    Type: String
-    Default: none
   VolumeSize:
     Description: The EBS Data volume size (GB) for all nodes
     Type: Number
@@ -146,8 +145,19 @@ Parameters:
     MaxValue: '20'
     Default: '1'
   AZ:
-    Description: The Availability Zones for VPC subnets. Accept either 1 zone or 3 zones. In the order of Subnet 1, Subnet 2 and Subnet 3 (if applicable).
+    Description: The Availability Zones for VPC subnets and instances. Accept either 1 zone or 3 zones. In the order of Subnet 1, Subnet 2 and Subnet 3 (if applicable).
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
+  InstancePublicIp:
+    Description: Whether assign public IP address to instances.
+    Type: String
+    AllowedValues:
+      - enable
+      - disable
+    Default: disable
+  LogSNS:
+    Description: SNS Topic for logging - optional/advanced. Requires instance public IP enabled.
+    Type: String
+    Default: none
   # network configuration
   VpcCidr:
     Description: CIDR Block for the Virtual Private Cloud (VPC).
@@ -196,10 +206,10 @@ Parameters:
     Type: String
     Default: none
 Conditions:
-  UseLogSNS: !Not
-    - !Equals
-      - !Ref LogSNS
-      - none
+  UsePublicIp: !Equals [!Ref InstancePublicIp, 'enabled']
+  UseLogSNS: !And
+    - !Equals [!Ref InstancePublicIp, 'enabled']
+    - !Not [!Equals [!Ref LogSNS, "none"]]
   UseSpot: !Not
     - !Equals
       - !Ref SpotPrice
@@ -271,13 +281,14 @@ Resources:
         Subnet1Cidr: !Ref Subnet1Cidr
         Subnet2Cidr: !Ref Subnet2Cidr
         Subnet3Cidr: !Ref Subnet3Cidr
+        S3Bucket: !Join [ "", [!FindInMap [Variable,"LambdaPackageBucket","base"], !Ref 'AWS::Region']]
+        TemplateURLBase: !FindInMap [Variable,"TemplateUrl","base"]
       TemplateURL: !Join ["", [!FindInMap [Variable,"TemplateUrl","base"],'ml-vpc.template']]
       TimeoutInMinutes: 5
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
     DependsOn:
       - VpcStack
-      - InstanceSecurityGroup
     Properties:
       NotificationARNs:
         - !If
@@ -295,7 +306,7 @@ Resources:
             - !GetAtt [VpcStack, Outputs.Subnet3Id]
         ParentStackName: !Ref 'AWS::StackName'
         ParentStackId: !Ref 'AWS::StackId'
-        SecurityGroup: !Ref InstanceSecurityGroup
+        SecurityGroup: !GetAtt [VpcStack, Outputs.SecurityGroupId]
       TemplateURL: !Join ['', [!FindInMap [Variable,"TemplateUrl","base"],'ml-managedeni.template']]
       TimeoutInMinutes: 5
   NodeMgrLambdaStack:
@@ -498,7 +509,7 @@ Resources:
   LaunchConfig1:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
-      AssociatePublicIpAddress: true
+      AssociatePublicIpAddress: !If [UsePublicIp, 'true', 'false']
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
@@ -545,7 +556,7 @@ Resources:
             - |+
 
       SecurityGroups:
-        - !Ref InstanceSecurityGroup
+        - !GetAtt [VpcStack, Outputs.SecurityGroupId]
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref IAMRole
       SpotPrice: !If
@@ -559,7 +570,7 @@ Resources:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
-      AssociatePublicIpAddress: true
+      AssociatePublicIpAddress: !If [UsePublicIp, 'true', 'false']
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
@@ -606,7 +617,7 @@ Resources:
             - |+
 
       SecurityGroups:
-        - !Ref InstanceSecurityGroup
+        - !GetAtt [VpcStack, Outputs.SecurityGroupId]
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref IAMRole
       SpotPrice: !If
@@ -620,7 +631,7 @@ Resources:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
-      AssociatePublicIpAddress: true
+      AssociatePublicIpAddress: !If [UsePublicIp, 'true', 'false']
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
@@ -667,7 +678,7 @@ Resources:
             - |+
 
       SecurityGroups:
-        - !Ref InstanceSecurityGroup
+        - !GetAtt [VpcStack, Outputs.SecurityGroupId]
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref IAMRole
       SpotPrice: !If
@@ -684,6 +695,8 @@ Resources:
       AppCookieStickinessPolicy:
         - CookieName: SessionID
           PolicyName: MLSession
+      SecurityGroups:
+        - !GetAtt [VpcStack, Outputs.SecurityGroupId]
       Subnets:
         - !GetAtt [VpcStack, Outputs.Subnet1Id]
         - !If [MultiZone, !GetAtt [VpcStack, Outputs.Subnet2Id], !Ref 'AWS::NoValue']
@@ -747,42 +760,6 @@ Resources:
     Metadata:
       'AWS::CloudFormation::Designer':
         id: e188e71e-5f01-4816-896e-9bd30b9a96c1
-  InstanceSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    DependsOn: VpcStack
-    Properties:
-      GroupDescription: Enable SSH access and HTTP access on the inbound port
-      VpcId: !GetAtt [VpcStack, Outputs.VpcId]
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: '22'
-          ToPort: '22'
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: '7998'
-          ToPort: '7998'
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: '8000'
-          ToPort: '8010'
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: '7997'
-          ToPort: '7997'
-          CidrIp: 0.0.0.0/0
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 509ae63b-1eb1-4707-889f-418b9a65426c
-  InstanceSecurityGroupIngress:
-    Type: 'AWS::EC2::SecurityGroupIngress'
-    DependsOn:
-      - InstanceSecurityGroup
-    Properties:
-      IpProtocol: tcp
-      FromPort: '7999'
-      ToPort: '7999'
-      GroupId: !GetAtt InstanceSecurityGroup.GroupId
-      SourceSecurityGroupId: !GetAtt InstanceSecurityGroup.GroupId
   InstanceRecoveryAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
