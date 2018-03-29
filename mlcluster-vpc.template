@@ -206,7 +206,7 @@ Parameters:
     Type: String
     Default: none
 Conditions:
-  publicIp: !Equals [!Ref InstancePublicIp, 'enabled']
+  UsePublicIp: !Equals [!Ref InstancePublicIp, 'enabled']
   UseLogSNS: !And
     - !Equals [!Ref InstancePublicIp, 'enabled']
     - !Not [!Equals [!Ref LogSNS, "none"]]
@@ -509,7 +509,7 @@ Resources:
   LaunchConfig1:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
-      AssociatePublicIpAddress: !If [publicIp, 'true', 'false']
+      AssociatePublicIpAddress: !If [UsePublicIp, 'true', 'false']
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
@@ -570,7 +570,7 @@ Resources:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
-      AssociatePublicIpAddress: !If [publicIp, 'true', 'false']
+      AssociatePublicIpAddress: !If [UsePublicIp, 'true', 'false']
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
@@ -631,7 +631,7 @@ Resources:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
-      AssociatePublicIpAddress: !If [publicIp, 'true', 'false']
+      AssociatePublicIpAddress: !If [UsePublicIp, 'true', 'false']
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
