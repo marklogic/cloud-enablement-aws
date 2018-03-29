@@ -279,7 +279,6 @@ Resources:
     Type: AWS::CloudFormation::Stack
     DependsOn:
       - VpcStack
-      - InstanceSecurityGroup
     Properties:
       NotificationARNs:
         - !If
@@ -297,7 +296,7 @@ Resources:
             - !GetAtt [VpcStack, Outputs.Subnet3Id]
         ParentStackName: !Ref 'AWS::StackName'
         ParentStackId: !Ref 'AWS::StackId'
-        SecurityGroup: !Ref InstanceSecurityGroup
+        SecurityGroup: !GetAtt [VpcStack, Outputs.SecurityGroupId]
       TemplateURL: !Join ['', [!FindInMap [Variable,"TemplateUrl","base"],'ml-managedeni.template']]
       TimeoutInMinutes: 5
   NodeMgrLambdaStack:
@@ -547,7 +546,7 @@ Resources:
             - |+
 
       SecurityGroups:
-        - !Ref InstanceSecurityGroup
+        - !GetAtt [VpcStack, Outputs.SecurityGroupId]
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref IAMRole
       SpotPrice: !If
@@ -608,7 +607,7 @@ Resources:
             - |+
 
       SecurityGroups:
-        - !Ref InstanceSecurityGroup
+        - !GetAtt [VpcStack, Outputs.SecurityGroupId]
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref IAMRole
       SpotPrice: !If
@@ -669,7 +668,7 @@ Resources:
             - |+
 
       SecurityGroups:
-        - !Ref InstanceSecurityGroup
+        - !GetAtt [VpcStack, Outputs.SecurityGroupId]
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref IAMRole
       SpotPrice: !If
@@ -686,6 +685,8 @@ Resources:
       AppCookieStickinessPolicy:
         - CookieName: SessionID
           PolicyName: MLSession
+      SecurityGroups:
+        - !GetAtt [VpcStack, Outputs.SecurityGroupId]
       Subnets:
         - !GetAtt [VpcStack, Outputs.Subnet1Id]
         - !If [MultiZone, !GetAtt [VpcStack, Outputs.Subnet2Id], !Ref 'AWS::NoValue']
@@ -749,42 +750,6 @@ Resources:
     Metadata:
       'AWS::CloudFormation::Designer':
         id: e188e71e-5f01-4816-896e-9bd30b9a96c1
-  InstanceSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    DependsOn: VpcStack
-    Properties:
-      GroupDescription: Enable SSH access and HTTP access on the inbound port
-      VpcId: !GetAtt [VpcStack, Outputs.VpcId]
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: '22'
-          ToPort: '22'
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: '7998'
-          ToPort: '7998'
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: '8000'
-          ToPort: '8010'
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: '7997'
-          ToPort: '7997'
-          CidrIp: 0.0.0.0/0
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: 509ae63b-1eb1-4707-889f-418b9a65426c
-  InstanceSecurityGroupIngress:
-    Type: 'AWS::EC2::SecurityGroupIngress'
-    DependsOn:
-      - InstanceSecurityGroup
-    Properties:
-      IpProtocol: tcp
-      FromPort: '7999'
-      ToPort: '7999'
-      GroupId: !GetAtt InstanceSecurityGroup.GroupId
-      SourceSecurityGroupId: !GetAtt InstanceSecurityGroup.GroupId
   InstanceRecoveryAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
