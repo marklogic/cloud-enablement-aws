@@ -306,7 +306,7 @@ Resources:
             - !GetAtt [VpcStack, Outputs.Subnet3Id]
         ParentStackName: !Ref 'AWS::StackName'
         ParentStackId: !Ref 'AWS::StackId'
-        SecurityGroup: !GetAtt [VpcStack, Outputs.SecurityGroupId]
+        SecurityGroup: !Ref InstanceSecurityGroup
       TemplateURL: !Join ['', [!FindInMap [Variable,"TemplateUrl","base"],'ml-managedeni.template']]
       TimeoutInMinutes: 5
   NodeMgrLambdaStack:
@@ -506,8 +506,67 @@ Resources:
     Metadata:
       'AWS::CloudFormation::Designer':
         id: bbd8314a-6e59-4102-9ed5-232739dd0dfa
+  InstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    DependsOn:
+      - VpcStack
+    Properties:
+      GroupDescription: Enable SSH access and HTTP access on the inbound port
+      VpcId: !GetAtt [VpcStack, Outputs.VpcId]
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '7998'
+          ToPort: '7998'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '8000'
+          ToPort: '8010'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '7997'
+          ToPort: '7997'
+          CidrIp: 0.0.0.0/0
+  InstanceSecurityGroupIngress:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    DependsOn:
+      - InstanceSecurityGroup
+    Properties:
+      IpProtocol: tcp
+      FromPort: '0'
+      ToPort: '65355'
+      GroupId: !Ref InstanceSecurityGroup
+      SourceSecurityGroupId: !Ref InstanceSecurityGroup
+  ElbSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    DependsOn: VpcStack
+    Properties:
+      GroupDescription: Enable SSH access and HTTP access on the inbound port
+      VpcId: !GetAtt [VpcStack, Outputs.VpcId]
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '7998'
+          ToPort: '7998'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '8000'
+          ToPort: '8010'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '7997'
+          ToPort: '7997'
+          CidrIp: 0.0.0.0/0
   LaunchConfig1:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
+    DependsOn:
+      - InstanceSecurityGroup
     Properties:
       AssociatePublicIpAddress: !If [UsePublicIp, 'true', 'false']
       BlockDeviceMappings:
@@ -556,7 +615,7 @@ Resources:
             - |+
 
       SecurityGroups:
-        - !GetAtt [VpcStack, Outputs.SecurityGroupId]
+        - !Ref InstanceSecurityGroup
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref IAMRole
       SpotPrice: !If
@@ -569,6 +628,8 @@ Resources:
   LaunchConfig2:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::LaunchConfiguration'
+    DependsOn:
+      - InstanceSecurityGroup
     Properties:
       AssociatePublicIpAddress: !If [UsePublicIp, 'true', 'false']
       BlockDeviceMappings:
@@ -617,7 +678,7 @@ Resources:
             - |+
 
       SecurityGroups:
-        - !GetAtt [VpcStack, Outputs.SecurityGroupId]
+        - !Ref InstanceSecurityGroup
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref IAMRole
       SpotPrice: !If
@@ -630,6 +691,8 @@ Resources:
   LaunchConfig3:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::LaunchConfiguration'
+    DependsOn:
+      - InstanceSecurityGroup
     Properties:
       AssociatePublicIpAddress: !If [UsePublicIp, 'true', 'false']
       BlockDeviceMappings:
@@ -678,7 +741,7 @@ Resources:
             - |+
 
       SecurityGroups:
-        - !GetAtt [VpcStack, Outputs.SecurityGroupId]
+        - !Ref InstanceSecurityGroup
       InstanceType: !Ref InstanceType
       IamInstanceProfile: !Ref IAMRole
       SpotPrice: !If
@@ -690,13 +753,17 @@ Resources:
         id: 7fa68c90-39bc-4874-ad20-8cd8c974ed52
   ElasticLoadBalancer:
     Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
-    DependsOn: VpcStack
+    DependsOn:
+      - ElbSecurityGroup
+    DependsOn:
+      - VpcStack
+      - ElbSecurityGroup
     Properties:
       AppCookieStickinessPolicy:
         - CookieName: SessionID
           PolicyName: MLSession
       SecurityGroups:
-        - !GetAtt [VpcStack, Outputs.SecurityGroupId]
+        - !Ref ElbSecurityGroup
       Subnets:
         - !GetAtt [VpcStack, Outputs.Subnet1Id]
         - !If [MultiZone, !GetAtt [VpcStack, Outputs.Subnet2Id], !Ref 'AWS::NoValue']

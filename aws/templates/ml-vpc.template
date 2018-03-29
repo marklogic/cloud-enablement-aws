@@ -141,7 +141,7 @@ Resources:
     Properties:
       RouteTableId: !Ref VpcRouteTable
       SubnetId: !Ref MarkLogicSubnet3
-  VpcSecurityGroup:
+  EndpointSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     DependsOn: MarkLogicVPC
     Properties:
@@ -149,31 +149,31 @@ Resources:
       VpcId: !Ref MarkLogicVPC
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: '22'
-          ToPort: '22'
+          FromPort: '443'
+          ToPort: '443'
           CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: '7998'
-          ToPort: '7998'
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: '8000'
-          ToPort: '8010'
-          CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: '7997'
-          ToPort: '7997'
-          CidrIp: 0.0.0.0/0
-  VpcSecurityGroupIngress:
+      #   - IpProtocol: tcp
+      #     FromPort: '7998'
+      #     ToPort: '7998'
+      #     CidrIp: 0.0.0.0/0
+      #   - IpProtocol: tcp
+      #     FromPort: '8000'
+      #     ToPort: '8010'
+      #     CidrIp: 0.0.0.0/0
+      #   - IpProtocol: tcp
+      #     FromPort: '7997'
+      #     ToPort: '7997'
+      #     CidrIp: 0.0.0.0/0
+  EndpointSecurityGroupIngress:
     Type: 'AWS::EC2::SecurityGroupIngress'
     DependsOn:
-      - VpcSecurityGroup
+      - EndpointSecurityGroup
     Properties:
       IpProtocol: tcp
       FromPort: '0'
       ToPort: '65355'
-      GroupId: !Ref VpcSecurityGroup
-      SourceSecurityGroupId: !Ref VpcSecurityGroup
+      GroupId: !Ref EndpointSecurityGroup
+      SourceSecurityGroupId: !Ref EndpointSecurityGroup
   DDBEndPoint:
     Type: 'AWS::EC2::VPCEndpoint'
     DependsOn:
@@ -219,7 +219,7 @@ Resources:
       Parameters:
         S3Bucket: !Ref S3Bucket
         Vpc: !Ref MarkLogicVPC
-        SecurityGroup: !Ref VpcSecurityGroup
+        SecurityGroup: !Ref EndpointSecurityGroup
         Subnets: !Join
           - ','
           - - !Ref MarkLogicSubnet1
@@ -247,9 +247,9 @@ Outputs:
   VpcId:
     Description: VPC ID
     Value: !Ref MarkLogicVPC
-  SecurityGroupId:
-    Description: Security Group ID
-    Value: !Ref VpcSecurityGroup
+  # SecurityGroupId:
+  #   Description: Security Group ID
+  #   Value: !Ref EndpointSecurityGroup
   Subnet1Id:
     Description: Subnet 1 ID
     Value: !Ref MarkLogicSubnet1
