@@ -9,7 +9,6 @@ Metadata:
           default: "Resource Configuration"
         Parameters:
           - IAMRole
-          - LogSNS
           - VolumeSize
           - VolumeType
           - InstanceType
@@ -18,6 +17,8 @@ Metadata:
           - NumberOfZones
           - NodesPerZone
           - AZ
+          - InstancePublicIp
+          - LogSNS
       - Label:
           default: "Network Configuration"
         Parameters:
@@ -43,6 +44,8 @@ Metadata:
         default: License Key
       IAMRole:
         default: IAM Role
+      InstancePublicIp:
+        default: Instance Public IP
       LogSNS:
         default: Logging SNS ARN
       VolumeSize:
@@ -74,10 +77,6 @@ Parameters:
   IAMRole:
     Description: IAM Role
     Type: String
-  LogSNS:
-    Description: SNS Topic for logging - optional/advanced
-    Type: String
-    Default: none
   VolumeSize:
     Description: The EBS Data volume size (GB) for all nodes
     Type: Number
@@ -146,8 +145,19 @@ Parameters:
     MaxValue: '20'
     Default: '1'
   AZ:
-    Description: The Availability Zones for VPC subnets. Accept either 1 zone or 3 zones. In the order of Subnet 1, Subnet 2 and Subnet 3 (if applicable).
+    Description: The Availability Zones for VPC subnets and instances. Accept either 1 zone or 3 zones. In the order of Subnet 1, Subnet 2 and Subnet 3 (if applicable).
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
+  InstancePublicIp:
+    Description: Whether assign public IP address to instances.
+    Type: String
+    AllowedValues:
+      - enable
+      - disable
+    Default: disable
+  LogSNS:
+    Description: SNS Topic for logging - optional/advanced. Requires instance public IP enabled.
+    Type: String
+    Default: none
   # network configuration
   VpcCidr:
     Description: CIDR Block for the Virtual Private Cloud (VPC).
@@ -196,10 +206,10 @@ Parameters:
     Type: String
     Default: none
 Conditions:
-  UseLogSNS: !Not
-    - !Equals
-      - !Ref LogSNS
-      - none
+  publicIp: !Equals [!Ref InstancePublicIp, 'enabled']
+  UseLogSNS: !And
+    - !Equals [!Ref InstancePublicIp, 'enabled']
+    - !Not [!Equals [!Ref LogSNS, "none"]]
   UseSpot: !Not
     - !Equals
       - !Ref SpotPrice
@@ -499,7 +509,7 @@ Resources:
   LaunchConfig1:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
-      AssociatePublicIpAddress: true
+      AssociatePublicIpAddress: !If [publicIp, 'true', 'false']
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
@@ -560,7 +570,7 @@ Resources:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
-      AssociatePublicIpAddress: true
+      AssociatePublicIpAddress: !If [publicIp, 'true', 'false']
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
@@ -621,7 +631,7 @@ Resources:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::LaunchConfiguration'
     Properties:
-      AssociatePublicIpAddress: true
+      AssociatePublicIpAddress: !If [publicIp, 'true', 'false']
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
