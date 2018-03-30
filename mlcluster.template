@@ -180,9 +180,9 @@ Parameters:
     Type: String
     Default: none
 Conditions:
-  UsePublicIp: !Equals [!Ref InstancePublicIp, 'enabled']
+  UsePublicIp: !Equals [!Ref InstancePublicIp, 'enable']
   UseLogSNS: !And
-    - !Equals [!Ref InstancePublicIp, 'enabled']
+    - !Equals [!Ref InstancePublicIp, 'enable']
     - !Not [!Equals [!Ref LogSNS, "none"]]
   UseSpot: !Not
     - !Equals

@@ -206,9 +206,9 @@ Parameters:
     Type: String
     Default: none
 Conditions:
-  UsePublicIp: !Equals [!Ref InstancePublicIp, 'enabled']
+  UsePublicIp: !Equals [!Ref InstancePublicIp, 'enable']
   UseLogSNS: !And
-    - !Equals [!Ref InstancePublicIp, 'enabled']
+    - !Equals [!Ref InstancePublicIp, 'enable']
     - !Not [!Equals [!Ref LogSNS, "none"]]
   UseSpot: !Not
     - !Equals
@@ -228,7 +228,7 @@ Mappings:
       BYOL: ami-9650fbec
     us-east-2:
       Enterprise: ami-3a0f205f
-      BYOL: ami-070c2362
+      BYOL: ami-12e9736a
     us-west-1:
       Enterprise: ami-b9330cd9
       BYOL: ami-d5330cb5
