@@ -47,7 +47,7 @@ def on_create(event, context):
     stack_id = event["StackId"]
     vpc = props["Vpc"]
     service_name = props["ServiceName"]
-    # security_group = props["SecurityGroup"]
+    security_group = props["SecurityGroup"]
     subnets = props["Subnets"]
     log.info("Event: %s" % str(event))
 
@@ -56,7 +56,8 @@ def on_create(event, context):
         VpcEndpointType='Interface',
         VpcId=vpc,
         ServiceName=service_name,
-        SubnetIds=subnets
+        SubnetIds=subnets,
+        SecurityGroupIds=[security_group]
     )
     endpoint_id = response["VpcEndpoint"]["VpcEndpointId"]
     log.info(
@@ -72,13 +73,13 @@ def on_create(event, context):
         "PhysicalResourceId": get_physical_resource_id(event["RequestId"])
     }
 
+
 @handler.delete
 def on_delete(event, context):
     log.info("Handle resource delete event")
     # get parameters passed in
     props = event["ResourceProperties"]
     stack_id = event["StackId"]
-    vpc = props["Vpc"]
     service_name = props["ServiceName"]
     log.info("Event: %s" % str(event))
 
@@ -112,4 +113,3 @@ def on_delete(event, context):
         "StackId": stack_id,
         "PhysicalResourceId": get_physical_resource_id(event["RequestId"])
     }
-
