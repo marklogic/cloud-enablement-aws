@@ -299,11 +299,14 @@ Resources:
         S3Bucket: !Join [ "", [!FindInMap [Variable,"LambdaPackageBucket","base"], !Ref 'AWS::Region']]
         NodesPerZone: !Ref NodesPerZone
         NumberOfZones: !Ref NumberOfZones
-        Subnets: !Join
-          - ','
-          - - !GetAtt [VpcStack, Outputs.Subnet1Id]
-            - !GetAtt [VpcStack, Outputs.Subnet2Id]
-            - !GetAtt [VpcStack, Outputs.Subnet3Id]
+        Subnets: !If
+          - MultiZone
+          - !Join
+            - ','
+            - - !GetAtt [VpcStack, Outputs.Subnet1Id]
+              - !GetAtt [VpcStack, Outputs.Subnet2Id]
+              - !GetAtt [VpcStack, Outputs.Subnet3Id]
+          - !GetAtt [VpcStack, Outputs.Subnet1Id]
         ParentStackName: !Ref 'AWS::StackName'
         ParentStackId: !Ref 'AWS::StackId'
         SecurityGroup: !Ref InstanceSecurityGroup
@@ -827,7 +830,7 @@ Resources:
     Metadata:
       'AWS::CloudFormation::Designer':
         id: e188e71e-5f01-4816-896e-9bd30b9a96c1
-  InstanceRecoveryAlarm:
+  InstanceRecoveryAlarm1:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmDescription: Trigger a recovery when instance status check fails for 1 consecutive minutes.
@@ -845,12 +848,47 @@ Resources:
         - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
       Dimensions:
         - Name: ASG1
-          Value:
-            Ref: MarkLogicServerGroup1
+          Value: !Ref MarkLogicServerGroup1
+  InstanceRecoveryAlarm2:
+    Type: AWS::CloudWatch::Alarm
+    Condition: MultiZone
+    Properties:
+      AlarmDescription: Trigger a recovery when instance status check fails for 1 consecutive minutes.
+      Namespace: AWS/EC2
+      MetricName: StatusCheckFailed_System
+      Statistic: Minimum
+      Period: '60'
+      EvaluationPeriods: '1'
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: '0'
+      AlarmActions:
+        - !Join ['',["arn:aws:automate:", !Ref "AWS::Region", ":ec2:recover"]]
+        - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
+      OKActions:
+        - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
+      Dimensions:
         - Name: ASG2
-          Value: !If [MultiZone, !Ref MarkLogicServerGroup2, !Ref 'AWS::NoValue']
+          Value: !Ref MarkLogicServerGroup2
+  InstanceRecoveryAlarm3:
+    Type: AWS::CloudWatch::Alarm
+    Condition: MultiZone
+    Properties:
+      AlarmDescription: Trigger a recovery when instance status check fails for 1 consecutive minutes.
+      Namespace: AWS/EC2
+      MetricName: StatusCheckFailed_System
+      Statistic: Minimum
+      Period: '60'
+      EvaluationPeriods: '1'
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: '0'
+      AlarmActions:
+        - !Join ['',["arn:aws:automate:", !Ref "AWS::Region", ":ec2:recover"]]
+        - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
+      OKActions:
+        - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
+      Dimensions:
         - Name: ASG3
-          Value: !If [MultiZone, !Ref MarkLogicServerGroup3, !Ref 'AWS::NoValue']
+          Value: !Ref MarkLogicServerGroup3
 Outputs:
   URL:
     Description: The URL of the MarkLogic Cluster

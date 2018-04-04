@@ -130,6 +130,7 @@ Resources:
       - VpcRouteTable
       - MarkLogicSubnet2
     Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Condition: DeployMultiZone
     Properties:
       RouteTableId: !Ref VpcRouteTable
       SubnetId: !Ref MarkLogicSubnet2
@@ -138,6 +139,7 @@ Resources:
       - VpcRouteTable
       - MarkLogicSubnet3
     Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Condition: DeployMultiZone
     Properties:
       RouteTableId: !Ref VpcRouteTable
       SubnetId: !Ref MarkLogicSubnet3
@@ -212,19 +214,19 @@ Resources:
     Type: AWS::CloudFormation::Stack
     DependsOn:
       - MarkLogicVPC
-      - MarkLogicSubnet1
-      - MarkLogicSubnet2
-      - MarkLogicSubnet3
     Properties:
       Parameters:
         S3Bucket: !Ref S3Bucket
         Vpc: !Ref MarkLogicVPC
         SecurityGroup: !Ref EndpointSecurityGroup
-        Subnets: !Join
-          - ','
-          - - !Ref MarkLogicSubnet1
-            - !Ref MarkLogicSubnet2
-            - !Ref MarkLogicSubnet3
+        Subnets: !If
+          - DeployMultiZone
+          - !Join
+            - ','
+            - - !Ref MarkLogicSubnet1
+              - !Ref MarkLogicSubnet2
+              - !Ref MarkLogicSubnet3
+          - !Ref MarkLogicSubnet1
       TemplateURL: !Join ["", [!Ref TemplateURLBase,'ml-endpoint.template']]
       TimeoutInMinutes: 5
   VpcRoute:
