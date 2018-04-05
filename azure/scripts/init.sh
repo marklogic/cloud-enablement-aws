@@ -1,3 +1,5 @@
+# Copyright 2002-2018 MarkLogic Corporation.  All Rights Reserved.
+#
 #!/bin/bash
 ######################################################################################################
 # File         : init.sh
@@ -20,7 +22,7 @@ AUTH_CURL="${CURL} --${AUTH_MODE}"
 
 ######################################################################################################
 # Function     : restart_check
-# Description  : Use the timestamp service to detect a server restart, given a baseline timestamp. 
+# Description  : Use the timestamp service to detect a server restart, given a baseline timestamp.
 # 				 Returns 0 if restart is detected, exits with an error if not.
 # Usage        : restart_check(hostname, baseline_timestamp, caller_lineno)
 ######################################################################################################
@@ -54,7 +56,7 @@ function write_conf {
   echo "export MARKLOGIC_HOSTNAME=$1" >> /etc/marklogic.conf |& tee -a $LOG
   echo "export MARKLOGIC_LICENSE_KEY=$2" >> /etc/marklogic.conf |& tee -a $LOG
   echo "export MARKLOGIC_LICENSEE=$3" >> /etc/marklogic.conf |& tee -a $LOG
-  
+
   INFO "Restarting the server to pick up changes in /etc/marklogic.conf"
   /etc/init.d/MarkLogic restart |& tee -a $LOG
   sleep 10
