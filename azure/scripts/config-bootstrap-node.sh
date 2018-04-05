@@ -1,3 +1,5 @@
+# Copyright 2002-2018 MarkLogic Corporation.  All Rights Reserved.
+#
 #!/bin/bash
 ######################################################################################################
 # File         : init-bootstrap-node.sh

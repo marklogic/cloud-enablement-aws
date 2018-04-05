@@ -1,6 +1,6 @@
 {
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "contentVersion": "9.0-3",
+    "contentVersion": "9.0-4",
     "parameters": {
         "lbSetting": {
             "type": "object"

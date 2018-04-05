@@ -1,8 +1,10 @@
+# Copyright 2002-2018 MarkLogic Corporation.  All Rights Reserved.
+#
 #!/bin/bash
 ######################################################################################################
 #	File         : init-additional-node.sh
 #	Description  : Use this script to initialize and add one or more hosts to a
-# 				       MarkLogic Server cluster. The first (bootstrap) host for the cluster should already 
+# 				       MarkLogic Server cluster. The first (bootstrap) host for the cluster should already
 #                be fully initialized.
 # Usage        : sh init-additional-node.sh user password auth-mode n-retry retry-interval \
 #                enable-high-availability license-key licensee bootstrap-node joining-host
@@ -20,7 +22,7 @@ JOINING_HOST=${10}
 #####################################################################################################
 #
 # Add the joining host to a cluster.
-# 
+#
 #####################################################################################################
 
 write_conf $JOINING_HOST $LICENSE_KEY $LICENSEE
@@ -73,10 +75,10 @@ fi
 
 #####################################################################################################
 #
-# Send the cluster config data to the joining host, completing 
+# Send the cluster config data to the joining host, completing
 # the join sequence.
 #
-#####################################################################################################  
+#####################################################################################################
 
 INFO "Sending the cluster config data to the joining host"
 TIMESTAMP=`$CURL -X POST -H "Content-type: application/zip" \
