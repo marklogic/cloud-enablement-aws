@@ -73,7 +73,7 @@ Resources:
       Handler: endpoint.handler
       Role: !GetAtt [EndpointExecRole, Arn]
       Runtime: python3.6
-      Timeout: '30'
+      Timeout: '180'
   Ec2InterfaceEndpoint:
     Type: 'Custom::Ec2InterfaceEndpoint'
     DependsOn: EndpointFunction
