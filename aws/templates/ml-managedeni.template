@@ -98,7 +98,7 @@ Resources:
       Handler: managedeni.handler
       Role: !GetAtt [ManagedEniExecRole, Arn]
       Runtime: python3.6
-      Timeout: '30'
+      Timeout: '180'
   ManagedEni:
     Type: 'Custom::ManagedEni'
     DependsOn: ManagedEniFunction

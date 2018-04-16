@@ -30,3 +30,21 @@ def get_network_interface_by_id(eni_id):
         return response["NetworkInterfaces"][0]
     else:
         log.error("Get network interface by id %s failed: %s" % (eni_id, str(response)))
+
+def cfn_success_response(event):
+    return {
+        "Status": "SUCCESS",
+        "RequestId": event["RequestId"],
+        "LogicalResourceId": event["LogicalResourceId"],
+        "StackId": event["StackId"],
+        "PhysicalResourceId": get_physical_resource_id(event["RequestId"])
+    }
+
+def cfn_failure_response(event, reason):
+    return {
+        "Status": "FAILED",
+        "Reason": reason,
+        "LogicalResourceId": event["LogicalResourceId"],
+        "StackId": event["StackId"],
+        "PhysicalResourceId": get_physical_resource_id(event["RequestId"])
+    }
