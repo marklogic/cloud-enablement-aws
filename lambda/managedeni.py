@@ -29,10 +29,6 @@ def eni_wait_for_creation(eni_id):
             status = eni_info["Status"]
             if status == "available":
                 break
-            elif status == "attaching":
-                time.sleep(sleep_interval)
-                retries += 1
-                continue
             else:
                 log.warning("Network interface %s in unexpected status: %s" % (eni_id, status))
                 time.sleep(sleep_interval)
@@ -234,5 +230,4 @@ def on_delete(event, context):
                     reason = "Failed to delete network interface %s" % eni_id
                     log.exception(reason)
 
-    time.sleep(5) # in case there are exceptions not sent to CloudWatch yet
     return cfn_success_response(event)
