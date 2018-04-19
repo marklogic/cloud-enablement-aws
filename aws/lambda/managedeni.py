@@ -3,11 +3,13 @@
 import boto3
 import logging
 import hashlib
+import json
 from botocore.exceptions import ClientError
 import cfn_resource
 import time
 from utils import get_network_interface_by_id
-from utils import get_physical_resource_id
+from utils import cfn_success_response
+from utils import cfn_failure_response
 
 log = logging.getLogger()
 log.setLevel(logging.INFO)
@@ -17,6 +19,52 @@ handler = cfn_resource.Resource()
 ec2_client = boto3.client('ec2')
 ec2_resource = boto3.resource('ec2')
 
+def eni_wait_for_creation(eni_id):
+    max_retry = 10
+    retries = 0
+    sleep_interval = 10
+    while True and retries < max_retry:
+        eni_info = get_network_interface_by_id(eni_id)
+        if eni_info:
+            status = eni_info["Status"]
+            if status == "available":
+                break
+            else:
+                log.warning("Network interface %s in unexpected status: %s" % (eni_id, status))
+                time.sleep(sleep_interval)
+                retries += 1
+        else:
+            log.warning("Network interface %s not found" % eni_id)
+            time.sleep(sleep_interval)
+            retries += 1
+    else:
+        log.warning("Waiting for network interface %s creation timed out" % eni_id)
+
+def eni_wait_for_detachment(eni_id):
+    max_retry = 10
+    retries = 0
+    sleep_interval = 10
+    while True and retries < max_retry:
+        eni_info = get_network_interface_by_id(eni_id)
+        if eni_info:
+            status = eni_info["Attachment"]["Status"]
+            if status == "detached":
+                break
+            elif status == "attached" or status == "detaching":
+                time.sleep(sleep_interval)
+                retries += 1
+                continue
+            else:
+                log.warning("Network interface %s in unexpected attachment status: %s" % (eni_id, status))
+                time.sleep(sleep_interval)
+                retries += 1
+        else:
+            log.warning("Network interface %s not found" % eni_id)
+            time.sleep(sleep_interval)
+            retries += 1
+    else:
+        log.warning("Waiting for network interface %s detachment timed out" % eni_id)
+
 def create_eni(subnet_id, security_group_id, tag):
     """
     Create ENI and populate the description with the tag content.
@@ -25,8 +73,7 @@ def create_eni(subnet_id, security_group_id, tag):
     :param tag:
     :return:
     """
-    # TODO remove tag
-    log.info("Creating ENI with tag %s" % tag)
+    # TODO remove description as tag
     eni_id = None
     try:
         eni = ec2_client.create_network_interface(
@@ -35,34 +82,39 @@ def create_eni(subnet_id, security_group_id, tag):
             Description=tag
         )
         eni_id = eni['NetworkInterface']['NetworkInterfaceId']
-        log.info("Successfully created Network Interface %s" % eni_id)
+        log.info("Creating network interface %s in subnet %s with tag %s" % (
+            eni_id,
+            subnet_id,
+            tag
+        ))
     except ClientError as e:
-        log.error(
-            "Error creating network interface: {}".
-            format(e.response['Error']['Code'])
+        reason = "network interface %s in subnet %s with tag %s" % (
+            eni_id,
+            subnet_id,
+            tag
         )
+        log.exception(reason)
+        time.sleep(5)
+
+    log.info("Waiting for network interface %s creation finish" % eni_id)
+    eni_wait_for_creation(eni_id)
     return eni_id
 
-def delete_eni(eni_id):
-    log.info("Deleting ENI %s" % eni_id)
-    try:
-        ec2_client.delete_network_interface(
-            NetworkInterfaceId=eni_id
-        )
-    except ClientError as e:
-        log.error(
-            "Error deleting network interface: {}".
-             format(e.response['Error']['Code'])
-        )
-
-def detach_eni(attachment_id):
+def detach_eni(eni_id, attachment_id):
     try:
         response = ec2_client.detach_network_interface(
             AttachmentId=attachment_id,
             Force=True
         )
+        log.info("Detaching network interface %s" % eni_id)
     except ClientError as e:
-        log.error("Error detaching network interface: %s" % e.response['Error']['Code'])
+        reason = "Failed to detach %s" % attachment_id
+        log.exception(reason)
+        time.sleep(5)
+        return False
+    log.info("Waiting for network interface %s detachment finish" % eni_id)
+    eni_wait_for_detachment(eni_id)
+    return True
 
 def eni_assgin_tag(eni_id, tag):
     # AWS SDK bug #1450
@@ -82,17 +134,15 @@ def eni_assgin_tag(eni_id, tag):
 
 @handler.create
 def on_create(event, context):
-    log.info("Handle resource create event")
+    log.info("Handle resource create event %s" % json.dumps(event, indent=2))
     # get parameters passed in
     props = event["ResourceProperties"]
-    stack_id = event["StackId"]
     nodes_per_zone = int(props["NodesPerZone"])
     zone_count = int(props["NumberOfZones"])
     parent_stack_name = props["ParentStackName"]
     parent_stack_id = props["ParentStackId"]
     subnets = props["Subnets"]
     security_group_id = props["SecurityGroup"]
-    log.info("Event: %s" % str(event))
 
     # prepare ENI meta information
     id_hash = hashlib.md5(parent_stack_id.encode()).hexdigest()
@@ -104,33 +154,29 @@ def on_create(event, context):
             eni_idx = i * nodes_per_zone + j
             tag = eni_tag_prefix + str(eni_idx)
             eni_id = create_eni(subnets[i], security_group_id, tag)
+            if not eni_id:
+                reason = "Failed to create network interface with tag %s" % tag
+                return cfn_failure_response(event, reason)
+
             # TODO AWS SDK bug #1450
             # eni_assgin_tag(eni_id=eni_id, tag=tag)
 
-    return {
-       "Status" : "SUCCESS",
-       "RequestId" : event["RequestId"],
-       "LogicalResourceId" : event["LogicalResourceId"],
-       "StackId" : stack_id,
-       "PhysicalResourceId" : get_physical_resource_id(event["RequestId"])
-    }
+    return cfn_success_response(event)
 
 @handler.update
 def on_update(event, context):
     # TODO based on the new ENI count, adding or removing ENIs
-    pass
+    return cfn_success_response(event)
 
 @handler.delete
 def on_delete(event, context):
-    log.info("Handle resource delete event")
+    log.info("Handle resource delete event %s " % json.dumps(event, indent=2))
     # get parameters passed in
     props = event["ResourceProperties"]
-    stack_id = event["StackId"]
     nodes_per_zone = int(props["NodesPerZone"])
     zone_count = int(props["NumberOfZones"])
     parent_stack_name = props["ParentStackName"]
     parent_stack_id = props["ParentStackId"]
-    log.info("Event: %s" % str(event))
 
     # prepare ENI meta information
     id_hash = hashlib.md5(parent_stack_id.encode()).hexdigest()
@@ -141,53 +187,47 @@ def on_delete(event, context):
         for j in range(0,nodes_per_zone):
             eni_idx = i * nodes_per_zone + j
             tag = eni_tag_prefix + str(eni_idx)
-            log.info("Query EC2 for ENI with tag %s" % tag)
+            log.info("Querying EC2 for ENI with tag %s" % tag)
             # query
-            response = ec2_client.describe_network_interfaces(
-                # TODO AWS SDK bug #1450
-                # Filters=[{
-                #     "Name": "tag:cluster-eni-id",
-                #     "Values": [tag]
-                # }]
-                Filters=[{
-                    "Name": "description",
-                    "Values": [tag]
-                }]
-            )
+            response = None
+            try:
+                response = ec2_client.describe_network_interfaces(
+                    # TODO AWS SDK bug #1450
+                    # Filters=[{
+                    #     "Name": "tag:cluster-eni-id",
+                    #     "Values": [tag]
+                    # }]
+                    Filters=[{
+                        "Name": "description",
+                        "Values": [tag]
+                    }]
+                )
+            except ClientError as e:
+                reason = "Failed to describe network interface with tag %s" % tag
+                log.exception(reason)
+                time.sleep(5)
+                continue
+
             for eni_info in response["NetworkInterfaces"]:
                 eni_id = eni_info["NetworkInterfaceId"]
                 log.info("Found network interface %s " % eni_id)
-                # detach
-                max_retry = 10
-                retries = 0
-                curr = eni_info
-                while curr["Status"] != "available" and retries < max_retry:
-                    status = curr["Status"]
-                    if status == "in-use":
-                        log.info("Network interface %s is in use, detaching it" % eni_id)
-                        attachment_id = curr["Attachment"]["AttachmentId"]
-                        detach_eni(attachment_id)
-                        curr = get_network_interface_by_id(eni_id) # refresh eni info
-                    elif status == "detaching" or status == "attaching":
-                        log.info("Network interface %s is %s, waiting for completion" % (eni_id, status))
-                        time.sleep(5)
-                        retries += 1
-                        curr = get_network_interface_by_id(eni_id)  # refresh eni info
-                    else:
-                        log.error(
-                            "Network interface %s unexpected  status: %s" %
-                            (eni_id, status)
-                        )
-                if curr["Status"] != "available":
-                    log.error("Failed to delete network interface %s: unable to detach")
-                    continue
-                # delete
-                delete_eni(eni_id)
 
-    return {
-        "Status": "SUCCESS",
-        "RequestId": event["RequestId"],
-        "LogicalResourceId": event["LogicalResourceId"],
-        "StackId": stack_id,
-        "PhysicalResourceId": get_physical_resource_id(event["RequestId"])
-    }
+                # detach
+                if "Attachment" in eni_info and (
+                            eni_info["Attachment"]["Status"] == "attached" or
+                                eni_info["Attachment"]["Status"] == "attaching"
+                ):
+                    attachment_id = eni_info["Attachment"]["AttachmentId"]
+                    if not detach_eni(eni_id, attachment_id):
+                        reason = "Failed to detach network interface %s" % eni_id
+                        log.error(reason)
+                try:
+                    ec2_client.delete_network_interface(
+                        NetworkInterfaceId=eni_id
+                    )
+                    log.info("Deleting network interface %s" % eni_id)
+                except ClientError as e:
+                    reason = "Failed to delete network interface %s" % eni_id
+                    log.exception(reason)
+
+    return cfn_success_response(event)
