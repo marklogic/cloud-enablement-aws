@@ -31,13 +31,16 @@ def get_network_interface_by_id(eni_id):
     else:
         log.error("Get network interface by id %s failed: %s" % (eni_id, str(response)))
 
-def cfn_success_response(event):
+def cfn_success_response(event, reuse_physical_id=False):
     return {
         "Status": "SUCCESS",
         "RequestId": event["RequestId"],
         "LogicalResourceId": event["LogicalResourceId"],
         "StackId": event["StackId"],
-        "PhysicalResourceId": get_physical_resource_id(event["RequestId"])
+        "PhysicalResourceId":
+            event["PhysicalResourceId"]
+            if reuse_physical_id
+            else get_physical_resource_id(event["RequestId"])
     }
 
 def cfn_failure_response(event, reason):

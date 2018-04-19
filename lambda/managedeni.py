@@ -19,6 +19,7 @@ handler = cfn_resource.Resource()
 ec2_client = boto3.client('ec2')
 ec2_resource = boto3.resource('ec2')
 
+
 def eni_wait_for_creation(eni_id):
     max_retry = 10
     retries = 0
@@ -65,6 +66,33 @@ def eni_wait_for_detachment(eni_id):
     else:
         log.warning("Waiting for network interface %s detachment timed out" % eni_id)
 
+def eni_exist(subnet_id, security_group_id, tag):
+    response = ec2_client.describe_network_interfaces(
+        # TODO AWS SDK bug #1450
+        # Filters=[{
+        #     "Name": "tag:cluster-eni-id",
+        #     "Values": [tag]
+        # }]
+        Filters=[
+            {
+                "Name": "description",
+                "Values": [tag]
+            },
+            {
+                "Name": "subnet-id",
+                "Values": [subnet_id]
+            },
+            {
+                "Name": "group-id",
+                "Values": [security_group_id]
+            }
+        ]
+    )
+    if len(response["NetworkInterfaces"]) > 0:
+        return response["NetworkInterfaces"][0]["NetworkInterfaceId"]
+    else:
+        return None
+
 def create_eni(subnet_id, security_group_id, tag):
     """
     Create ENI and populate the description with the tag content.
@@ -74,7 +102,9 @@ def create_eni(subnet_id, security_group_id, tag):
     :return:
     """
     # TODO remove description as tag
-    eni_id = None
+    eni_id = eni_exist(subnet_id, security_group_id, tag)
+    if eni_id != None:
+        return eni_id
     try:
         eni = ec2_client.create_network_interface(
             Groups=[security_group_id],
@@ -156,7 +186,8 @@ def on_create(event, context):
             eni_id = create_eni(subnets[i], security_group_id, tag)
             if not eni_id:
                 reason = "Failed to create network interface with tag %s" % tag
-                return cfn_failure_response(event, reason)
+                log.warning(reason)
+                continue
 
             # TODO AWS SDK bug #1450
             # eni_assgin_tag(eni_id=eni_id, tag=tag)
@@ -165,8 +196,54 @@ def on_create(event, context):
 
 @handler.update
 def on_update(event, context):
-    # TODO based on the new ENI count, adding or removing ENIs
-    return cfn_success_response(event)
+    log.info("Handle resource update event %s" % json.dumps(event, indent=2))
+    # get parameters passed in
+    props = event["ResourceProperties"]
+    nodes_per_zone = int(props["NodesPerZone"])
+    zone_count = int(props["NumberOfZones"])
+    parent_stack_name = props["ParentStackName"]
+    parent_stack_id = props["ParentStackId"]
+    subnets = props["Subnets"]
+    security_group_id = props["SecurityGroup"]
+    # old properties
+    old_props = event["OldResourceProperties"]
+    old_nodes_per_zone = int(old_props["NodesPerZone"])
+    old_zone_count = int(old_props["NumberOfZones"])
+
+    # validate diff and handle special case
+    if old_zone_count != zone_count:
+        reason = "Updating number of zones is not supported"
+        log.error(reason)
+        return cfn_failure_response(event,reason)
+    if old_nodes_per_zone == nodes_per_zone:
+        return cfn_success_response(event, reuse_physical_id=True)
+    if old_nodes_per_zone > nodes_per_zone and nodes_per_zone != 0:
+        reason = "Scaling down the number of nodes per zone by updating the stack is not recommended. " \
+                 "Please manually remove unused network interface."
+        log.warning(reason)
+        return cfn_failure_response(event, reason)
+    if nodes_per_zone == 0:
+        log.info("Hibernating the cluster, retain network interfaces")
+        return cfn_success_response(event, reuse_physical_id=True)
+
+    # prepare ENI meta information
+    id_hash = hashlib.md5(parent_stack_id.encode()).hexdigest()
+    eni_tag_prefix = parent_stack_name + "-" + id_hash + "_"
+
+    eni_idx = old_zone_count * old_nodes_per_zone
+    for i in range(zone_count):
+        for j in range(nodes_per_zone):
+            if j < old_nodes_per_zone:
+                continue
+            tag = eni_tag_prefix + str(eni_idx)
+            eni_idx += 1
+            eni_id = create_eni(subnets[i], security_group_id, tag)
+            if not eni_id:
+                reason = "Failed to create network interface with tag %s" % tag
+                log.warning(reason)
+                continue
+
+    return cfn_success_response(event, reuse_physical_id=True)
 
 @handler.delete
 def on_delete(event, context):
