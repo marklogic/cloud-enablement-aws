@@ -48,6 +48,9 @@ def eni_wait_for_detachment(eni_id):
     while True and retries < max_retry:
         eni_info = get_network_interface_by_id(eni_id)
         if eni_info:
+            if "Attachment" not in eni_info:
+                break
+
             status = eni_info["Attachment"]["Status"]
             if status == "detached":
                 break
