@@ -196,48 +196,54 @@ Mappings:
     TemplateUrl:
       base: 'https://s3-us-west-2.amazonaws.com/cloud-enablement-devevlop-us-west-2/aws/templates/' # update when release
   LicenseRegion2AMI:
-      us-east-1:
-        Enterprise: "ami-e95af193"
-        BYOL: "ami-9650fbec"
-      us-east-2:
-        Enterprise: "ami-3a0f205f"
-        BYOL: "ami-070c2362"
-      us-west-1:
-        Enterprise: "ami-b9330cd9"
-        BYOL: "ami-d5330cb5"
-      us-west-2:
-        Enterprise: "ami-8e25eef6"
-        BYOL: "ami-863ff4fe"
-      eu-central-1:
-        Enterprise: "ami-fe23a691"
-        BYOL: "ami-152eab7a"
-      eu-west-1:
-        Enterprise: "ami-34c0604d"
-        BYOL: "ami-74c5650d"
-      ap-south-1:
-        Enterprise: "ami-96b0fdf9"
-        BYOL: "ami-31b6fb5e"
-      ap-southeast-1:
-        Enterprise: "ami-5ad79a39"
-        BYOL: "ami-b4d79ad7"
-      ap-southeast-2:
-        Enterprise: "ami-c825cbaa"
-        BYOL: "ami-b722ccd5"
-      ap-northeast-1:
-        Enterprise: "ami-f5e04f93"
-        BYOL: "ami-46f35c20"
-      ap-northeast-2:
-        Enterprise: "ami-1eb51170"
-        BYOL: "ami-d9b410b7"
-      sa-east-1:
-        Enterprise: "ami-3f235853"
-        BYOL: "ami-18235874"
-      eu-west-2:
-        Enterprise: "ami-b71b07d3"
-        BYOL: "ami-2d140849"
-      ca-central-1:
-        Enterprise: "ami-9f4ef6fb"
-        BYOL: "ami-3f44fc5b"
+    us-east-1:
+      Enterprise: ami-f755d188
+      BYOL: ami-3952d646
+    us-east-2:
+      Enterprise: ami-ce7e43ab
+      BYOL: ami-827f42e7
+    us-west-1:
+      Enterprise: ami-33d7c853
+      BYOL: ami-7cd8c71c
+    us-west-2:
+      Enterprise: ami-904334e8
+      BYOL: ami-1a423562
+    eu-central-1:
+      Enterprise: ami-090724e2
+      BYOL: ami-b9052652
+    eu-west-1:
+      Enterprise: ami-d29ab1ab
+      BYOL: ami-2e9ab157
+    ap-south-1:
+      Enterprise: ami-debc9cb1
+      BYOL: ami-74bd9d1b
+    ap-southeast-1:
+      Enterprise: ami-00b09b7c
+      BYOL: ami-7eb79c02
+    ap-southeast-2:
+      Enterprise: ami-5c40943e
+      BYOL: ami-da4793b8
+    ap-northeast-1:
+      Enterprise: ami-958b64ea
+      BYOL: ami=ami-3089664f
+    ap-northeast-2:
+      Enterprise: ami-264ee748
+      BYOL: ami-884be2e6
+    sa-east-1:
+      Enterprise: ami-58e5b734
+      BYOL: ami-06e7b56a
+    eu-west-2:
+      Enterprise: ami-04d83a63
+      BYOL: ami-70de3c17
+    ca-central-1:
+      Enterprise: ami-a8e767cc
+      BYOL: ami-ede56589
+    eu-west-3:
+      Enterprise: ami-9f9425e2
+      BYOL: ami-999726e4
+    us-gov-west-1:
+      Enterprise: ami-32ba2d53
+      BYOL: ami-cb72e5aa
 Resources:
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
