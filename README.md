@@ -1,4 +1,4 @@
-# CloudFormation Template for MarkLogic on AWS
+# MarkLogic CloudFormation Template on AWS
 
 | Template Type | Launch in US West 2 (Oregon) |
 | -- | -- |
