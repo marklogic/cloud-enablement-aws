@@ -28,4 +28,5 @@ The Solution Template consists of a mainTemplate, createUiDefinition, several su
 
 ## Documentation
 
+- [MarkLogic Server on Azure Guide](http://docs.marklogic.com/guide/azure)
 - [MarkLogic on Azure](https://developer.marklogic.com/products/cloud/azure)  
