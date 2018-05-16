@@ -127,7 +127,7 @@
         }
     },
     "variables": {
-        "templateVersion": "9.0-4",
+        "templateVersion": "9.0-5",
         "templateBaseUrl": "[concat(parameters('baseUrl'),'/templates/')]",
         "scriptBaseUrl": "[concat(parameters('baseUrl'),'/scripts/')]",
         "clusterPrefix": "[replace(parameters('DeploymentName'),' ','')]",
