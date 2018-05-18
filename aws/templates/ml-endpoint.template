@@ -8,12 +8,15 @@ Metadata:
           default: "Interface Endpoint Configuration"
         Parameters:
           - S3Bucket
+          - VerDir
           - Vpc
           - SecurityGroup
           - Subnets
     ParameterLabels:
       S3Bucket:
         default: 'S3 Bucket Name'
+      VerDir:
+        default: 'Version Directory'
       Vpc:
         default: 'VPC'
       SecurityGroup:
@@ -23,6 +26,9 @@ Metadata:
 Parameters:
   S3Bucket:
     Description: The S3 bucket name that contains the lambda package. Must be in the same region.
+    Type: String
+  VerDir:
+    Description: The directory name of current version.
     Type: String
   Vpc:
     Description: ID for the VPC for which endpoint will be created
@@ -69,7 +75,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: endpoint.zip
+        S3Key: !Join ['/',[!Ref VerDir,'endpoint.zip']]
       Handler: endpoint.handler
       Role: !GetAtt [EndpointExecRole, Arn]
       Runtime: python3.6

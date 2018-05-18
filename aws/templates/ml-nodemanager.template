@@ -8,12 +8,18 @@ Metadata:
           default: 'Node Manager Lambda'
         Parameters:
           - S3Bucket
+          - VerDir
     ParameterLabels:
       S3Bucket:
         default: S3 Bucket Name
+      VerDir:
+        default: 'Version Directory'
 Parameters:
   S3Bucket:
     Description: The S3 bucket name that contains the lambda package. Must be in the same region.
+    Type: String
+  VerDir:
+    Description: The directory name of current version.
     Type: String
 Resources:
   NodeManagerExecRole:
@@ -66,7 +72,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: node_manager.zip
+        S3Key: !Join ['/', [!Ref VerDir,'node_manager.zip']]
       Handler: nodemanager.handler
       Role: !GetAtt [NodeManagerExecRole, Arn]
       Runtime: python3.6

@@ -15,6 +15,7 @@ Metadata:
           - Subnet3Cidr
           - S3Bucket
           - TemplateURLBase
+          - VerDir
     ParameterLabels:
       MultiZone:
         default: Multiple Zone
@@ -32,6 +33,8 @@ Metadata:
         default: 'S3 Bucket Name'
       TemplateURLBase:
         default: 'Template URL Base'
+      VerDir:
+        default: 'Version Directory'
 Parameters:
   MultiZone:
     Description: Whether there are the cluster will be deployed to multiple Availability Zones.
@@ -78,6 +81,9 @@ Parameters:
     Type: String
   TemplateURLBase:
     Description: The base URL for sub-templates.
+    Type: String
+  VerDir:
+    Description: The directory name of current version.
     Type: String
 Conditions:
   DeployMultiZone: !Equals [!Ref MultiZone, 'true']
@@ -217,6 +223,7 @@ Resources:
     Properties:
       Parameters:
         S3Bucket: !Ref S3Bucket
+        VerDir: !Ref VerDir
         Vpc: !Ref MarkLogicVPC
         SecurityGroup: !Ref EndpointSecurityGroup
         Subnets: !If
