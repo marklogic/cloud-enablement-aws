@@ -13,13 +13,13 @@ Metadata:
       S3Bucket:
         default: S3 Bucket Name
       S3Directory:
-        default: 'Version Directory'
+        default: S3 Directory Name
 Parameters:
   S3Bucket:
     Description: The S3 bucket name that contains the lambda package. Must be in the same region.
     Type: String
   S3Directory:
-    Description: The directory name of current version.
+    Description: The directory name inside the S3 bucket.
     Type: String
 Resources:
   NodeManagerExecRole:

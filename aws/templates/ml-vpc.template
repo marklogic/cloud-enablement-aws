@@ -34,7 +34,7 @@ Metadata:
       TemplateURLBase:
         default: 'Template URL Base'
       S3Directory:
-        default: 'Version Directory'
+        default: 'S3 Directory Name'
 Parameters:
   MultiZone:
     Description: Whether there are the cluster will be deployed to multiple Availability Zones.
@@ -83,7 +83,7 @@ Parameters:
     Description: The base URL for sub-templates.
     Type: String
   S3Directory:
-    Description: The directory name of current version.
+    Description: The directory name inside the S3 bucket.
     Type: String
 Conditions:
   DeployMultiZone: !Equals [!Ref MultiZone, 'true']
