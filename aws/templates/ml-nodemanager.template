@@ -1,19 +1,25 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Launch Lambda function for MarkLogic Node Manager on AWS
 Metadata:
-  version: 9.0-5
+  version: 9.0-6
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
           default: 'Node Manager Lambda'
         Parameters:
           - S3Bucket
+          - S3Directory
     ParameterLabels:
       S3Bucket:
         default: S3 Bucket Name
+      S3Directory:
+        default: S3 Directory Name
 Parameters:
   S3Bucket:
     Description: The S3 bucket name that contains the lambda package. Must be in the same region.
+    Type: String
+  S3Directory:
+    Description: The directory name inside the S3 bucket.
     Type: String
 Resources:
   NodeManagerExecRole:
@@ -66,7 +72,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: node_manager.zip
+        S3Key: !Join ['/', [!Ref S3Directory,'node_manager.zip']]
       Handler: nodemanager.handler
       Role: !GetAtt [NodeManagerExecRole, Arn]
       Runtime: python3.6

@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS with a new VPC
 Metadata:
-  version: 9.0-5
+  version: 9.0-6
   binary: MarkLogic-9.0-5.x86_64.rpm # TODO
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -219,9 +219,11 @@ Conditions:
 Mappings:
   Variable:
     LambdaPackageBucket:
-      base: 'cloud-enablement-devevlop-' # update when release
+      base: 'marklogic-lambda-' # update when release
     TemplateUrl:
-      base: 'https://s3-us-west-2.amazonaws.com/cloud-enablement-devevlop-us-west-2/aws/templates/' # update when release
+      base: 'https://s3.amazonaws.com/marklogic-releases' # update when release
+    S3Directory:
+      base: '9.0-6'
   LicenseRegion2AMI:
     us-east-1:
       Enterprise: ami-f755d188
@@ -288,8 +290,9 @@ Resources:
         Subnet2Cidr: !Ref Subnet2Cidr
         Subnet3Cidr: !Ref Subnet3Cidr
         S3Bucket: !Join [ "", [!FindInMap [Variable,"LambdaPackageBucket","base"], !Ref 'AWS::Region']]
-        TemplateURLBase: !FindInMap [Variable,"TemplateUrl","base"]
-      TemplateURL: !Join ["", [!FindInMap [Variable,"TemplateUrl","base"],'ml-vpc.template']]
+        TemplateURLBase: !Join ["/", [!FindInMap [Variable,"TemplateUrl","base"],!FindInMap [Variable,"S3Directory","base"],'']]
+        S3Directory: !FindInMap [Variable,"S3Directory","base"]
+      TemplateURL: !Join ["/", [!FindInMap [Variable,"TemplateUrl","base"],!FindInMap [Variable,"S3Directory","base"],'ml-vpc.template']]
       TimeoutInMinutes: 5
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
@@ -303,6 +306,7 @@ Resources:
           - !Ref 'AWS::NoValue'
       Parameters:
         S3Bucket: !Join [ "", [!FindInMap [Variable,"LambdaPackageBucket","base"], !Ref 'AWS::Region']]
+        S3Directory: !FindInMap [Variable,"S3Directory","base"]
         NodesPerZone: !Ref NodesPerZone
         NumberOfZones: !Ref NumberOfZones
         Subnets: !If
@@ -316,7 +320,7 @@ Resources:
         ParentStackName: !Ref 'AWS::StackName'
         ParentStackId: !Ref 'AWS::StackId'
         SecurityGroup: !Ref InstanceSecurityGroup
-      TemplateURL: !Join ['', [!FindInMap [Variable,"TemplateUrl","base"],'ml-managedeni.template']]
+      TemplateURL: !Join ['/', [!FindInMap [Variable,"TemplateUrl","base"],!FindInMap [Variable,"S3Directory","base"],'ml-managedeni.template']]
       TimeoutInMinutes: 5
   NodeMgrLambdaStack:
     Type: AWS::CloudFormation::Stack
@@ -329,7 +333,8 @@ Resources:
           - !Ref 'AWS::NoValue'
       Parameters:
         S3Bucket: !Join [ "", [!FindInMap [Variable,"LambdaPackageBucket","base"], !Ref 'AWS::Region']]
-      TemplateURL: !Join ['', [!FindInMap [Variable,"TemplateUrl","base"],'ml-nodemanager.template']]
+        S3Directory: !FindInMap [Variable,"S3Directory","base"]
+      TemplateURL: !Join ['/', [!FindInMap [Variable,"TemplateUrl","base"],!FindInMap [Variable,"S3Directory","base"],'ml-nodemanager.template']]
       TimeoutInMinutes: 5
   MarklogicVolume1:
     Type: 'AWS::EC2::Volume'
