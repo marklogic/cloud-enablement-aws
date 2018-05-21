@@ -1,14 +1,14 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Launch Managed ENI for MarkLogic Cluster on AWS
 Metadata:
-  version: 9.0-5
+  version: 9.0-6
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
           default: 'Managed ENI Configuration'
         Parameters:
           - S3Bucket
-          - VerDir
+          - S3Directory
           - NodesPerZone
           - NumberOfZones
           - Subnets
@@ -17,7 +17,7 @@ Metadata:
     ParameterLabels:
       S3Bucket:
         default: S3 Bucket Name
-      VerDir:
+      S3Directory:
         default: 'Version Directory'
       NodesPerZone:
         default: Nodes per Zone
@@ -33,7 +33,7 @@ Parameters:
   S3Bucket:
     Description: The S3 bucket name that contains the lambda package. Must be in the same region.
     Type: String
-  VerDir:
+  S3Directory:
     Description: The directory name of current version.
     Type: String
   NodesPerZone:
@@ -101,7 +101,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Join ['/', [!Ref VerDir,'managed_eni.zip']]
+        S3Key: !Join ['/', [!Ref S3Directory,'managed_eni.zip']]
       Handler: managedeni.handler
       Role: !GetAtt [ManagedEniExecRole, Arn]
       Runtime: python3.6

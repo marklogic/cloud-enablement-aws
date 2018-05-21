@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS with a new VPC
 Metadata:
-  version: 9.0-5
+  version: 9.0-6
   binary: MarkLogic-9.0-5.x86_64.rpm # TODO
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -219,11 +219,11 @@ Conditions:
 Mappings:
   Variable:
     LambdaPackageBucket:
-      base: 'marklogic-lambda-' #'cloud-enablement-devevlop-' update when release 
+      base: 'marklogic-lambda-' # update when release
     TemplateUrl:
-      base: 'https://s3.amazonaws.com/marklogic-releases' #https://s3-us-west-2.amazonaws.com/cloud-enablement-devevlop-us-west-2/aws/templates/' update when release
+      base: 'https://s3.amazonaws.com/marklogic-releases' # update when release
     VersionDir:
-      base: '9.0-5'
+      base: '9.0-6'
   LicenseRegion2AMI:
     us-east-1:
       Enterprise: ami-f755d188
@@ -291,7 +291,7 @@ Resources:
         Subnet3Cidr: !Ref Subnet3Cidr
         S3Bucket: !Join [ "", [!FindInMap [Variable,"LambdaPackageBucket","base"], !Ref 'AWS::Region']]
         TemplateURLBase: !Join ["/", [!FindInMap [Variable,"TemplateUrl","base"],!FindInMap [Variable,"VersionDir","base"],'']]
-        VerDir: !FindInMap [Variable,"VersionDir","base"]
+        S3Directory: !FindInMap [Variable,"VersionDir","base"]
       TemplateURL: !Join ["/", [!FindInMap [Variable,"TemplateUrl","base"],!FindInMap [Variable,"VersionDir","base"],'ml-vpc.template']]
       TimeoutInMinutes: 5
   ManagedEniStack:
@@ -306,7 +306,7 @@ Resources:
           - !Ref 'AWS::NoValue'
       Parameters:
         S3Bucket: !Join [ "", [!FindInMap [Variable,"LambdaPackageBucket","base"], !Ref 'AWS::Region']]
-        VerDir: !FindInMap [Variable,"VersionDir","base"]
+        S3Directory: !FindInMap [Variable,"VersionDir","base"]
         NodesPerZone: !Ref NodesPerZone
         NumberOfZones: !Ref NumberOfZones
         Subnets: !If
@@ -333,7 +333,7 @@ Resources:
           - !Ref 'AWS::NoValue'
       Parameters:
         S3Bucket: !Join [ "", [!FindInMap [Variable,"LambdaPackageBucket","base"], !Ref 'AWS::Region']]
-        VerDir: !FindInMap [Variable,"VersionDir","base"]
+        S3Directory: !FindInMap [Variable,"VersionDir","base"]
       TemplateURL: !Join ['/', [!FindInMap [Variable,"TemplateUrl","base"],!FindInMap [Variable,"VersionDir","base"],'ml-nodemanager.template']]
       TimeoutInMinutes: 5
   MarklogicVolume1:

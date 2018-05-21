@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Create a VPC for MarkLogic cluster
 Metadata:
-  version: 9.0-5
+  version: 9.0-6
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -15,7 +15,7 @@ Metadata:
           - Subnet3Cidr
           - S3Bucket
           - TemplateURLBase
-          - VerDir
+          - S3Directory
     ParameterLabels:
       MultiZone:
         default: Multiple Zone
@@ -33,7 +33,7 @@ Metadata:
         default: 'S3 Bucket Name'
       TemplateURLBase:
         default: 'Template URL Base'
-      VerDir:
+      S3Directory:
         default: 'Version Directory'
 Parameters:
   MultiZone:
@@ -82,7 +82,7 @@ Parameters:
   TemplateURLBase:
     Description: The base URL for sub-templates.
     Type: String
-  VerDir:
+  S3Directory:
     Description: The directory name of current version.
     Type: String
 Conditions:
@@ -223,7 +223,7 @@ Resources:
     Properties:
       Parameters:
         S3Bucket: !Ref S3Bucket
-        VerDir: !Ref VerDir
+        S3Directory: !Ref S3Directory
         Vpc: !Ref MarkLogicVPC
         SecurityGroup: !Ref EndpointSecurityGroup
         Subnets: !If

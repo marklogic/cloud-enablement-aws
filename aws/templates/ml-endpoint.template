@@ -1,21 +1,21 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Create interface endpoint for a VPC using AWS Lambda
 Metadata:
-  version: 9.0-5
+  version: 9.0-6
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
           default: "Interface Endpoint Configuration"
         Parameters:
           - S3Bucket
-          - VerDir
+          - S3Directory
           - Vpc
           - SecurityGroup
           - Subnets
     ParameterLabels:
       S3Bucket:
         default: 'S3 Bucket Name'
-      VerDir:
+      S3Directory:
         default: 'Version Directory'
       Vpc:
         default: 'VPC'
@@ -27,7 +27,7 @@ Parameters:
   S3Bucket:
     Description: The S3 bucket name that contains the lambda package. Must be in the same region.
     Type: String
-  VerDir:
+  S3Directory:
     Description: The directory name of current version.
     Type: String
   Vpc:
@@ -75,7 +75,7 @@ Resources:
     Properties:
       Code:
         S3Bucket: !Ref S3Bucket
-        S3Key: !Join ['/',[!Ref VerDir,'endpoint.zip']]
+        S3Key: !Join ['/',[!Ref S3Directory,'endpoint.zip']]
       Handler: endpoint.handler
       Role: !GetAtt [EndpointExecRole, Arn]
       Runtime: python3.6
