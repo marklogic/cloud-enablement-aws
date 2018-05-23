@@ -25,7 +25,7 @@ def eni_wait_for_creation(eni_id):
     retries = 0
     sleep_interval = 10
     while True and retries < max_retry:
-        eni_info = get_network_interface_by_id(eni_id)
+        eni_info = get_network_interface_by_id(eni_id) #used to replace ec2_resource.NetworkInterface(id=eni_id)
         if eni_info:
             status = eni_info["Status"]
             if status == "available":
@@ -46,7 +46,7 @@ def eni_wait_for_detachment(eni_id):
     retries = 0
     sleep_interval = 10
     while True and retries < max_retry:
-        eni_info = get_network_interface_by_id(eni_id)
+        eni_info = ec2_resource.NetworkInterface(id=eni_id)
         if eni_info:
             if "Attachment" not in eni_info:
                 break
@@ -71,14 +71,9 @@ def eni_wait_for_detachment(eni_id):
 
 def eni_exist(subnet_id, security_group_id, tag):
     response = ec2_client.describe_network_interfaces(
-        # TODO AWS SDK bug #1450
-        # Filters=[{
-        #     "Name": "tag:cluster-eni-id",
-        #     "Values": [tag]
-        # }]
         Filters=[
             {
-                "Name": "description",
+                "Name": "tag:cluster-eni-id",
                 "Values": [tag]
             },
             {
@@ -104,7 +99,6 @@ def create_eni(subnet_id, security_group_id, tag):
     :param tag:
     :return:
     """
-    # TODO remove description as tag
     eni_id = eni_exist(subnet_id, security_group_id, tag)
     if eni_id != None:
         return eni_id
@@ -112,7 +106,6 @@ def create_eni(subnet_id, security_group_id, tag):
         eni = ec2_client.create_network_interface(
             Groups=[security_group_id],
             SubnetId=subnet_id,
-            Description=tag
         )
         eni_id = eni['NetworkInterface']['NetworkInterfaceId']
         log.info("Creating network interface %s in subnet %s with tag %s" % (
@@ -149,20 +142,18 @@ def detach_eni(eni_id, attachment_id):
     eni_wait_for_detachment(eni_id)
     return True
 
-def eni_assgin_tag(eni_id, tag):
-    # AWS SDK bug #1450
-    # https://github.com/boto/boto3/issues/1450
-    # log.info(eni_id)
-    # log.info(type(eni_id))
-    # eni = ec2_resource.NetworkInterface(id=eni_id)
-    # tag = eni.create_tags(
-    #     Tags=[
-    #         {
-    #             'Key': 'cluster-eni-id',
-    #             'Value': tag
-    #         }
-    #     ]
-    # )
+def eni_assign_tag(eni_id, tag):
+    log.info(eni_id)
+    log.info(type(eni_id))
+    eni = ec2_resource.NetworkInterface(id=eni_id)
+    tag = eni.create_tags(
+        Tags=[
+            {
+                'Key': 'cluster-eni-id',
+                'Value': tag
+            }
+        ]
+    )
     pass
 
 @handler.create
@@ -192,8 +183,7 @@ def on_create(event, context):
                 log.warning(reason)
                 continue
 
-            # TODO AWS SDK bug #1450
-            # eni_assgin_tag(eni_id=eni_id, tag=tag)
+            eni_assign_tag(eni_id=eni_id, tag=tag)
 
     return cfn_success_response(event)
 
@@ -272,13 +262,8 @@ def on_delete(event, context):
             response = None
             try:
                 response = ec2_client.describe_network_interfaces(
-                    # TODO AWS SDK bug #1450
-                    # Filters=[{
-                    #     "Name": "tag:cluster-eni-id",
-                    #     "Values": [tag]
-                    # }]
                     Filters=[{
-                        "Name": "description",
+                        "Name": "tag:cluster-eni-id",
                         "Values": [tag]
                     }]
                 )
