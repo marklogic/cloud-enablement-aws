@@ -23,7 +23,7 @@ def eni_wait_for_attachment(eni_id):
     eni_info = None
     while True and retries < max_rety:
         try:
-            eni_info = get_network_interface_by_id(eni_id)
+            eni_info = ec2_resource.NetworkInterface(id=eni_id) #get_network_interface_by_id(eni_id)
         except ClientError as e:
             reason = "Failed to get network interface by id %s" % eni_id
             log.exception(reason)
@@ -102,14 +102,9 @@ def on_launch(msg):
             log.info("Querying unattached ENI with tag %s" % tag)
             # query
             response = ec2_client.describe_network_interfaces(
-                # TODO AWS SDK bug #1450
-                # Filters=[{
-                #     "Name": "tag:cluster-eni-id",
-                #     "Values": [tag]
-                # }]
                 Filters=[
                     {
-                        "Name": "description",
+                        "Name": "tag:cluster-eni-id",
                         "Values": [tag]
                     },
                     {
