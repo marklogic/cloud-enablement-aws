@@ -143,8 +143,6 @@ def detach_eni(eni_id, attachment_id):
     return True
 
 def eni_assign_tag(eni_id, tag):
-    log.info(eni_id)
-    log.info(type(eni_id))
     eni = ec2_resource.NetworkInterface(id=eni_id)
     tag = eni.create_tags(
         Tags=[
