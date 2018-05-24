@@ -25,7 +25,8 @@ def eni_wait_for_creation(eni_id):
     retries = 0
     sleep_interval = 10
     while True and retries < max_retry:
-        eni_info = get_network_interface_by_id(eni_id) #used to replace ec2_resource.NetworkInterface(id=eni_id)
+        # resource is not ready yet, not visible to 'ec2_resource.NetworkInterface(id=eni_id)'
+        eni_info = get_network_interface_by_id(eni_id)
         if eni_info:
             status = eni_info["Status"]
             if status == "available":

@@ -7,7 +7,6 @@ import hashlib
 import json
 import time
 from botocore.exceptions import ClientError
-from utils import get_network_interface_by_id
 
 log = logging.getLogger()
 log.setLevel(logging.INFO)
@@ -23,7 +22,7 @@ def eni_wait_for_attachment(eni_id):
     eni_info = None
     while True and retries < max_rety:
         try:
-            eni_info = ec2_resource.NetworkInterface(id=eni_id) #get_network_interface_by_id(eni_id)
+            eni_info = ec2_resource.NetworkInterface(id=eni_id)
         except ClientError as e:
             reason = "Failed to get network interface by id %s" % eni_id
             log.exception(reason)
