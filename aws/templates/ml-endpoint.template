@@ -107,3 +107,12 @@ Resources:
       ServiceName: !Sub 'com.amazonaws.${AWS::Region}.kms'
       Subnets: !Ref Subnets
       SecurityGroup: !Ref SecurityGroup
+  SnsInterfaceEndpoint:
+    Type: 'Custom::SnsInterfaceEndpoint'
+    DependsOn: EndpointFunction
+    Properties:
+      ServiceToken: !GetAtt [EndpointFunction, Arn]
+      Vpc: !Ref Vpc
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.sns'
+      Subnets: !Ref Subnets
+      SecurityGroup: !Ref SecurityGroup
