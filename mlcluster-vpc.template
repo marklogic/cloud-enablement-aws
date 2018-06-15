@@ -97,7 +97,9 @@ Parameters:
     AllowedValues:
       - ---- Essential Enterprise and Bring-Your-Own-License ----
       - m3.xlarge
+      - m5.xlarge
       - c3.xlarge
+      - c5.xlarge
       - r3.xlarge
       - --------------- Essential Enterprise Only ---------------
       - m4.xlarge
@@ -105,12 +107,18 @@ Parameters:
       - m3.medium
       - m3.large
       - m3.2xlarge
+      - m5.large
+      - m5.2xlarge
       - cc1.4xlarge
       - cc2.8xlarge
       - c3.large
       - c3.2xlarge
       - c3.4xlarge
       - c3.8xlarge
+      - c5.large
+      - c5.2xlarge
+      - c5.4xlarge
+      - c5.9xlarge
       - cr1.8xlarge
       - r3.large
       - r3.2xlarge
