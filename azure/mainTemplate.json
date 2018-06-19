@@ -250,7 +250,14 @@
             "adminUsername": "[parameters('VirtualMachineUser')]",
             "sshKey": "[parameters('SSHPublicKey')]",
             "osDiskAcctType": "[if(equals(parameters('OSStorage'),'standard'),'Standard_LRS','Premium_LRS')]",
-            "networkInterfaceName": "[variables('networkInterfaceSetting').name]"
+            "networkInterfaceName": "[variables('networkInterfaceSetting').name]",
+
+            "licenseKey": "[parameters('LicenseKey')]",
+            "licensee": "[parameters('Licensee')]",
+            "nodePublicIpNameV4": "[variables('nodePublicIpSetting').namev4]",
+            "mlAdminUsername": "[parameters('AdminUser')]",
+            "mlAdminPassword": "[parameters('AdminPassword')]",
+            "azDisk": "4"
         },
         "bootstrapNodeExtSetting": {
             "vmName": "[variables('vmSetting').vmName]",
