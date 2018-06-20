@@ -250,7 +250,14 @@
             "adminUsername": "[parameters('VirtualMachineUser')]",
             "sshKey": "[parameters('SSHPublicKey')]",
             "osDiskAcctType": "[if(equals(parameters('OSStorage'),'standard'),'Standard_LRS','Premium_LRS')]",
-            "networkInterfaceName": "[variables('networkInterfaceSetting').name]"
+            "networkInterfaceName": "[variables('networkInterfaceSetting').name]",
+
+            "licenseKey": "[parameters('LicenseKey')]",
+            "licensee": "[parameters('Licensee')]",
+            "nodePublicIpNameV4": "[variables('nodePublicIpSetting').namev4]",
+            "mlAdminUsername": "[parameters('AdminUser')]",
+            "mlAdminPassword": "[parameters('AdminPassword')]",
+            "azDisk": 4
         },
         "bootstrapNodeExtSetting": {
             "vmName": "[variables('vmSetting').vmName]",
@@ -259,7 +266,7 @@
             "bootstrapNodeScriptUrl": "[variables('scriptUrls').bootstrapNodeScriptUrl]",
             "initScriptUrl": "[variables('scriptUrls').initScriptUrl]",
             "nodePublicIpName": "[variables('nodePublicIpSetting').namev4]",
-            "cmdPrefix": "[concat('sudo sh config-bootstrap-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 public ',parameters('LicenseKey'),' ',parameters('Licensee'))]"
+            "cmdPrefix": "[concat('sudo sh config-bootstrap-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 public')]"
         },
         "additionalNodeExtSetting": {
             "vmName": "[variables('vmSetting').vmName]",
@@ -272,7 +279,7 @@
             "nodePublicIpName": "[variables('nodePublicIpSetting').namev4]",
             "haExtXqyUrl": "[variables('scriptUrls').haExtXqyUrl]",
             "highAvailabilityScriptUrl": "[variables('scriptUrls').highAvailabilityScriptUrl]",
-            "cmdPrefix": "[concat('sudo sh config-additional-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 ',string(variables('enableHA')),' ',parameters('LicenseKey'),' ',parameters('Licensee'))]"
+            "cmdPrefix": "[concat('sudo sh config-additional-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 ',string(variables('enableHA')))]"
         }
     },
     "resources": [

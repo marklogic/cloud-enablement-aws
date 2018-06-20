@@ -34,6 +34,7 @@
         "osProfile": {
           "computername": "[concat(parameters('vmSetting').vmName,'-',copyIndex())]",
           "adminUsername": "[parameters('vmSetting').adminUsername]",
+          "customData": "[base64(concat('MARKLOGIC_LICENSE_KEY=',parameters('vmSetting').licenseKey,'\nMARKLOGIC_LICENSEE=',parameters('vmSetting').licensee,'\nMARKLOGIC_NODE_NAME=',reference(resourceId('Microsoft.Network/publicIpAddresses/',concat(parameters('vmSetting').nodePublicIpNameV4,copyIndex())), '2017-11-01').dnsSettings.fqdn,'\nMARKLOGIC_ADMIN_USERNAME=',parameters('vmSetting').mlAdminUsername,'\nMARKLOGIC_ADMIN_PASSWORD=',parameters('vmSetting').mlAdminPassword,'\nMARKLOGIC_AZURE_DISK=',parameters('vmSetting').azDisk))]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "true",
             "ssh": {
@@ -61,7 +62,7 @@
           },
           "dataDisks": [
             {
-              "lun": 0,
+              "lun": "[parameters('vmSetting').azDisk]",
               "diskSizeGB": "[parameters('vmSetting').dataDiskSizeGB]",
               "createOption": "Empty",
               "managedDisk": {
