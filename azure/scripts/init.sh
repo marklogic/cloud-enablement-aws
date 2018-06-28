@@ -44,25 +44,6 @@ function restart_check {
 }
 
 ######################################################################################################
-# Function     : write_conf
-# Description  : Write environment variables in /etc/marklogic.conf
-#                and restart MarkLogic Server to pick up the environment variables change.
-# Usage        : write_conf(hostname, license_key, licensee)
-######################################################################################################
-
-function write_conf {
-
-  INFO "Writing data into /etc/marklogic.conf"
-  echo "export MARKLOGIC_HOSTNAME=$1" >> /etc/marklogic.conf |& tee -a $LOG
-  echo "export MARKLOGIC_LICENSE_KEY=$2" >> /etc/marklogic.conf |& tee -a $LOG
-  echo "export MARKLOGIC_LICENSEE=$3" >> /etc/marklogic.conf |& tee -a $LOG
-
-  INFO "Restarting the server to pick up changes in /etc/marklogic.conf"
-  /etc/init.d/MarkLogic restart |& tee -a $LOG
-  sleep 10
-}
-
-######################################################################################################
 # Function     : INFO, WARN, ERROR
 # Description  : Log out the message in log file and console
 # Usage        : INFO("message"), WARN("message"), ERROR("message")

@@ -5,16 +5,14 @@
 # File         : init-bootstrap-node.sh
 # Description  : This script will setup the first node in the cluster
 # Usage        : sh init-bootstrap-node.sh username password auth-mode \
-#                n-retry retry-interval security-realm license-key licensee hostname
+#                n-retry retry-interval security-realm hostname
 ######################################################################################################
 
 source ./init.sh $1 "$2" $3 $4 $5
 
 # variables
 SEC_REALM=$6
-LICENSE_KEY=$7
-LICENSEE=$8
-BOOTSTRAP_HOST=$9
+BOOTSTRAP_HOST=$7
 
 ######################################################################################################
 # Bring up the first host in the cluster. The following
@@ -23,8 +21,6 @@ BOOTSTRAP_HOST=$9
 #   (2) POST /admin/v1/instance-admin?admin-user=X&admin-password=Y&realm=Z
 # GET /admin/v1/timestamp is used to confirm restarts.
 ######################################################################################################
-
-write_conf $BOOTSTRAP_HOST $LICENSE_KEY $LICENSEE
 
 INFO "Initializing $BOOTSTRAP_HOST"
 $CURL -X POST -d "" http://${BOOTSTRAP_HOST}:8001/admin/v1/init &>> $LOG
