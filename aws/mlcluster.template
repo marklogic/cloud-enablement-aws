@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Deploy a MarkLogic Cluster on AWS in existing VPC (Virtual Private Cloud)
+Description: Deploy a MarkLogic Cluster on AWS in existing VPC (Virtual Private Cloud).
 Metadata:
   version: 9.0-6
   binary: MarkLogic-9.0-5.x86_64.rpm # TODO
