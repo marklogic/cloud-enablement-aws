@@ -13,9 +13,6 @@ Metadata:
           - Subnet1Cidr
           - Subnet2Cidr
           - Subnet3Cidr
-          - S3Bucket
-          - TemplateURLBase
-          - S3Directory
     ParameterLabels:
       MultiZone:
         default: Multiple Zone
@@ -29,12 +26,6 @@ Metadata:
         default: 'Subnet 2 CIDR'
       Subnet3Cidr:
         default: 'Subnet 3 CIDR'
-      S3Bucket:
-        default: 'S3 Bucket Name'
-      TemplateURLBase:
-        default: 'Template URL Base'
-      S3Directory:
-        default: 'S3 Directory Name'
 Parameters:
   MultiZone:
     Description: Whether there are the cluster will be deployed to multiple Availability Zones.
@@ -76,15 +67,6 @@ Parameters:
       ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     Default: 10.0.64.0/23
     ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
-  S3Bucket:
-    Description: The S3 bucket name that contains the lambda package. Must be in the same region.
-    Type: String
-  TemplateURLBase:
-    Description: The base URL for sub-templates.
-    Type: String
-  S3Directory:
-    Description: The directory name inside the S3 bucket.
-    Type: String
 Conditions:
   DeployMultiZone: !Equals [!Ref MultiZone, 'true']
 Resources:
@@ -160,18 +142,6 @@ Resources:
           FromPort: '443'
           ToPort: '443'
           CidrIp: 0.0.0.0/0
-      #   - IpProtocol: tcp
-      #     FromPort: '7998'
-      #     ToPort: '7998'
-      #     CidrIp: 0.0.0.0/0
-      #   - IpProtocol: tcp
-      #     FromPort: '8000'
-      #     ToPort: '8010'
-      #     CidrIp: 0.0.0.0/0
-      #   - IpProtocol: tcp
-      #     FromPort: '7997'
-      #     ToPort: '7997'
-      #     CidrIp: 0.0.0.0/0
   EndpointSecurityGroupIngress:
     Type: 'AWS::EC2::SecurityGroupIngress'
     DependsOn:
@@ -216,26 +186,66 @@ Resources:
         - !Ref VpcRouteTable
       ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
       VpcId: !Ref MarkLogicVPC
-  InterfaceEndPointStack:
-    Type: AWS::CloudFormation::Stack
+  Ec2Endpoint:
+    Type: "AWS::EC2::VPCEndpoint"
     DependsOn:
       - MarkLogicVPC
     Properties:
-      Parameters:
-        S3Bucket: !Ref S3Bucket
-        S3Directory: !Ref S3Directory
-        Vpc: !Ref MarkLogicVPC
-        SecurityGroup: !Ref EndpointSecurityGroup
-        Subnets: !If
-          - DeployMultiZone
-          - !Join
-            - ','
-            - - !Ref MarkLogicSubnet1
-              - !Ref MarkLogicSubnet2
-              - !Ref MarkLogicSubnet3
-          - !Ref MarkLogicSubnet1
-      TemplateURL: !Join ["", [!Ref TemplateURLBase,'ml-endpoint.template']]
-      TimeoutInMinutes: 5
+      VpcId: !Ref MarkLogicVPC
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.ec2'
+      VpcEndpointType: "Interface"
+      PrivateDnsEnabled: 'true'
+      SubnetIds:
+        - !Ref MarkLogicSubnet1
+        - !Ref MarkLogicSubnet2
+        - !Ref MarkLogicSubnet3
+      SecurityGroupIds:
+        - !Ref EndpointSecurityGroup
+  ElbEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    DependsOn:
+      - MarkLogicVPC
+    Properties:
+      VpcId: !Ref MarkLogicVPC
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.elasticloadbalancing'
+      VpcEndpointType: "Interface"
+      PrivateDnsEnabled: 'true'
+      SubnetIds:
+        - !Ref MarkLogicSubnet1
+        - !Ref MarkLogicSubnet2
+        - !Ref MarkLogicSubnet3
+      SecurityGroupIds:
+        - !Ref EndpointSecurityGroup
+  KmsEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    DependsOn:
+      - MarkLogicVPC
+    Properties:
+      VpcId: !Ref MarkLogicVPC
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.kms'
+      VpcEndpointType: "Interface"
+      PrivateDnsEnabled: 'true'
+      SubnetIds:
+        - !Ref MarkLogicSubnet1
+        - !Ref MarkLogicSubnet2
+        - !Ref MarkLogicSubnet3
+      SecurityGroupIds:
+        - !Ref EndpointSecurityGroup
+  SnsInterfaceEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    DependsOn:
+      - MarkLogicVPC
+    Properties:
+      VpcId: !Ref MarkLogicVPC
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.sns'
+      VpcEndpointType: "Interface"
+      PrivateDnsEnabled: 'true'
+      SubnetIds:
+        - !Ref MarkLogicSubnet1
+        - !Ref MarkLogicSubnet2
+        - !Ref MarkLogicSubnet3
+      SecurityGroupIds:
+        - !Ref EndpointSecurityGroup
   VpcRoute:
     Type: AWS::EC2::Route
     DependsOn:
@@ -256,9 +266,6 @@ Outputs:
   VpcId:
     Description: VPC ID
     Value: !Ref MarkLogicVPC
-  # SecurityGroupId:
-  #   Description: Security Group ID
-  #   Value: !Ref EndpointSecurityGroup
   Subnet1Id:
     Description: Subnet 1 ID
     Value: !Ref MarkLogicSubnet1
