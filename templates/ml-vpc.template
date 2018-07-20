@@ -299,10 +299,12 @@ Resources:
       ServiceName: !Sub 'com.amazonaws.${AWS::Region}.ec2'
       VpcEndpointType: "Interface"
       PrivateDnsEnabled: 'true'
-      SubnetIds:
-        - !Ref PrivateSubnet1
-        - !Ref PrivateSubnet2
-        - !Ref PrivateSubnet3
+      SubnetIds: !If
+        - DeployMultiZone
+        - - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+          - !Ref PrivateSubnet3
+        - - !Ref PrivateSubnet1
       SecurityGroupIds:
         - !Ref EndpointSecurityGroup
   ElbEndpoint:
@@ -314,10 +316,12 @@ Resources:
       ServiceName: !Sub 'com.amazonaws.${AWS::Region}.elasticloadbalancing'
       VpcEndpointType: "Interface"
       PrivateDnsEnabled: 'true'
-      SubnetIds:
-        - !Ref PrivateSubnet1
-        - !Ref PrivateSubnet2
-        - !Ref PrivateSubnet3
+      SubnetIds: !If
+        - DeployMultiZone
+        - - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+          - !Ref PrivateSubnet3
+        - - !Ref PrivateSubnet1
       SecurityGroupIds:
         - !Ref EndpointSecurityGroup
   KmsEndpoint:
@@ -329,10 +333,12 @@ Resources:
       ServiceName: !Sub 'com.amazonaws.${AWS::Region}.kms'
       VpcEndpointType: "Interface"
       PrivateDnsEnabled: 'true'
-      SubnetIds:
-        - !Ref PrivateSubnet1
-        - !Ref PrivateSubnet2
-        - !Ref PrivateSubnet3
+      SubnetIds: !If
+        - DeployMultiZone
+        - - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+          - !Ref PrivateSubnet3
+        - - !Ref PrivateSubnet1
       SecurityGroupIds:
         - !Ref EndpointSecurityGroup
   SnsInterfaceEndpoint:
@@ -344,10 +350,12 @@ Resources:
       ServiceName: !Sub 'com.amazonaws.${AWS::Region}.sns'
       VpcEndpointType: "Interface"
       PrivateDnsEnabled: 'true'
-      SubnetIds:
-        - !Ref PrivateSubnet1
-        - !Ref PrivateSubnet2
-        - !Ref PrivateSubnet3
+      SubnetIds: !If
+        - DeployMultiZone
+        - - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+          - !Ref PrivateSubnet3
+        - - !Ref PrivateSubnet1
       SecurityGroupIds:
         - !Ref EndpointSecurityGroup
 Outputs:
