@@ -23,9 +23,11 @@ Metadata:
           default: "Network Configuration"
         Parameters:
           - VpcCidr
-          - Subnet1Cidr
-          - Subnet2Cidr
-          - Subnet3Cidr
+          - PrivateSubnet1Cidr
+          - PrivateSubnet2Cidr
+          - PrivateSubnet3Cidr
+          - PublicSubnet1Cidr
+          - PublicSubnet2Cidr
       - Label:
           default: "MarkLogic Configuration"
         Parameters:
@@ -66,12 +68,16 @@ Metadata:
         default: Availability Zone
       VpcCidr:
         default: VPC CIDR
-      Subnet1Cidr:
-        default: Subnet 1 CIDR
-      Subnet2Cidr:
-        default: Subnet 2 CIDR
-      Subnet3Cidr:
-        default: Subnet 3 CIDR
+      PrivateSubnet1Cidr:
+        default: Private Subnet 1 CIDR
+      PrivateSubnet2Cidr:
+        default: Private Subnet 2 CIDR
+      PrivateSubnet3Cidr:
+        default: Private Subnet 3 CIDR
+      PublicSubnet1Cidr:
+        default: 'Public Subnet 1 CIDR'
+      PublicSubnet2Cidr:
+        default: 'Public Subnet 2 CIDR'
 Parameters:
   # resource configuration
   IAMRole:
@@ -174,28 +180,43 @@ Parameters:
       ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     Default: 10.0.0.0/16
     ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
-  Subnet1Cidr:
-    Description: CIDR Block for the subnet 1.
+  PrivateSubnet1Cidr:
+    Description: CIDR Block for the private subnet 1.
     Type: String
     AllowedPattern: >-
       ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     Default: 10.0.0.0/23
     ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
-  Subnet2Cidr:
-    Description: CIDR Block for the subnet 2. Only applicable to multi-zone cluster.
+  PrivateSubnet2Cidr:
+    Description: CIDR Block for the private subnet 2. Only applicable to multi-zone cluster.
       Only applicable to multi-zone cluster.
     Type: String
     AllowedPattern: >-
       ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     Default: 10.0.32.0/23
     ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
-  Subnet3Cidr:
-    Description: CIDR Block for the subnet 3. Only applicable to multi-zone cluster.
+  PrivateSubnet3Cidr:
+    Description: CIDR Block for the private subnet 3. Only applicable to multi-zone cluster.
       Only applicable to multi-zone cluster.
     Type: String
     AllowedPattern: >-
       ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
     Default: 10.0.64.0/23
+    ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
+  PublicSubnet1Cidr:
+    Description: CIDR Block for the public subnet 1.
+    Type: String
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    Default: 10.0.96.0/23
+    ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
+  PublicSubnet2Cidr:
+    Description: CIDR Block for the public subnet 2. Only applicable to multi-zone cluster.
+      Only applicable to multi-zone cluster.
+    Type: String
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    Default: 10.0.128.0/23
     ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
   # marklogic configuration
   AdminUser:
@@ -292,9 +313,11 @@ Resources:
         MultiZone: !If [MultiZone, 'true', 'false']
         AZ: !Join [',', !Ref AZ]
         VpcCidr: !Ref VpcCidr
-        Subnet1Cidr: !Ref Subnet1Cidr
-        Subnet2Cidr: !Ref Subnet2Cidr
-        Subnet3Cidr: !Ref Subnet3Cidr
+        PrivateSubnet1Cidr: !Ref PrivateSubnet1Cidr
+        PrivateSubnet2Cidr: !Ref PrivateSubnet2Cidr
+        PrivateSubnet3Cidr: !Ref PrivateSubnet3Cidr
+        PublicSubnet1Cidr: !Ref PublicSubnet1Cidr
+        PublicSubnet2Cidr: !Ref PublicSubnet2Cidr
       TemplateURL: !Join ["/", [!FindInMap [Variable,"TemplateUrl","base"],!FindInMap [Variable,"S3Directory","base"],'ml-vpc.template']]
       TimeoutInMinutes: 5
   ManagedEniStack:
@@ -316,10 +339,10 @@ Resources:
           - MultiZone
           - !Join
             - ','
-            - - !GetAtt [VpcStack, Outputs.Subnet1Id]
-              - !GetAtt [VpcStack, Outputs.Subnet2Id]
-              - !GetAtt [VpcStack, Outputs.Subnet3Id]
-          - !GetAtt [VpcStack, Outputs.Subnet1Id]
+            - - !GetAtt [VpcStack, Outputs.PrivateSubnet1Id]
+              - !GetAtt [VpcStack, Outputs.PrivateSubnet2Id]
+              - !GetAtt [VpcStack, Outputs.PrivateSubnet3Id]
+          - !GetAtt [VpcStack, Outputs.PrivateSubnet1Id]
         ParentStackName: !Ref 'AWS::StackName'
         ParentStackId: !Ref 'AWS::StackId'
         SecurityGroup: !Ref InstanceSecurityGroup
@@ -400,7 +423,7 @@ Resources:
       - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier:
-        - !GetAtt [VpcStack, Outputs.Subnet1Id]
+        - !GetAtt [VpcStack, Outputs.PrivateSubnet1Id]
       LaunchConfigurationName: !Ref LaunchConfig1
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -444,7 +467,7 @@ Resources:
       - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier:
-        - !GetAtt [VpcStack, Outputs.Subnet2Id]
+        - !GetAtt [VpcStack, Outputs.PrivateSubnet2Id]
       LaunchConfigurationName: !Ref LaunchConfig2
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -488,7 +511,7 @@ Resources:
       - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier:
-        - !GetAtt [VpcStack, Outputs.Subnet3Id]
+        - !GetAtt [VpcStack, Outputs.PrivateSubnet3Id]
       LaunchConfigurationName: !Ref LaunchConfig3
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -782,9 +805,8 @@ Resources:
       SecurityGroups:
         - !Ref ElbSecurityGroup
       Subnets:
-        - !GetAtt [VpcStack, Outputs.Subnet1Id]
-        - !If [MultiZone, !GetAtt [VpcStack, Outputs.Subnet2Id], !Ref 'AWS::NoValue']
-        - !If [MultiZone, !GetAtt [VpcStack, Outputs.Subnet3Id], !Ref 'AWS::NoValue']
+        - !GetAtt [VpcStack, Outputs.PublicSubnet1Id]
+        - !If [MultiZone, !GetAtt [VpcStack, Outputs.PublicSubnet2Id], !Ref 'AWS::NoValue']
       ConnectionDrainingPolicy:
         Enabled: 'true'
         Timeout: '60'
