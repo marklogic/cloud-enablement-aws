@@ -8,8 +8,8 @@ echo `date` > ../version.txt
 cp custom_resource_base.zip ../managed_eni.zip
 
 cd ..
-zip -g managed_eni.zip managedeni.py
-zip -g managed_eni.zip utils.py
-zip -g managed_eni.zip version.txt
+zip -g managed_eni.zip managedeni.py utils.py version.txt
+
+rm version.txt
 
 chmod 777 managed_eni.zip

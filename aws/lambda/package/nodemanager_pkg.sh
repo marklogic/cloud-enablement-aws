@@ -7,4 +7,6 @@ echo `date` > ../version.txt
 cd ..
 zip node_manager.zip nodemanager.py utils.py version.txt
 
+rm version.txt
+
 chmod 777 node_manager.zip
