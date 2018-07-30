@@ -117,6 +117,38 @@
                 "bladeTitle": "Resource Configuration",
                 "elements": [
                     {
+                        "name": "network",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Virtual Network",
+                        "elements": [
+                            {
+                                "name": "networkCombo",
+                                "type": "Microsoft.Network.VirtualNetworkCombo",
+                                "label": {
+                                    "virtualNetwork": "Virtual network",
+                                    "subnets": "Subnets"
+                                },
+                                "toolTip": {
+                                    "virtualNetwork": "Create a Virtual Network",
+                                    "subnets": "Create a Subnet"
+                                },
+                                "options": {
+                                  "hideExisting": true
+                                },
+                                "subnets": {
+                                  "subnet1": {
+                                    "label": "Subnet",
+                                    "defaultValue": {
+                                      "name": "vnet-subnet",
+                                      "addressPrefixSize": "/24"
+                                    }
+                                  }
+                                },
+                                "visible": true
+                            }
+                        ]
+                    },
+                    {
                         "name": "highAvailability",
                         "type": "Microsoft.Common.OptionsGroup",
                         "label": "MarkLogic High Availability",
