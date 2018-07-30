@@ -48,6 +48,38 @@
                 "description": "Number of nodes in the cluster"
             }
         },
+        "VnetName": {
+            "type": "string",
+            "minLength": 1,
+            "defaultValue": "vnet",
+            "metadata": {
+                "description": "Virtual Network name"
+            }
+        },
+        "VnetPrefix": {
+            "type": "string",
+            "minLength": 1,
+            "defaultValue": "10.0.0.0/16",
+            "metadata": {
+                "description": "Virtual Network address prefix"
+            }
+        },
+        "SubnetName": {
+            "type": "string",
+            "minLength": 1,
+            "defaultValue": "vnet-subnet",
+            "metadata": {
+                "description": "Subnet name"
+            }
+        },
+        "SubnetPrefix": {
+            "type": "string",
+            "minLength": 1,
+            "defaultValue": "10.0.1.0/24",
+            "metadata": {
+                "description": "Subnet address prefix"
+            }
+        },
         "LoadBalancer": {
             "type": "string",
             "defaultValue": "public",
@@ -170,11 +202,11 @@
             "apiVersion": "[variables('apiVersions').computeApiVersion]"
         },
         "vnetSetting": {
-            "name": "[concat(variables('clusterPrefix'),'-vnet')]",
+            "name": "[concat(variables('clusterPrefix'),'-',parameters('VnetName'))]",
             "location": "[variables('clusterLocation')]",
-            "vnetPrefix": "10.0.0.0/16",
-            "vnetSubnetName": "[concat(variables('clusterPrefix'),'-vnet-subnet')]",
-            "vnetSubnetPrefix": "10.0.1.0/24",
+            "vnetPrefix": "[parameters('VnetPrefix')]",
+            "vnetSubnetName": "[concat(variables('clusterPrefix'),'-',parameters('SubnetName'))]",
+            "vnetSubnetPrefix": "[parameters('SubnetPrefix')]",
             "apiVersion": "[variables('apiVersions').networkApiVersion]"
         },
         "nsgSetting": {
