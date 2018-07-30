@@ -17,7 +17,6 @@ Metadata:
           - NumberOfZones
           - NodesPerZone
           - AZ
-          - InstancePublicIp
           - LogSNS
       - Label:
           default: "Network Configuration"
@@ -46,8 +45,6 @@ Metadata:
         default: License Key
       IAMRole:
         default: IAM Role
-      InstancePublicIp:
-        default: Instance Public IP
       LogSNS:
         default: Logging SNS ARN
       VolumeSize:
@@ -161,13 +158,6 @@ Parameters:
   AZ:
     Description: The Availability Zones for VPC subnets and instances. Accept either 1 zone or 3 zones. In the order of Subnet 1, Subnet 2 and Subnet 3 (if applicable).
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
-  InstancePublicIp:
-    Description: Whether assign public IP address to instances.
-    Type: String
-    AllowedValues:
-      - enable
-      - disable
-    Default: disable
   LogSNS:
     Description: SNS Topic for logging - optional/advanced.
     Type: String
@@ -235,7 +225,6 @@ Parameters:
     Type: String
     Default: none
 Conditions:
-  UsePublicIp: !Equals [!Ref InstancePublicIp, 'enable']
   UseLogSNS: !Not [!Equals [!Ref LogSNS, "none"]]
   UseSpot: !Not
     - !Equals
@@ -608,7 +597,6 @@ Resources:
     DependsOn:
       - InstanceSecurityGroup
     Properties:
-      AssociatePublicIpAddress: !If [UsePublicIp, 'true', 'false']
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
@@ -671,7 +659,6 @@ Resources:
     DependsOn:
       - InstanceSecurityGroup
     Properties:
-      AssociatePublicIpAddress: !If [UsePublicIp, 'true', 'false']
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
@@ -734,7 +721,6 @@ Resources:
     DependsOn:
       - InstanceSecurityGroup
     Properties:
-      AssociatePublicIpAddress: !If [UsePublicIp, 'true', 'false']
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
