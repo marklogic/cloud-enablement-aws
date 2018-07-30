@@ -6,9 +6,6 @@
       "type": "object"
     }
   },
-  "variables": {
-        "dnsPostFix": "[concat('.',parameters('extSetting').vmLocation,'.cloudapp.azure.com')]"
-  },
   "resources": [
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",

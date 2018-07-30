@@ -8,10 +8,9 @@
     },
     "variables": {
         "vnetId": "[resourceId('Microsoft.Network/virtualNetworks',parameters('networkInterfaceSetting').vnetName)]",
-        "subnetId": "[concat(variables('vnetId'),'/subnets/',parameters('networkInterfaceSetting').subnetName)]",
-        "lbId": "[resourceId('Microsoft.Network/loadBalancers',parameters('networkInterfaceSetting').lbName)]",
-        "lbBackendPoolIpv4Id": "[concat(variables('lbId'),'/backendAddressPools/',parameters('networkInterfaceSetting').lbBackendPoolIpv4Name)]",
-        "lbBackendPoolIpv6Id": "[concat(variables('lbId'),'/backendAddressPools/',parameters('networkInterfaceSetting').lbBackendPoolIpv6Name)]"
+        "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('networkInterfaceSetting').vnetName, parameters('networkInterfaceSetting').subnetName)]",
+        "lbBackendPoolIpv4Id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools',parameters('networkInterfaceSetting').lbName,parameters('networkInterfaceSetting').lbBackendPoolIpv4Name)]",
+        "lbBackendPoolIpv6Id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools',parameters('networkInterfaceSetting').lbName,parameters('networkInterfaceSetting').lbBackendPoolIpv6Name)]",
     },
     "resources": [
         {
