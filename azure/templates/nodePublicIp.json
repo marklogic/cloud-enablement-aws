@@ -26,7 +26,7 @@
             }
         },
         {
-            "apiVersion": "2016-03-30",
+            "apiVersion": "[parameters('nodePublicIpSetting').apiVersion]",
             "type": "Microsoft.Network/publicIPAddresses",
             "name": "[concat(parameters('nodePublicIpSetting').namev6,copyIndex())]",
             "location": "[parameters('nodePublicIpSetting').location]",
