@@ -122,15 +122,21 @@
                         "label": "Virtual Network",
                         "elements": [
                             {
-                                "name": "networkCombo",
+                                "name": "vnet",
                                 "type": "Microsoft.Network.VirtualNetworkCombo",
                                 "label": {
-                                    "virtualNetwork": "Virtual network",
-                                    "subnets": "Subnets"
+                                  "virtualNetwork": "Virtual Network",
+                                  "subnets": "Subnets"
                                 },
                                 "toolTip": {
-                                    "virtualNetwork": "Create a Virtual Network",
-                                    "subnets": "Create a Subnet"
+                                  "virtualNetwork": "Virtual Network for MarkLogic cluster",
+                                  "subnets": "Subnets for MarkLogic"
+                                },
+                                "defaultValue": {
+                                  "name": "vnet"
+                                },
+                                "constraints": {
+                                  "minAddressPrefixSize": "/16"
                                 },
                                 "options": {
                                   "hideExisting": true
@@ -139,8 +145,10 @@
                                   "subnet1": {
                                     "label": "Subnet",
                                     "defaultValue": {
-                                      "name": "vnet-subnet",
-                                      "addressPrefixSize": "/24"
+                                      "name": "vnet-subnet"
+                                    },
+                                    "constraints": {
+                                      "minAddressPrefixSize": "/24"
                                     }
                                   }
                                 },
@@ -530,6 +538,10 @@
             "Licensee": "[steps('marklogic').licensee]",
             "LicenseKey": "[steps('marklogic').licenseKey]",
             "NumberOfNodes": "[basics('numberofNodes')]",
+            "VNetName": "[steps('resourceConfig').network.vnet.name]",
+            "VNetPrefix": "[steps('resourceConfig').network.vnet.addressPrefixes]",
+            "SubnetName": "[steps('resourceConfig').network.vnet.subnets.subnet1.name]",
+            "SubnetPrefix": "[steps('resourceConfig').network.vnet.subnets.subnet1.addressPrefix]",
             "LoadBalancer": "[steps('resourceConfig').loadBalancer.lbType]",
             "OSStorage": "[steps('resourceConfig').storage.osStorage]",
             "LoadBalancerIPV6": "[steps('resourceConfig').loadBalancer.lbIpv6]",
