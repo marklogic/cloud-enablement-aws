@@ -30,7 +30,13 @@ def eni_wait_for_attachment(eni_id):
             retries += 1
             continue
 
-        status = eni_info["Attachment"]["Status"]
+        if not eni_info.attachment:
+            log.warning(
+                "Network interface %s not attached" % (eni_id)
+            )
+            retries += 1
+            continue
+        status = eni_info.attachment["Status"]
         if status == "attached":
             break
         elif status == "attaching":
@@ -129,12 +135,12 @@ def on_launch(msg):
                         DeviceIndex=1
                     )
                     log.info("Attaching ENI %s to instance %s" % (eni_id, instance_id))
-                    eni_wait_for_attachment(eni_id)
                 except botocore.exceptions.ClientError as e:
                     reason = "Error attaching network interface %s" % eni_id
                     log.exception(reason)
                     time.sleep(5)
                     continue
+                eni_wait_for_attachment(eni_id)
                 break
             else:
                 continue
