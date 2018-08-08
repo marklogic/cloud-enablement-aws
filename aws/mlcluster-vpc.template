@@ -573,6 +573,10 @@ Resources:
           FromPort: '7997'
           ToPort: '7997'
           CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '7999'
+          ToPort: '7999'
+          CidrIp: 0.0.0.0/0
   InstanceSecurityGroupIngress:
     Type: 'AWS::EC2::SecurityGroupIngress'
     DependsOn:
