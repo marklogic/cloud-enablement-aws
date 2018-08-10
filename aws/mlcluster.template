@@ -257,6 +257,8 @@ Mappings:
 Resources:
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - InstanceSecurityGroup
     Properties:
       NotificationARNs:
         - !If
@@ -529,6 +531,8 @@ Resources:
           CidrIp: 0.0.0.0/0
   LaunchConfig1:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
+    DependsOn:
+      - InstanceSecurityGroup
     Properties:
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
@@ -589,6 +593,8 @@ Resources:
   LaunchConfig2:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::LaunchConfiguration'
+    DependsOn:
+      - InstanceSecurityGroup
     Properties:
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
@@ -649,6 +655,8 @@ Resources:
   LaunchConfig3:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::LaunchConfiguration'
+    DependsOn:
+      - InstanceSecurityGroup
     Properties:
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
@@ -708,6 +716,8 @@ Resources:
         id: 7fa68c90-39bc-4874-ad20-8cd8c974ed52
   ElasticLoadBalancer:
     Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
+    DependsOn:
+      - ElbSecurityGroup
     Properties:
       AppCookieStickinessPolicy:
         - CookieName: SessionID
