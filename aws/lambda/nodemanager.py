@@ -14,6 +14,7 @@ log.setLevel(logging.INFO)
 # global variables
 ec2_client = boto3.client('ec2')
 asg_client = boto3.client('autoscaling')
+ec2_resource = boto3.resource('ec2')
 
 def eni_wait_for_attachment(eni_id):
     max_rety = 10
