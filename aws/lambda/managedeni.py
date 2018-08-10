@@ -292,6 +292,7 @@ def on_delete(event, context):
                     log.info("Deleting network interface %s" % eni_id)
                 except ClientError as e:
                     reason = "Failed to delete network interface %s" % eni_id
+                    log.exception(reason)
                     return cfn_failure_response(event, reason)
 
     return cfn_success_response(event)

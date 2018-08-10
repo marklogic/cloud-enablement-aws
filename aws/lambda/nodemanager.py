@@ -31,9 +31,7 @@ def eni_wait_for_attachment(eni_id):
             continue
 
         if not eni_info.attachment:
-            log.warning(
-                "Network interface %s not attached" % (eni_id)
-            )
+            time.sleep(sleep_interval)
             retries += 1
             continue
         status = eni_info.attachment["Status"]
