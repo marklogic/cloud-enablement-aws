@@ -14,6 +14,7 @@ Metadata:
           - Subnets
           - ParentStackName
           - ParentStackId
+          - SecurityGroup
     ParameterLabels:
       S3Bucket:
         default: S3 Bucket Name
@@ -29,6 +30,8 @@ Metadata:
         default: Parent Stack Name
       ParentStackId:
         default: Parent Stack ID
+      SecurityGroup:
+        default: Security Group ID
 Parameters:
   S3Bucket:
     Description: The S3 bucket name that contains the lambda package. Must be in the same region.
