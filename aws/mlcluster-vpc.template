@@ -327,6 +327,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     DependsOn:
       - VpcStack
+      - InstanceSecurityGroup
     Properties:
       NotificationARNs:
         - !If
@@ -797,8 +798,6 @@ Resources:
         id: 7fa68c90-39bc-4874-ad20-8cd8c974ed52
   ElasticLoadBalancer:
     Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
-    DependsOn:
-      - ElbSecurityGroup
     DependsOn:
       - VpcStack
       - ElbSecurityGroup

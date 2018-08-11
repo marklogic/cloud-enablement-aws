@@ -49,10 +49,10 @@ def eni_wait_for_detachment(eni_id):
     while True and retries < max_retry:
         eni_info = ec2_resource.NetworkInterface(id=eni_id)
         if eni_info:
-            if "Attachment" not in eni_info:
+            if not eni_info.attachment:
                 break
 
-            status = eni_info["Attachment"]["Status"]
+            status = eni_info.attachment["Status"]
             if status == "detached":
                 break
             elif status == "attached" or status == "detaching":
@@ -293,5 +293,6 @@ def on_delete(event, context):
                 except ClientError as e:
                     reason = "Failed to delete network interface %s" % eni_id
                     log.exception(reason)
+                    return cfn_failure_response(event, reason)
 
     return cfn_success_response(event)
