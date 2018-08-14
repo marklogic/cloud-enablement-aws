@@ -377,3 +377,9 @@ Outputs:
   PublicSubnet2Id:
     Description: Public Subnet 2 ID
     Value: !If [DeployMultiZone, !Ref PublicSubnet2, '']
+  PrivateSecurityGroup:
+    Description: Private Security Group
+    Value: !Ref EndpointSecurityGroup
+  PrivateSubnetRouteTable:
+    Description: Private Subnet Route Table
+    Value: !Ref PrivateSubnetRouteTable
