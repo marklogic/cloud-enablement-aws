@@ -938,3 +938,9 @@ Outputs:
           - ElasticLoadBalancer
           - DNSName
         - ':8001'
+  PrivateSubnetRouteTable:
+    Description: Private Subnet Route Table
+    Value: !GetAtt [VpcStack, Outputs.PrivateSubnetRouteTable]
+  InstanceSecurityGroup:
+    Description: Instance Security Group
+    Value: !Ref InstanceSecurityGroup
