@@ -1,6 +1,6 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "contentVersion": "9.0-5.1",
+    "contentVersion": "9.0-6",
     "parameters": {
         "DeploymentName": {
             "type": "string",
@@ -148,7 +148,7 @@
                 "artifactsBaseUrl": ""
             },
             "minLength": 1,
-            "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/v9.0-5.1/azure"
+            "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/v9.0-6/azure"
         },
         "location": {
             "type": "string",
@@ -159,7 +159,7 @@
         }
     },
     "variables": {
-        "templateVersion": "9.0-5.1",
+        "templateVersion": "9.0-6",
         "templateBaseUrl": "[concat(parameters('baseUrl'),'/templates/')]",
         "scriptBaseUrl": "[concat(parameters('baseUrl'),'/scripts/')]",
         "clusterPrefix": "[replace(parameters('DeploymentName'),' ','')]",
@@ -169,7 +169,7 @@
         "enableHA": "[if(lessOrEquals(parameters('NumberOfNodes'),1),bool('false'),equals(parameters('HighAvailability'),'enable'))]",
         "license": "[if(and(equals(parameters('Licensee'),'none'),equals(parameters('LicenseKey'),'none')),'DEV','BYOL')]",
         "imageOffer": "[if(equals(variables('license'),'DEV'),'marklogic-developer-9','marklogic-9-byol')]",
-        "imageSku": "[if(equals(variables('license'),'DEV'),'ml9051_centos','ml9051_centos_byol')]",
+        "imageSku": "[if(equals(variables('license'),'DEV'),'ml906_centos','ml906_centos_byol')]",
         "apiVersions": {
             "resourcesApiVersion": "2016-09-01",
             "networkApiVersion": "2017-08-01",
