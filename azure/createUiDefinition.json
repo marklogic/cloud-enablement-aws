@@ -104,7 +104,27 @@
                             "validationMessage": "Invalid value"
                         },
                         "visible": true
-                    }
+                    },
+                    {
+                        "name": "highAvailability",
+                        "type": "Microsoft.Common.OptionsGroup",
+                        "label": "MarkLogic High Availability",
+                        "defaultValue": "enable",
+                        "toolTip": "Configure local-disk failover.",
+                        "constraints": {
+                            "allowedValues": [
+                                {
+                                    "label": "enable",
+                                    "value": "enable"
+                                },
+                                {
+                                    "label": "disable",
+                                    "value": "disable"
+                                }
+                            ]
+                        },
+                        "visible": "[greater(basics('numberofNodes'),1)]"
+                    },
                 ]
             },
             {
@@ -155,26 +175,6 @@
                                 "visible": true
                             }
                         ]
-                    },
-                    {
-                        "name": "highAvailability",
-                        "type": "Microsoft.Common.OptionsGroup",
-                        "label": "MarkLogic High Availability",
-                        "defaultValue": "enable",
-                        "toolTip": "Configure local-disk failover.",
-                        "constraints": {
-                            "allowedValues": [
-                                {
-                                    "label": "enable",
-                                    "value": "enable"
-                                },
-                                {
-                                    "label": "disable",
-                                    "value": "disable"
-                                }
-                            ]
-                        },
-                        "visible": "[greater(basics('numberofNodes'),1)]"
                     },
                     {
                         "name": "loadBalancer",
@@ -549,7 +549,7 @@
             "VirtualMachineUser": "[steps('resourceConfig').virtualMachine.vmUser]",
             "SSHPublicKey": "[steps('resourceConfig').virtualMachine.vmCredential.sshPublicKey]",
             "InstanceType": "[coalesce(steps('resourceConfig').instanceTypePremium,steps('resourceConfig').instanceTypeStandard)]",
-            "HighAvailability": "[steps('resourceConfig').highAvailability]",
+            "HighAvailability": "[steps('marklogic').highAvailability]",
             "Location": "[location()]"
         }
     }
