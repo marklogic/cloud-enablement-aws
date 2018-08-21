@@ -16,7 +16,6 @@ def get_physical_resource_id(request_id):
 def get_network_interface_by_id(eni_id):
     """
     Use describe network interfaces function instead of ec2_resource.NetworkInterface
-    AWS SDK bug #1450
     :param eni_id:
     :return:
     """

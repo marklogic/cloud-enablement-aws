@@ -106,6 +106,46 @@
                         "visible": true
                     },
                     {
+                        "name": "network",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Virtual Network",
+                        "elements": [
+                            {
+                                "name": "vnet",
+                                "type": "Microsoft.Network.VirtualNetworkCombo",
+                                "label": {
+                                  "virtualNetwork": "Virtual Network",
+                                  "subnets": "Subnets"
+                                },
+                                "toolTip": {
+                                  "virtualNetwork": "Virtual Network for MarkLogic cluster",
+                                  "subnets": "Subnets for MarkLogic"
+                                },
+                                "defaultValue": {
+                                  "name": "vnet"
+                                },
+                                "constraints": {
+                                  "minAddressPrefixSize": "/16"
+                                },
+                                "options": {
+                                  "hideExisting": true
+                                },
+                                "subnets": {
+                                  "subnet1": {
+                                    "label": "Subnet",
+                                    "defaultValue": {
+                                      "name": "vnet-subnet"
+                                    },
+                                    "constraints": {
+                                      "minAddressPrefixSize": "/24"
+                                    }
+                                  }
+                                },
+                                "visible": true
+                            }
+                        ]
+                    },
+                    {
                         "name": "highAvailability",
                         "type": "Microsoft.Common.OptionsGroup",
                         "label": "MarkLogic High Availability",

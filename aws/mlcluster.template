@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Deploy a MarkLogic Cluster on AWS in existing VPC
+Description: Deploy a MarkLogic Cluster on AWS in existing VPC (Virtual Private Cloud).
 Metadata:
-  version: 9.0-5
+  version: 9.0-6
   binary: MarkLogic-9.0-5.x86_64.rpm # TODO
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -17,7 +17,6 @@ Metadata:
           - NumberOfZones
           - NodesPerZone
           - AZ
-          - InstancePublicIp
           - LogSNS
       - Label:
           default: "Network Configuration"
@@ -42,8 +41,6 @@ Metadata:
         default: License Key
       IAMRole:
         default: IAM Role
-      InstancePublicIp:
-        default: Instance Public IP
       LogSNS:
         default: Logging SNS ARN
       VolumeSize:
@@ -91,31 +88,53 @@ Parameters:
     AllowedValues:
       - ---- Essential Enterprise and Bring-Your-Own-License ----
       - m3.xlarge
+      - m5.xlarge
       - c3.xlarge
+      - c5.xlarge
       - r3.xlarge
+      - r4.xlarge
       - --------------- Essential Enterprise Only ---------------
       - m4.xlarge
       - -------------- Bring-Your-Own-License Only --------------
       - m3.medium
       - m3.large
       - m3.2xlarge
+      - m5.large
+      - m5.2xlarge
       - cc1.4xlarge
       - cc2.8xlarge
       - c3.large
       - c3.2xlarge
       - c3.4xlarge
       - c3.8xlarge
+      - c5.large
+      - c5.2xlarge
+      - c5.4xlarge
+      - c5.9xlarge
       - cr1.8xlarge
       - r3.large
       - r3.2xlarge
       - r3.4xlarge
       - r3.8xlarge
+      - r4.large
+      - r4.2xlarge
+      - r4.4xlarge
+      - r4.8xlarge
+      - r5.large
+      - r5.xlarge
+      - r5.2xlarge
+      - r5.4xlarge
       - i2.xlarge
       - i2.2xlarge
       - i2.4xlarge
       - i2.8xlarge
+      - i3.xlarge
+      - i3.2xlarge
+      - i3.4xlarge
+      - i3.8xlarge
       - hi1.4xlarge
       - hs1.8xlarge
+      - d2.4xlarge
   SpotPrice:
     Description: Spot price for instances in USD/Hour - Optional/advanced
     Type: Number
@@ -141,22 +160,14 @@ Parameters:
   AZ:
     Description: The Availability Zones for VPC subnets. Accept either 1 zone or 3 zones. In the order of Subnet 1, Subnet 2 and Subnet 3 (if applicable).
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
-  InstancePublicIp:
-    Description: Whether assign public IP address to instances.
-    Type: String
-    AllowedValues:
-      - enable
-      - disable
-    Default: disable
   LogSNS:
-    Description: SNS Topic for logging - optional/advanced. Requires instance public IP enabled.
+    Description: SNS Topic for logging - optional/advanced.
     Type: String
     Default: none
   # network configuration
   VPC:
     Description: ID of an existing Virtual Private Cloud (VPC)
     Type: 'AWS::EC2::VPC::Id'
-    AllowedPattern: 'vpc-[0-9a-z]{8}'
   Subnets:
     Description: Subnets in the VPC. Accept either 1 subnet or 3 subnets. The order must be same as Availability Zone(s) selected.
     Type: 'List<AWS::EC2::Subnet::Id>'
@@ -177,10 +188,7 @@ Parameters:
     Type: String
     Default: none
 Conditions:
-  UsePublicIp: !Equals [!Ref InstancePublicIp, 'enable']
-  UseLogSNS: !And
-    - !Equals [!Ref InstancePublicIp, 'enable']
-    - !Not [!Equals [!Ref LogSNS, "none"]]
+  UseLogSNS: !Not [!Equals [!Ref LogSNS, "none"]]
   UseSpot: !Not
     - !Equals
       - !Ref SpotPrice
@@ -192,9 +200,11 @@ Conditions:
 Mappings:
   Variable:
     LambdaPackageBucket:
-      base: 'cloud-enablement-devevlop-' # update when release
+      base: 'marklogic-lambda-' # update when release
     TemplateUrl:
-      base: 'https://s3-us-west-2.amazonaws.com/cloud-enablement-devevlop-us-west-2/aws/templates/' # update when release
+      base: 'https://s3.amazonaws.com/marklogic-releases' # update when release
+    S3Directory:
+      base: '9.0-6'
   LicenseRegion2AMI:
     us-east-1:
       Enterprise: ami-f755d188
@@ -247,6 +257,8 @@ Mappings:
 Resources:
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - InstanceSecurityGroup
     Properties:
       NotificationARNs:
         - !If
@@ -255,13 +267,14 @@ Resources:
           - !Ref 'AWS::NoValue'
       Parameters:
         S3Bucket: !Join [ "", [!FindInMap [Variable,"LambdaPackageBucket","base"], !Ref 'AWS::Region']]
+        S3Directory: !FindInMap [Variable,"S3Directory","base"]
         NodesPerZone: !Ref NodesPerZone
         NumberOfZones: !Ref NumberOfZones
         Subnets: !If [MultiZone, !Join [',', !Ref Subnets], !Select [0, !Ref Subnets]]
         ParentStackName: !Ref 'AWS::StackName'
         ParentStackId: !Ref 'AWS::StackId'
         SecurityGroup: !Ref InstanceSecurityGroup
-      TemplateURL: !Join ['', [!FindInMap [Variable,"TemplateUrl","base"],'ml-managedeni.template']]
+      TemplateURL: !Join ['/', [!FindInMap [Variable,"TemplateUrl","base"],!FindInMap [Variable,"S3Directory","base"],'ml-managedeni.template']]
       TimeoutInMinutes: 5
   NodeMgrLambdaStack:
     Type: AWS::CloudFormation::Stack
@@ -274,7 +287,8 @@ Resources:
           - !Ref 'AWS::NoValue'
       Parameters:
         S3Bucket: !Join [ "", [!FindInMap [Variable,"LambdaPackageBucket","base"], !Ref 'AWS::Region']]
-      TemplateURL: !Join ['', [!FindInMap [Variable,"TemplateUrl","base"],'ml-nodemanager.template']]
+        S3Directory: !FindInMap [Variable,"S3Directory","base"]
+      TemplateURL: !Join ['/', [!FindInMap [Variable,"TemplateUrl","base"],!FindInMap [Variable,"S3Directory","base"],'ml-nodemanager.template']]
       TimeoutInMinutes: 5
   MarklogicVolume1:
     Type: 'AWS::EC2::Volume'
@@ -479,6 +493,10 @@ Resources:
           FromPort: '7997'
           ToPort: '7997'
           CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '7999'
+          ToPort: '7999'
+          CidrIp: 0.0.0.0/0
   InstanceSecurityGroupIngress:
     Type: 'AWS::EC2::SecurityGroupIngress'
     DependsOn:
@@ -513,8 +531,9 @@ Resources:
           CidrIp: 0.0.0.0/0
   LaunchConfig1:
     Type: 'AWS::AutoScaling::LaunchConfiguration'
+    DependsOn:
+      - InstanceSecurityGroup
     Properties:
-      AssociatePublicIpAddress: !If [UsePublicIp, 'true', 'false']
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
@@ -574,8 +593,9 @@ Resources:
   LaunchConfig2:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::LaunchConfiguration'
+    DependsOn:
+      - InstanceSecurityGroup
     Properties:
-      AssociatePublicIpAddress: !If [UsePublicIp, 'true', 'false']
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
@@ -635,8 +655,9 @@ Resources:
   LaunchConfig3:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::LaunchConfiguration'
+    DependsOn:
+      - InstanceSecurityGroup
     Properties:
-      AssociatePublicIpAddress: !If [UsePublicIp, 'true', 'false']
       BlockDeviceMappings:
         - DeviceName: /dev/sdf
           NoDevice: true
@@ -695,6 +716,8 @@ Resources:
         id: 7fa68c90-39bc-4874-ad20-8cd8c974ed52
   ElasticLoadBalancer:
     Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
+    DependsOn:
+      - ElbSecurityGroup
     Properties:
       AppCookieStickinessPolicy:
         - CookieName: SessionID
