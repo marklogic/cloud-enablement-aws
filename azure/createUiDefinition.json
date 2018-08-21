@@ -164,7 +164,7 @@
                             ]
                         },
                         "visible": "[greater(basics('numberofNodes'),1)]"
-                    },
+                    }
                 ]
             },
             {
