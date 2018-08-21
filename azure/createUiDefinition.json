@@ -104,18 +104,7 @@
                             "validationMessage": "Invalid value"
                         },
                         "visible": true
-                    }
-                ]
-            },
-            {
-                "name": "resourceConfig",
-                "label": "Resource Configuration",
-                "subLabel": {
-                    "preValidation": "Configure Cluster Resources",
-                    "postValidation": "Done"
-                },
-                "bladeTitle": "Resource Configuration",
-                "elements": [
+                    },
                     {
                         "name": "network",
                         "type": "Microsoft.Common.Section",
@@ -175,6 +164,57 @@
                             ]
                         },
                         "visible": "[greater(basics('numberofNodes'),1)]"
+                    },
+                ]
+            },
+            {
+                "name": "resourceConfig",
+                "label": "Resource Configuration",
+                "subLabel": {
+                    "preValidation": "Configure Cluster Resources",
+                    "postValidation": "Done"
+                },
+                "bladeTitle": "Resource Configuration",
+                "elements": [
+                    {
+                        "name": "network",
+                        "type": "Microsoft.Common.Section",
+                        "label": "Virtual Network",
+                        "elements": [
+                            {
+                                "name": "vnet",
+                                "type": "Microsoft.Network.VirtualNetworkCombo",
+                                "label": {
+                                  "virtualNetwork": "Virtual Network",
+                                  "subnets": "Subnets"
+                                },
+                                "toolTip": {
+                                  "virtualNetwork": "Virtual Network for MarkLogic cluster",
+                                  "subnets": "Subnets for MarkLogic"
+                                },
+                                "defaultValue": {
+                                  "name": "vnet"
+                                },
+                                "constraints": {
+                                  "minAddressPrefixSize": "/16"
+                                },
+                                "options": {
+                                  "hideExisting": true
+                                },
+                                "subnets": {
+                                  "subnet1": {
+                                    "label": "Subnet",
+                                    "defaultValue": {
+                                      "name": "vnet-subnet"
+                                    },
+                                    "constraints": {
+                                      "minAddressPrefixSize": "/24"
+                                    }
+                                  }
+                                },
+                                "visible": true
+                            }
+                        ]
                     },
                     {
                         "name": "loadBalancer",
@@ -549,7 +589,7 @@
             "VirtualMachineUser": "[steps('resourceConfig').virtualMachine.vmUser]",
             "SSHPublicKey": "[steps('resourceConfig').virtualMachine.vmCredential.sshPublicKey]",
             "InstanceType": "[coalesce(steps('resourceConfig').instanceTypePremium,steps('resourceConfig').instanceTypeStandard)]",
-            "HighAvailability": "[steps('resourceConfig').highAvailability]",
+            "HighAvailability": "[steps('marklogic').highAvailability]",
             "Location": "[location()]"
         }
     }
