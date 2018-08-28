@@ -121,3 +121,7 @@ Resources:
       ParentStackId: !Ref ParentStackId
       Subnets: !Ref Subnets
       SecurityGroup: !Ref SecurityGroup
+Outputs:
+  ENI:
+    Description: Private DNS of Elastic Network Interfaces
+    Value: !GetAtt [ManagedEni, Addresses]
