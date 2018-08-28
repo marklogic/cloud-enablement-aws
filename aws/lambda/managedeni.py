@@ -30,7 +30,7 @@ def eni_wait_for_creation(eni_id):
         if eni_info:
             status = eni_info["Status"]
             if status == "available":
-                break
+                return eni_info
             else:
                 log.warning("Network interface %s in unexpected status: %s" % (eni_id, status))
                 time.sleep(sleep_interval)
@@ -124,8 +124,7 @@ def create_eni(subnet_id, security_group_id, tag):
         time.sleep(5)
 
     log.info("Waiting for network interface %s creation finish" % eni_id)
-    eni_wait_for_creation(eni_id)
-    return eni_id
+    return eni_wait_for_creation(eni_id)
 
 def detach_eni(eni_id, attachment_id):
     try:
@@ -171,20 +170,26 @@ def on_create(event, context):
     id_hash = hashlib.md5(parent_stack_id.encode()).hexdigest()
     eni_tag_prefix = parent_stack_name + "-" + id_hash + "_"
 
+    dns = []
     # craete ENIs
     for i in range(0,zone_count):
         for j in range(0,nodes_per_zone):
             eni_idx = i * nodes_per_zone + j
             tag = eni_tag_prefix + str(eni_idx)
-            eni_id = create_eni(subnets[i], security_group_id, tag)
-            if not eni_id:
+            eni_info = create_eni(subnets[i], security_group_id, tag)
+            if not eni_info:
                 reason = "Failed to create network interface with tag %s" % tag
                 log.warning(reason)
                 continue
 
+            eni_id = eni_info["NetworkInterfaceId"]
+            eni_dns = eni_info["PrivateDnsName"]
             eni_assign_tag(eni_id=eni_id, tag=tag)
+            dns.append(eni_dns)
 
-    return cfn_success_response(event)
+    return cfn_success_response(event,data={
+        "Addresses": ",".join(dns)
+    })
 
 @handler.update
 def on_update(event, context):
