@@ -134,6 +134,12 @@ Parameters:
       - r4.4xlarge
       - r4.8xlarge
       - r4.16xlarge
+      - r5.large
+      - r5.xlarge
+      - r5.2xlarge
+      - r5.4xlarge
+      - r5.12xlarge
+      - r5.24xlarge
       - p3.2xlarge
       - p3.8xlarge
       - p3.16xlarge
@@ -142,7 +148,6 @@ Parameters:
       - i3.4xlarge
       - i3.8xlarge
       - i3.16xlarge
-      - i3.metal
       - -------------- Bring-Your-Own-License Only --------------
       - t2.small
       - t2.medium
@@ -188,6 +193,12 @@ Parameters:
       - d2.2xlarge
       - d2.4xlarge
       - d2.8xlarge
+      - r5d.large
+      - r5d.xlarge
+      - r5d.2xlarge
+      - r5d.4xlarge
+      - r5d.12xlarge
+      - r5d.24xlarge
       - t3.nano
       - t3.large
       - t3.xlarge
