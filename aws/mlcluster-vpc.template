@@ -308,9 +308,9 @@ Conditions:
 Mappings:
   Variable:
     LambdaPackageBucket:
-      base: 'marklogic-lambda-' # update when release
+      base: 'cloud-enablement-devevlop-' # update when release
     TemplateUrl:
-      base: 'https://s3.amazonaws.com/marklogic-releases' # update when release
+      base: 'https://s3-us-west-2.amazonaws.com/cloud-enablement-devevlop-us-west-2' # update when release
     S3Directory:
       base: '9.0-6'
   LicenseRegion2AMI:
@@ -928,65 +928,6 @@ Resources:
     Metadata:
       'AWS::CloudFormation::Designer':
         id: e188e71e-5f01-4816-896e-9bd30b9a96c1
-  InstanceRecoveryAlarm1:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmDescription: Trigger a recovery when instance status check fails for 1 consecutive minutes.
-      Namespace: AWS/EC2
-      MetricName: StatusCheckFailed_System
-      Statistic: Minimum
-      Period: '60'
-      EvaluationPeriods: '1'
-      ComparisonOperator: GreaterThanThreshold
-      Threshold: '0'
-      AlarmActions:
-        - !Join ['',["arn:aws:automate:", !Ref "AWS::Region", ":ec2:recover"]]
-        - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
-      OKActions:
-        - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
-      Dimensions:
-        - Name: ASG1
-          Value: !Ref MarkLogicServerGroup1
-  InstanceRecoveryAlarm2:
-    Type: AWS::CloudWatch::Alarm
-    Condition: MultiZone
-    Properties:
-      AlarmDescription: Trigger a recovery when instance status check fails for 1 consecutive minutes.
-      Namespace: AWS/EC2
-      MetricName: StatusCheckFailed_System
-      Statistic: Minimum
-      Period: '60'
-      EvaluationPeriods: '1'
-      ComparisonOperator: GreaterThanThreshold
-      Threshold: '0'
-      AlarmActions:
-        - !Join ['',["arn:aws:automate:", !Ref "AWS::Region", ":ec2:recover"]]
-        - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
-      OKActions:
-        - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
-      Dimensions:
-        - Name: ASG2
-          Value: !Ref MarkLogicServerGroup2
-  InstanceRecoveryAlarm3:
-    Type: AWS::CloudWatch::Alarm
-    Condition: MultiZone
-    Properties:
-      AlarmDescription: Trigger a recovery when instance status check fails for 1 consecutive minutes.
-      Namespace: AWS/EC2
-      MetricName: StatusCheckFailed_System
-      Statistic: Minimum
-      Period: '60'
-      EvaluationPeriods: '1'
-      ComparisonOperator: GreaterThanThreshold
-      Threshold: '0'
-      AlarmActions:
-        - !Join ['',["arn:aws:automate:", !Ref "AWS::Region", ":ec2:recover"]]
-        - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
-      OKActions:
-        - !If [UseLogSNS, !Ref LogSNS ,!Ref 'AWS::NoValue']
-      Dimensions:
-        - Name: ASG3
-          Value: !Ref MarkLogicServerGroup3
 Outputs:
   URL:
     Description: The URL of the MarkLogic Cluster
