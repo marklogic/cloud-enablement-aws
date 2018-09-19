@@ -308,9 +308,9 @@ Conditions:
 Mappings:
   Variable:
     LambdaPackageBucket:
-      base: 'cloud-enablement-devevlop-' # update when release
+      base: 'marklogic-lambda-' # update when release
     TemplateUrl:
-      base: 'https://s3-us-west-2.amazonaws.com/cloud-enablement-devevlop-us-west-2' # update when release
+      base: 'https://s3.amazonaws.com/marklogic-releases' # update when release
     S3Directory:
       base: '9.0-6'
   LicenseRegion2AMI:
