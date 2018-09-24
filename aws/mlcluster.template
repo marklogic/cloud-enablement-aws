@@ -11,6 +11,8 @@ Metadata:
           - IAMRole
           - VolumeSize
           - VolumeType
+          - VolumeEncryption
+          - VolumeEncryptionKey
           - InstanceType
           - SpotPrice
           - KeyName
@@ -47,6 +49,10 @@ Metadata:
         default: Volume Size
       VolumeType:
         default: Volume Type
+      VolumeEncryption:
+        default: Volume Encryption
+      VolumeEncryptionKey:
+        default: Volume Encryption Key
       InstanceType:
         default: Instance Type
       SpotPrice:
@@ -81,6 +87,16 @@ Parameters:
       - standard
       - gp2
     Default: gp2
+  VolumeEncryption:
+    Description: Whether enable volume encryption
+    Type: String
+    AllowedValues:
+      - enable
+      - disable
+    Default: disable
+  VolumeEncryptionKey:
+    Description: The key ID of AWS KMS key to encrypt volumes
+    Type: String
   InstanceType:
     Description: Type of EC2 instance to launch
     Type: String
@@ -256,6 +272,8 @@ Conditions:
     !Not [!Equals [!Ref NumberOfZones, 1]]
   EssentialEnterprise:
     !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']]
+  UseVolumeEncryption: !Equals [!Ref VolumeEncryption, 'enable']
+  HasCustomEBSKey: !Not [!Equals [!Ref VolumeEncryptionKey, '']]
 Mappings:
   Variable:
     LambdaPackageBucket:
@@ -358,6 +376,8 @@ Resources:
         - Key: Name
           Value: MarkLogicData 1
       VolumeType: !Ref VolumeType
+      Encrypted: !If [UseVolumeEncryption, 'true', 'false']
+      KmsKeyId: !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, !Ref 'AWS::NoValue']
     Metadata:
       'AWS::CloudFormation::Designer':
         id: c81032f7-b0ec-47ca-a236-e24d57b49ae3
@@ -371,6 +391,8 @@ Resources:
         - Key: Name
           Value: MarkLogicData 2
       VolumeType: !Ref VolumeType
+      Encrypted: !If [UseVolumeEncryption, 'true', 'false']
+      KmsKeyId: !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, !Ref 'AWS::NoValue']
     Metadata:
       'AWS::CloudFormation::Designer':
         id: ddb55ae1-a00b-42ed-addd-5e03e4a2764b
@@ -384,6 +406,8 @@ Resources:
         - Key: Name
           Value: MarkLogicData 3
       VolumeType: !Ref VolumeType
+      Encrypted: !If [UseVolumeEncryption, 'true', 'false']
+      KmsKeyId: !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, !Ref 'AWS::NoValue']
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 9094a65e-9d01-4c4c-9586-c33720e2cc9c
@@ -638,6 +662,10 @@ Resources:
             - !Ref LogSNS
             - |+
 
+            - MARKLOGIC_EBS_KEY=
+            - !If [UseVolumeEncryption, !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, 'default'], '']
+            - |+
+
       SecurityGroups:
         - !Ref InstanceSecurityGroup
       InstanceType: !Ref InstanceType
@@ -700,6 +728,10 @@ Resources:
             - !Ref LogSNS
             - |+
 
+            - MARKLOGIC_EBS_KEY=
+            - !If [UseVolumeEncryption, !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, 'default'], '']
+            - |+
+
       SecurityGroups:
         - !Ref InstanceSecurityGroup
       InstanceType: !Ref InstanceType
@@ -760,6 +792,10 @@ Resources:
 
             - MARKLOGIC_LOG_SNS=
             - !Ref LogSNS
+            - |+
+
+            - MARKLOGIC_EBS_KEY=
+            - !If [UseVolumeEncryption, !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, 'default'], '']
             - |+
 
       SecurityGroups:
