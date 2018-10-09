@@ -100,15 +100,16 @@ Parameters:
       - gp2
     Default: gp2
   VolumeEncryption:
-    Description: Whether enable volume encryption
+    Description: Whether to enable volume encryption
     Type: String
     AllowedValues:
       - enable
       - disable
-    Default: disable
+    Default: enable
   VolumeEncryptionKey:
-    Description: The key ID of AWS KMS key to encrypt volumes
+    Description: The key ID of AWS KMS key to encrypt volumes - Optional
     Type: String
+    Default: ""
   InstanceType:
     Description: Type of EC2 instance to launch
     Type: String
@@ -744,9 +745,16 @@ Resources:
             - !Ref LogSNS
             - |+
 
-            - MARKLOGIC_EBS_KEY=
-            - !If [UseVolumeEncryption, !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, 'default'], '']
-            - |+
+            - !If
+              - UseVolumeEncryption
+              - !Join
+                - ''
+                - - 'MARKLOGIC_EBS_KEY='
+                  - !If
+                    - HasCustomEBSKey
+                    - !Ref VolumeEncryptionKey
+                    - 'default'
+              - ''
 
       SecurityGroups:
         - !Ref InstanceSecurityGroup
@@ -810,9 +818,16 @@ Resources:
             - !Ref LogSNS
             - |+
 
-            - MARKLOGIC_EBS_KEY=
-            - !If [UseVolumeEncryption, !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, 'default'], '']
-            - |+
+            - !If
+              - UseVolumeEncryption
+              - !Join
+                - ''
+                - - 'MARKLOGIC_EBS_KEY='
+                  - !If
+                    - HasCustomEBSKey
+                    - !Ref VolumeEncryptionKey
+                    - 'default'
+              - ''
 
       SecurityGroups:
         - !Ref InstanceSecurityGroup
@@ -876,9 +891,16 @@ Resources:
             - !Ref LogSNS
             - |+
 
-            - MARKLOGIC_EBS_KEY=
-            - !If [UseVolumeEncryption, !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, 'default'], '']
-            - |+
+            - !If
+              - UseVolumeEncryption
+              - !Join
+                - ''
+                - - 'MARKLOGIC_EBS_KEY='
+                  - !If
+                    - HasCustomEBSKey
+                    - !Ref VolumeEncryptionKey
+                    - 'default'
+              - ''
 
       SecurityGroups:
         - !Ref InstanceSecurityGroup
