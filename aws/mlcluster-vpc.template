@@ -56,7 +56,7 @@ Metadata:
       VolumeEncryption:
         default: Volume Encryption
       VolumeEncryptionKey:
-        default: Volume Encryption Key
+        default: Volume Encryption Key ARN
       InstanceType:
         default: Instance Type
       SpotPrice:
