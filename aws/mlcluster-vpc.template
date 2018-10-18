@@ -318,13 +318,13 @@ Parameters:
     Type: String
     NoEcho: 'true'
   Licensee:
-    Description: The MarkLogic Licensee or 'none'
+    Description: The MarkLogic Licensee - Optional
     Type: String
-    Default: none
+    Default: ""
   LicenseKey:
-    Description: The MarkLogic License Key or 'none'
+    Description: The MarkLogic License Key - Optional
     Type: String
-    Default: none
+    Default: ""
 Conditions:
   UseLogSNS: !Not [!Equals [!Ref LogSNS, "none"]]
   UseSpot: !Not
