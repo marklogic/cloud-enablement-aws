@@ -183,7 +183,12 @@
                         "elements": [
                             {
                                 "name": "vnet",
-                                "type": "Microsoft.Network.VirtualNetworkCombo",
+                                "type": "Microsoft.Network.
+                              
+                              
+                              
+                              
+                              ",
                                 "label": {
                                   "virtualNetwork": "Virtual Network",
                                   "subnets": "Subnets"
