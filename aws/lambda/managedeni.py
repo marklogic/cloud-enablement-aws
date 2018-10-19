@@ -25,11 +25,12 @@ def eni_wait_for_creation(eni_id):
     retries = 0
     sleep_interval = 10
     while True and retries < max_retry:
+        # resource is not ready yet, not visible to 'ec2_resource.NetworkInterface(id=eni_id)'
         eni_info = get_network_interface_by_id(eni_id)
         if eni_info:
             status = eni_info["Status"]
             if status == "available":
-                break
+                return eni_info
             else:
                 log.warning("Network interface %s in unexpected status: %s" % (eni_id, status))
                 time.sleep(sleep_interval)
@@ -46,12 +47,12 @@ def eni_wait_for_detachment(eni_id):
     retries = 0
     sleep_interval = 10
     while True and retries < max_retry:
-        eni_info = get_network_interface_by_id(eni_id)
+        eni_info = ec2_resource.NetworkInterface(id=eni_id)
         if eni_info:
-            if "Attachment" not in eni_info:
+            if not eni_info.attachment:
                 break
 
-            status = eni_info["Attachment"]["Status"]
+            status = eni_info.attachment["Status"]
             if status == "detached":
                 break
             elif status == "attached" or status == "detaching":
@@ -71,14 +72,9 @@ def eni_wait_for_detachment(eni_id):
 
 def eni_exist(subnet_id, security_group_id, tag):
     response = ec2_client.describe_network_interfaces(
-        # TODO AWS SDK bug #1450
-        # Filters=[{
-        #     "Name": "tag:cluster-eni-id",
-        #     "Values": [tag]
-        # }]
         Filters=[
             {
-                "Name": "description",
+                "Name": "tag:cluster-eni-id",
                 "Values": [tag]
             },
             {
@@ -104,7 +100,6 @@ def create_eni(subnet_id, security_group_id, tag):
     :param tag:
     :return:
     """
-    # TODO remove description as tag
     eni_id = eni_exist(subnet_id, security_group_id, tag)
     if eni_id != None:
         return eni_id
@@ -112,7 +107,6 @@ def create_eni(subnet_id, security_group_id, tag):
         eni = ec2_client.create_network_interface(
             Groups=[security_group_id],
             SubnetId=subnet_id,
-            Description=tag
         )
         eni_id = eni['NetworkInterface']['NetworkInterfaceId']
         log.info("Creating network interface %s in subnet %s with tag %s" % (
@@ -130,8 +124,7 @@ def create_eni(subnet_id, security_group_id, tag):
         time.sleep(5)
 
     log.info("Waiting for network interface %s creation finish" % eni_id)
-    eni_wait_for_creation(eni_id)
-    return eni_id
+    return eni_wait_for_creation(eni_id)
 
 def detach_eni(eni_id, attachment_id):
     try:
@@ -149,20 +142,16 @@ def detach_eni(eni_id, attachment_id):
     eni_wait_for_detachment(eni_id)
     return True
 
-def eni_assgin_tag(eni_id, tag):
-    # AWS SDK bug #1450
-    # https://github.com/boto/boto3/issues/1450
-    # log.info(eni_id)
-    # log.info(type(eni_id))
-    # eni = ec2_resource.NetworkInterface(id=eni_id)
-    # tag = eni.create_tags(
-    #     Tags=[
-    #         {
-    #             'Key': 'cluster-eni-id',
-    #             'Value': tag
-    #         }
-    #     ]
-    # )
+def eni_assign_tag(eni_id, tag):
+    eni = ec2_resource.NetworkInterface(id=eni_id)
+    tag = eni.create_tags(
+        Tags=[
+            {
+                'Key': 'cluster-eni-id',
+                'Value': tag
+            }
+        ]
+    )
     pass
 
 @handler.create
@@ -181,21 +170,26 @@ def on_create(event, context):
     id_hash = hashlib.md5(parent_stack_id.encode()).hexdigest()
     eni_tag_prefix = parent_stack_name + "-" + id_hash + "_"
 
+    dns = []
     # craete ENIs
     for i in range(0,zone_count):
         for j in range(0,nodes_per_zone):
             eni_idx = i * nodes_per_zone + j
             tag = eni_tag_prefix + str(eni_idx)
-            eni_id = create_eni(subnets[i], security_group_id, tag)
-            if not eni_id:
+            eni_info = create_eni(subnets[i], security_group_id, tag)
+            if not eni_info:
                 reason = "Failed to create network interface with tag %s" % tag
                 log.warning(reason)
                 continue
 
-            # TODO AWS SDK bug #1450
-            # eni_assgin_tag(eni_id=eni_id, tag=tag)
+            eni_id = eni_info["NetworkInterfaceId"]
+            eni_dns = eni_info["PrivateDnsName"]
+            eni_assign_tag(eni_id=eni_id, tag=tag)
+            dns.append(eni_dns)
 
-    return cfn_success_response(event)
+    return cfn_success_response(event,data={
+        "Addresses": ",".join(dns)
+    })
 
 @handler.update
 def on_update(event, context):
@@ -272,13 +266,8 @@ def on_delete(event, context):
             response = None
             try:
                 response = ec2_client.describe_network_interfaces(
-                    # TODO AWS SDK bug #1450
-                    # Filters=[{
-                    #     "Name": "tag:cluster-eni-id",
-                    #     "Values": [tag]
-                    # }]
                     Filters=[{
-                        "Name": "description",
+                        "Name": "tag:cluster-eni-id",
                         "Values": [tag]
                     }]
                 )
@@ -309,5 +298,6 @@ def on_delete(event, context):
                 except ClientError as e:
                     reason = "Failed to delete network interface %s" % eni_id
                     log.exception(reason)
+                    return cfn_failure_response(event, reason)
 
     return cfn_success_response(event)

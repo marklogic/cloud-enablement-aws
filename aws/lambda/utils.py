@@ -16,7 +16,6 @@ def get_physical_resource_id(request_id):
 def get_network_interface_by_id(eni_id):
     """
     Use describe network interfaces function instead of ec2_resource.NetworkInterface
-    AWS SDK bug #1450
     :param eni_id:
     :return:
     """
@@ -31,7 +30,7 @@ def get_network_interface_by_id(eni_id):
     else:
         log.error("Get network interface by id %s failed: %s" % (eni_id, str(response)))
 
-def cfn_success_response(event, reuse_physical_id=False):
+def cfn_success_response(event, reuse_physical_id=False, data=None):
     return {
         "Status": "SUCCESS",
         "RequestId": event["RequestId"],
@@ -40,14 +39,16 @@ def cfn_success_response(event, reuse_physical_id=False):
         "PhysicalResourceId":
             event["PhysicalResourceId"]
             if reuse_physical_id
-            else get_physical_resource_id(event["RequestId"])
+            else get_physical_resource_id(event["RequestId"]),
+        "Data": {} if not data else data
     }
 
-def cfn_failure_response(event, reason):
+def cfn_failure_response(event, reason, data=None):
     return {
         "Status": "FAILED",
         "Reason": reason,
         "LogicalResourceId": event["LogicalResourceId"],
         "StackId": event["StackId"],
-        "PhysicalResourceId": get_physical_resource_id(event["RequestId"])
+        "PhysicalResourceId": get_physical_resource_id(event["RequestId"]),
+        "Data": {} if not data else data
     }
