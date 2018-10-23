@@ -24,7 +24,8 @@ Metadata:
           default: "Network Configuration"
         Parameters:
           - VPC
-          - Subnets
+          - PublicSubnets
+          - PrivateSubnets
       - Label:
           default: "MarkLogic Configuration"
         Parameters:
@@ -67,8 +68,10 @@ Metadata:
         default: Availability Zone
       VPC:
         default: VPC
-      Subnets:
-        default: Subnets
+      PublicSubnets:
+        default: Public Subnets
+      PrivateSubnets:
+        default: Private Subnets
 Parameters:
   # resource configuration
   IAMRole:
@@ -244,8 +247,11 @@ Parameters:
   VPC:
     Description: ID of an existing Virtual Private Cloud (VPC)
     Type: 'AWS::EC2::VPC::Id'
-  Subnets:
-    Description: Subnets in the VPC. Accept either 1 subnet or 3 subnets. The order must be same as Availability Zone(s) selected.
+  PublicSubnets:
+    Description: Public Subnets in the VPC. Accept either 1 subnet or 3 subnets. The order must be same as Availability Zone(s) selected.
+    Type: 'List<AWS::EC2::Subnet::Id>'
+  PrivateSubnets:
+    Description: Private Subnets in the VPC. Accept either 1 subnet or 3 subnets. The order must be same as Availability Zone(s) selected.
     Type: 'List<AWS::EC2::Subnet::Id>'
   # marklogic configuration
   AdminUser:
@@ -348,7 +354,7 @@ Resources:
         S3Directory: !FindInMap [Variable,"S3Directory","base"]
         NodesPerZone: !Ref NodesPerZone
         NumberOfZones: !Ref NumberOfZones
-        Subnets: !If [MultiZone, !Join [',', !Ref Subnets], !Select [0, !Ref Subnets]]
+        Subnets: !If [MultiZone, !Join [',', !Ref PrivateSubnets], !Select [0, !Ref PrivateSubnets]]
         ParentStackName: !Ref 'AWS::StackName'
         ParentStackId: !Ref 'AWS::StackId'
         SecurityGroup: !Ref InstanceSecurityGroup
@@ -434,7 +440,7 @@ Resources:
       - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier:
-        - !Select [0, !Ref Subnets]
+        - !Select [0, !Ref PrivateSubnets]
       LaunchConfigurationName: !Ref LaunchConfig1
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -477,7 +483,7 @@ Resources:
       - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier:
-        - !Select [1, !Ref Subnets]
+        - !Select [1, !Ref PrivateSubnets]
       LaunchConfigurationName: !Ref LaunchConfig2
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -520,7 +526,7 @@ Resources:
       - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier:
-        - !Select [2, !Ref Subnets]
+        - !Select [2, !Ref PrivateSubnets]
       LaunchConfigurationName: !Ref LaunchConfig3
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -842,9 +848,9 @@ Resources:
       SecurityGroups:
         - !Ref ElbSecurityGroup
       Subnets:
-        - !Select [0, !Ref Subnets]
-        - !If [MultiZone, !Select [1, !Ref Subnets], !Ref 'AWS::NoValue']
-        - !If [MultiZone, !Select [2, !Ref Subnets], !Ref 'AWS::NoValue']
+        - !Select [0, !Ref PublicSubnets]
+        - !If [MultiZone, !Select [1, !Ref PublicSubnets], !Ref 'AWS::NoValue']
+        - !If [MultiZone, !Select [2, !Ref PublicSubnets], !Ref 'AWS::NoValue']
       ConnectionDrainingPolicy:
         Enabled: 'true'
         Timeout: '60'
