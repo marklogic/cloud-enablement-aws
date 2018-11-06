@@ -88,7 +88,7 @@ def eni_exist(subnet_id, security_group_id, tag):
         ]
     )
     if len(response["NetworkInterfaces"]) > 0:
-        return response["NetworkInterfaces"][0]["NetworkInterfaceId"]
+        return response["NetworkInterfaces"][0]
     else:
         return None
 
@@ -100,9 +100,9 @@ def create_eni(subnet_id, security_group_id, tag):
     :param tag:
     :return:
     """
-    eni_id = eni_exist(subnet_id, security_group_id, tag)
-    if eni_id != None:
-        return eni_id
+    eni_info = eni_exist(subnet_id, security_group_id, tag)
+    if eni_info:
+        return eni_info
     try:
         eni = ec2_client.create_network_interface(
             Groups=[security_group_id],
@@ -122,7 +122,6 @@ def create_eni(subnet_id, security_group_id, tag):
         )
         log.exception(reason)
         time.sleep(5)
-
     log.info("Waiting for network interface %s creation finish" % eni_id)
     return eni_wait_for_creation(eni_id)
 
@@ -181,7 +180,6 @@ def on_create(event, context):
                 reason = "Failed to create network interface with tag %s" % tag
                 log.warning(reason)
                 continue
-
             eni_id = eni_info["NetworkInterfaceId"]
             eni_dns = eni_info["PrivateDnsName"]
             eni_assign_tag(eni_id=eni_id, tag=tag)
@@ -212,8 +210,6 @@ def on_update(event, context):
         reason = "Updating number of zones is not supported"
         log.error(reason)
         return cfn_failure_response(event,reason)
-    if old_nodes_per_zone == nodes_per_zone:
-        return cfn_success_response(event, reuse_physical_id=True)
     if old_nodes_per_zone > nodes_per_zone and nodes_per_zone != 0:
         reason = "Scaling down the number of nodes per zone by updating the stack is not recommended. " \
                  "Please manually remove unused network interface."
@@ -221,26 +217,33 @@ def on_update(event, context):
         return cfn_failure_response(event, reason)
     if nodes_per_zone == 0:
         log.info("Hibernating the cluster, retain network interfaces")
-        return cfn_success_response(event, reuse_physical_id=True)
+        return cfn_success_response(event, reuse_physical_id=True,data={
+            "Addresses": ""
+        })
 
     # prepare ENI meta information
     id_hash = hashlib.md5(parent_stack_id.encode()).hexdigest()
     eni_tag_prefix = parent_stack_name + "-" + id_hash + "_"
 
-    eni_idx = old_zone_count * old_nodes_per_zone
+    dns = []
+    eni_idx = 0
     for i in range(zone_count):
         for j in range(nodes_per_zone):
-            if j < old_nodes_per_zone:
-                continue
             tag = eni_tag_prefix + str(eni_idx)
             eni_idx += 1
-            eni_id = create_eni(subnets[i], security_group_id, tag)
-            if not eni_id:
+            eni_info = create_eni(subnets[i], security_group_id, tag)
+            if not eni_info:
                 reason = "Failed to create network interface with tag %s" % tag
                 log.warning(reason)
                 continue
+            eni_id = eni_info["NetworkInterfaceId"]
+            eni_dns = eni_info["PrivateDnsName"]
+            eni_assign_tag(eni_id=eni_id, tag=tag)
+            dns.append(eni_dns)
 
-    return cfn_success_response(event, reuse_physical_id=True)
+    return cfn_success_response(event,reuse_physical_id=True,data={
+        "Addresses": ",".join(dns)
+    })
 
 @handler.delete
 def on_delete(event, context):
@@ -257,47 +260,49 @@ def on_delete(event, context):
     eni_tag_prefix = parent_stack_name + "-" + id_hash + "_"
 
     # delete ENIs
-    for i in range(0,zone_count):
-        for j in range(0,nodes_per_zone):
-            eni_idx = i * nodes_per_zone + j
-            tag = eni_tag_prefix + str(eni_idx)
-            log.info("Querying EC2 for ENI with tag %s" % tag)
-            # query
-            response = None
+    eni_idx = 0
+    while True:
+        tag = eni_tag_prefix + str(eni_idx)
+        log.info("Querying EC2 for ENI with tag %s" % tag)
+        # query
+        response = None
+        try:
+            response = ec2_client.describe_network_interfaces(
+                Filters=[{
+                    "Name": "tag:cluster-eni-id",
+                    "Values": [tag]
+                }]
+            )
+        except ClientError as e:
+            reason = "Failed to describe network interface with tag %s" % tag
+            log.exception(reason)
+            time.sleep(5)
+            eni_idx += 1
+            continue
+
+        if not response["NetworkInterfaces"]:
+            break
+        for eni_info in response["NetworkInterfaces"]:
+            eni_id = eni_info["NetworkInterfaceId"]
+            log.info("Found network interface %s " % eni_id)
+
+            # detach
+            if "Attachment" in eni_info and (
+                        eni_info["Attachment"]["Status"] == "attached" or
+                            eni_info["Attachment"]["Status"] == "attaching"
+            ):
+                attachment_id = eni_info["Attachment"]["AttachmentId"]
+                if not detach_eni(eni_id, attachment_id):
+                    reason = "Failed to detach network interface %s" % eni_id
+                    log.error(reason)
             try:
-                response = ec2_client.describe_network_interfaces(
-                    Filters=[{
-                        "Name": "tag:cluster-eni-id",
-                        "Values": [tag]
-                    }]
+                ec2_client.delete_network_interface(
+                    NetworkInterfaceId=eni_id
                 )
+                log.info("Deleting network interface %s" % eni_id)
             except ClientError as e:
-                reason = "Failed to describe network interface with tag %s" % tag
+                reason = "Failed to delete network interface %s" % eni_id
                 log.exception(reason)
-                time.sleep(5)
-                continue
-
-            for eni_info in response["NetworkInterfaces"]:
-                eni_id = eni_info["NetworkInterfaceId"]
-                log.info("Found network interface %s " % eni_id)
-
-                # detach
-                if "Attachment" in eni_info and (
-                            eni_info["Attachment"]["Status"] == "attached" or
-                                eni_info["Attachment"]["Status"] == "attaching"
-                ):
-                    attachment_id = eni_info["Attachment"]["AttachmentId"]
-                    if not detach_eni(eni_id, attachment_id):
-                        reason = "Failed to detach network interface %s" % eni_id
-                        log.error(reason)
-                try:
-                    ec2_client.delete_network_interface(
-                        NetworkInterfaceId=eni_id
-                    )
-                    log.info("Deleting network interface %s" % eni_id)
-                except ClientError as e:
-                    reason = "Failed to delete network interface %s" % eni_id
-                    log.exception(reason)
-                    return cfn_failure_response(event, reason)
-
+                return cfn_failure_response(event, reason)
+        eni_idx += 1
     return cfn_success_response(event)
