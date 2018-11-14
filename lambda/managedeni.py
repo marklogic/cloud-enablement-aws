@@ -217,9 +217,7 @@ def on_update(event, context):
         return cfn_failure_response(event, reason)
     if nodes_per_zone == 0:
         log.info("Hibernating the cluster, retain network interfaces")
-        return cfn_success_response(event, reuse_physical_id=True,data={
-            "Addresses": ""
-        })
+        nodes_per_zone = old_nodes_per_zone
 
     # prepare ENI meta information
     id_hash = hashlib.md5(parent_stack_id.encode()).hexdigest()
