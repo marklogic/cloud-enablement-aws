@@ -11,38 +11,13 @@
     },
     "variables": {
         "ipv4Name": "[concat(parameters('publicLBIpSetting').name,'-v4')]",
-        "ipv6Name": "[concat(parameters('publicLBIpSetting').name,'-v6')]",
         "lbIpv4ConfigName": "[concat(parameters('lbSetting').lbIpConfigName,'-v4')]",
-        "lbIpv6ConfigName": "[concat(parameters('lbSetting').lbIpConfigName,'-v6')]",
         "lbBackendPoolIpv4Name": "[concat(parameters('lbSetting').lbBackendPoolName,'-v4')]",
-        "lbBackendPoolIpv6Name": "[concat(parameters('lbSetting').lbBackendPoolName,'-v6')]",
         "lbIpv4ConfigId": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations',parameters('lbSetting').name,variables('lbIpv4ConfigName'))]",
-        "lbIpv6ConfigId": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations',parameters('lbSetting').name,variables('lbIpv6ConfigName'))]",
         "lbBackendPoolIpv4Id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools',parameters('lbSetting').name,variables('lbBackendPoolIpv4Name'))]",
-        "lbBackendPoolIpv6Id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools',parameters('lbSetting').name,variables('lbBackendPoolIpv6Name'))]",
         "probeId": "[resourceId('Microsoft.Network/loadBalancers/probes',parameters('lbSetting').name,parameters('lbSetting').probeName)]",
-        "vnetId": "[resourceId('Microsoft.Network/virtualNetworks',parameters('lbSetting').vnetName)]",
         "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('lbSetting').vnetName, parameters('lbSetting').subnetName)]",
-        "enableIpv6": "[and(equals(parameters('lbSetting').type,'public'),parameters('publicLBIpSetting').enableIpv6)]",
-        "extLbPropertyWIpv6": [
-            {
-                "name": "[variables('lbIpv4ConfigName')]",
-                "properties": {
-                    "publicIPAddress": {
-                        "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('ipv4Name'))]"
-                    }
-                }
-            },
-            {
-                "name": "[variables('lbIpv6ConfigName')]",
-                "properties": {
-                    "publicIPAddress": {
-                        "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('ipv6Name'))]"
-                    }
-                }
-            }
-        ],
-        "extLbPropertyWoIpv6": [
+        "extLbProperty": [
             {
                 "name": "[variables('lbIpv4ConfigName')]",
                 "properties": {
@@ -52,7 +27,7 @@
                 }
             }
         ],
-        "publicLbProperty": "[if(variables('enableIpv6'),variables('extLbPropertyWIpv6'),variables('extLbPropertyWoIpv6'))]",
+        "publicLbProperty": "[variables('extLbProperty')]",
         "internalLbProperty": [
             {
                 "name": "[variables('lbIpv4ConfigName')]",
@@ -63,333 +38,7 @@
                 }
             }
         ],
-        "lbRuleWIpv6": [
-            {
-                "name": "8000-v4",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv4ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv4Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8000,
-                    "backendPort": 8000,
-                    "enableFloatingIP": false,
-                    "idleTimeoutInMinutes": 5,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8001-v4",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv4ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv4Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8001,
-                    "backendPort": 8001,
-                    "enableFloatingIP": false,
-                    "idleTimeoutInMinutes": 5,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8002-v4",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv4ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv4Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8002,
-                    "backendPort": 8002,
-                    "enableFloatingIP": false,
-                    "idleTimeoutInMinutes": 5,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8003-v4",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv4ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv4Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8003,
-                    "backendPort": 8003,
-                    "enableFloatingIP": false,
-                    "idleTimeoutInMinutes": 5,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8004-v4",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv4ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv4Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8004,
-                    "backendPort": 8004,
-                    "enableFloatingIP": false,
-                    "idleTimeoutInMinutes": 5,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8005-v4",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv4ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv4Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8005,
-                    "backendPort": 8005,
-                    "enableFloatingIP": false,
-                    "idleTimeoutInMinutes": 5,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8006-v4",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv4ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv4Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8006,
-                    "backendPort": 8006,
-                    "enableFloatingIP": false,
-                    "idleTimeoutInMinutes": 5,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8007-v4",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv4ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv4Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8007,
-                    "backendPort": 8007,
-                    "enableFloatingIP": false,
-                    "idleTimeoutInMinutes": 5,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8008-v4",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv4ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv4Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8008,
-                    "backendPort": 8008,
-                    "enableFloatingIP": false,
-                    "idleTimeoutInMinutes": 5,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8000-v6",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv6ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv6Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8000,
-                    "backendPort": 8000,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8001-v6",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv6ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv6Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8001,
-                    "backendPort": 8001,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8002-v6",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv6ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv6Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8002,
-                    "backendPort": 8002,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8003-v6",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv6ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv6Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8003,
-                    "backendPort": 8003,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8004-v6",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv6ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv6Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8004,
-                    "backendPort": 8004,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8005-v6",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv6ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv6Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8005,
-                    "backendPort": 8005,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8006-v6",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv6ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv6Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8006,
-                    "backendPort": 8006,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8007-v6",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv6ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv6Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8007,
-                    "backendPort": 8007,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            },
-            {
-                "name": "8008-v6",
-                "properties": {
-                    "frontendIPConfiguration": {
-                        "id": "[variables('lbIpv6ConfigId')]"
-                    },
-                    "backendAddressPool": {
-                      "id": "[variables('lbBackendPoolIpv6Id')]"
-                    },
-                    "protocol": "tcp",
-                    "frontendPort": 8008,
-                    "backendPort": 8008,
-                    "probe": {
-                      "id": "[variables('probeId')]"
-                    }
-                }
-            }
-        ],
-        "lbRuleWoIpv6": [
+        "lbRules": [
             {
                 "name": "8000-v4",
                 "properties": {
@@ -570,7 +219,6 @@
             "type": "Microsoft.Network/loadBalancers",
             "location": "[parameters('lbSetting').location]",
             "dependsOn": [
-                "[concat('Microsoft.Network/publicIPAddresses/', variables('ipv6Name'))]",
                 "[concat('Microsoft.Network/publicIPAddresses/', variables('ipv4Name'))]"
             ],
             "properties": {
@@ -578,12 +226,9 @@
                 "backendAddressPools": [
                     {
                         "name": "[variables('lbBackendPoolIpv4Name')]"
-                    },
-                    {
-                        "name": "[variables('lbBackendPoolIpv6Name')]"
                     }
                 ],
-                "loadBalancingRules": "[if(variables('enableIpv6'),variables('lbRuleWIpv6'),variables('lbRuleWoIpv6'))]",
+                "loadBalancingRules": "[variables('lbRules')]",
                 "probes": [
                     {
                         "name": "[parameters('lbSetting').probeName]",
@@ -595,20 +240,6 @@
                         }
                     }
                 ]
-            }
-        },
-        {
-            "apiVersion": "[parameters('publicLBIpSetting').apiVersion]",
-            "type": "Microsoft.Network/publicIPAddresses",
-            "name": "[variables('ipv6Name')]",
-            "condition": "[variables('enableIpv6')]",
-            "location": "[parameters('publicLBIpSetting').location]",
-            "properties": {
-                "publicIPAllocationMethod": "Dynamic",
-                "publicIPAddressVersion": "IPv6",
-                "dnsSettings": {
-                    "domainNameLabel": "[parameters('publicLBIpSetting').domainNameLabel]"
-                }
             }
         },
         {
