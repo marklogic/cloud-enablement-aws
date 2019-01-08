@@ -117,12 +117,15 @@ Parameters:
       - m5.4xlarge
       - m5.12xlarge
       - m5.24xlarge
+<<<<<<< HEAD
       - m5a.large
       - m5a.xlarge
       - m5a.2xlarge
       - m5a.4xlarge
       - m5a.12xlarge
       - m5a.24xlarge
+=======
+>>>>>>> develop
       - c3.xlarge
       - c4.xlarge
       - c4.2xlarge
@@ -154,12 +157,15 @@ Parameters:
       - r5.4xlarge
       - r5.12xlarge
       - r5.24xlarge
+<<<<<<< HEAD
       - r5a.large
       - r5a.xlarge
       - r5a.2xlarge
       - r5a.4xlarge
       - r5a.12xlarge
       - r5a.24xlarge
+=======
+>>>>>>> develop
       - p3.2xlarge
       - p3.8xlarge
       - p3.16xlarge
