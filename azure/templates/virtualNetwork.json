@@ -26,7 +26,13 @@
                     {
                         "name": "[parameters('vnetSetting').vnetSubnetName]",
                         "properties": {
-                            "addressPrefix": "[parameters('vnetSetting').vnetSubnetPrefix]"
+                            "addressPrefix": "[parameters('vnetSetting').vnetVmSubnetPrefix]"
+                        }
+                    },
+                    {
+                        "name": "[parameters('vnetSetting').vnetAppGatewaySubnetName]",
+                        "properties": {
+                            "addressPrefix": "[parameters('vnetSetting').vnetSubnetAppGatewayPrefix]"
                         }
                     }
                 ]

@@ -72,20 +72,20 @@
                 "description": "Subnet name"
             }
         },
-        "SubnetPrefix": {
+        "VmSubnetPrefix": {
             "type": "string",
             "minLength": 1,
             "defaultValue": "10.0.1.0/24",
             "metadata": {
-                "description": "Subnet address prefix"
+                "description": "Subnet address prefix for Virtual Machine"
             }
         },
-        "LoadBalancer": {
+        "AppGatewaySubnetPrefix": {
             "type": "string",
-            "defaultValue": "public",
-            "allowedValues": ["public", "internal"],
+            "minLength": 1,
+            "defaultValue": "10.0.2.0/24",
             "metadata": {
-                "description": "Type of load balancer to use"
+                "description": "Subnet address prefix for Application Gateway"
             }
         },
         "OSStorage": {
@@ -142,7 +142,7 @@
             "minLength": 1,
             "defaultValue": "https://raw.githubusercontent.com/marklogic/cloud-enablement/v9.0-7/azure"
         },
-        "location": {
+        "Location": {
             "type": "string",
             "minLength": 1,
             "metadata": {
@@ -155,7 +155,7 @@
         "templateBaseUrl": "[concat(parameters('baseUrl'),'/templates/')]",
         "scriptBaseUrl": "[concat(parameters('baseUrl'),'/scripts/')]",
         "clusterPrefix": "[replace(parameters('DeploymentName'),' ','')]",
-        "clusterLocation": "[parameters('location')]",
+        "clusterLocation": "[parameters('Location')]",
         "enableAvailabilitySet": true,
         "enableHA": "[if(lessOrEquals(parameters('NumberOfNodes'),1),bool('false'),equals(parameters('HighAvailability'),'enable'))]",
         "license": "[if(and(equals(parameters('Licensee'),'none'),equals(parameters('LicenseKey'),'none')),'DEV','BYOL')]",
@@ -165,7 +165,8 @@
             "resourcesApiVersion": "2016-09-01",
             "networkApiVersion": "2017-08-01",
             "storageApiVersion": "2017-03-30",
-            "computeApiVersion": "2017-03-30"
+            "computeApiVersion": "2017-03-30",
+            "appGatewayApiVersion": "2018-04-01"
         },
         "templateUrls": {
             "availabilitySetTemplateUrl": "[concat(variables('templateBaseUrl'),'availabilitySet.json')]",
@@ -176,7 +177,7 @@
             "vmTemplateUrl": "[concat(variables('templateBaseUrl'),'virtualMachine.json')]",
             "bootstrapNodeExtTemplateUrl": "[concat(variables('templateBaseUrl'),'bootstrapNodeExt.json')]",
             "additionalNodeExtTemplateUrl": "[concat(variables('templateBaseUrl'),'additionalNodeExt.json')]",
-            "lbTemplateUrl": "[concat(variables('templateBaseUrl'),'loadBalancer.json')]"
+            "appGatewayTemplateUrl": "[concat(variables('templateBaseUrl'),'appGateway.json')]"
         },
         "scriptUrls": {
             "bootstrapNodeScriptUrl": "[concat(variables('scriptBaseUrl'),'config-bootstrap-node.sh')]",
@@ -196,8 +197,10 @@
             "name": "[concat(variables('clusterPrefix'),'-',parameters('VnetName'))]",
             "location": "[variables('clusterLocation')]",
             "vnetPrefix": "[parameters('VnetPrefix')]",
-            "vnetSubnetName": "[concat(variables('clusterPrefix'),'-',parameters('SubnetName'))]",
-            "vnetSubnetPrefix": "[parameters('SubnetPrefix')]",
+            "vnetSubnetName": "[concat(variables('clusterPrefix'),'-',parameters('SubnetName'),'-Vm')]",
+            "vnetAppGatewaySubnetName": "[concat(variables('clusterPrefix'),'-',parameters('SubnetName'),'-appGateway')]",
+            "vnetVmSubnetPrefix": "[parameters('VmSubnetPrefix')]",
+            "vnetSubnetAppGatewayPrefix": "[parameters('AppGatewaySubnetPrefix')]",
             "apiVersion": "[variables('apiVersions').networkApiVersion]"
         },
         "nsgSetting": {
@@ -223,26 +226,25 @@
             "subnetName": "[variables('vnetSetting').vnetSubnetName]",
             "nodePublicIpName": "[variables('nodePublicIpSetting').namev4]",
             "nsgName": "[variables('nsgSetting').name]",
-            "lbName": "[variables('lbSetting').name]",
-            "lbBackendPoolIpv4Name": "[concat(variables('lbSetting').lbBackendPoolName,'-v4')]"
+            "appGatewayName": "[variables('appGatewaySetting').name]",
+            "appGatewayBackendPoolName": "[variables('appGatewaySetting').appGatewayBackendPoolName]"
         },
-        "lbSetting": {
-            "name": "[concat(variables('clusterPrefix'),'-lb')]",
-            "apiVersion": "[variables('apiVersions').networkApiVersion]",
+        "appGatewaySetting": {
+            "name": "[concat(variables('clusterPrefix'),'-appGateway')]",
+            "apiVersion": "[variables('apiVersions').appGatewayApiVersion]",
             "location": "[variables('clusterLocation')]",
-            "lbIpConfigName": "[concat(variables('clusterPrefix'),'-lbIpConfig')]",
-            "lbBackendPoolName": "[concat(variables('clusterPrefix'),'-lbBackendPool')]",
-            "probeName": "[concat(variables('clusterPrefix'),'-lbProbe')]",
+            "appGatewayIpConfigName": "[concat(variables('clusterPrefix'),'-appGatewayIpConfig')]",
+            "appGatewayBackendPoolName": "[concat(variables('clusterPrefix'),'-appGatewayBackendPool')]",
+            "probeName": "[concat(variables('clusterPrefix'),'-appGatewayProbe')]",
             "vnetName": "[variables('vnetSetting').name]",
-            "subnetName": "[variables('vnetSetting').vnetSubnetName]",
-            "type": "[parameters('LoadBalancer')]"
+            "subnetName": "[variables('vnetSetting').vnetAppGatewaySubnetName]"
         },
-        "publicLBIpSetting": {
-            "name": "[concat(variables('lbSetting').name,'Ip')]",
+        "publicAppGatewayIpSetting": {
+            "name": "[concat(variables('appGatewaySetting').name,'Ip')]",
             "apiVersion": "[variables('apiVersions').networkApiVersion]",
             "location": "[variables('clusterLocation')]",
             "IPAllocationMethod": "Static",
-            "domainNameLabel": "[concat(variables('clusterPrefix'),'-',uniqueString(concat(variables('clusterPrefix'),resourceGroup().id)),'-lb')]"
+            "domainNameLabel": "[concat(variables('clusterPrefix'),'-',uniqueString(concat(variables('clusterPrefix'),resourceGroup().id)),'-appgateway')]"
         },
         "vmSetting": {
             "location": "[variables('clusterLocation')]",
@@ -372,21 +374,21 @@
             }
         },
         {
-            "name": "loadBalancerDeployment",
+            "name": "appGatewayDeployment",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "[variables('apiVersions').resourcesAPIVersion]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[variables('templateUrls').lbTemplateUrl]",
+                    "uri": "[variables('templateUrls').appGatewayTemplateUrl]",
                     "contentVersion": "[variables('templateVersion')]"
                 },
                 "parameters": {
-                    "lbSetting": {
-                        "value": "[variables('lbSetting')]"
+                    "appGatewaySetting": {
+                        "value": "[variables('appGatewaySetting')]"
                     },
-                    "publicLBIpSetting": {
-                        "value": "[variables('publicLBIpSetting')]"
+                    "publicAppGatewayIpSetting": {
+                        "value": "[variables('publicAppGatewayIpSetting')]"
                     }
                 }
             }
@@ -399,7 +401,7 @@
                 "vnetDeployment",
                 "nodePublicIpDeployment",
                 "nsgDeployment",
-                "loadBalancerDeployment"
+                "appGatewayDeployment"
             ],
             "properties": {
                 "mode": "Incremental",

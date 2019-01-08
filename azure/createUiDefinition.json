@@ -203,9 +203,19 @@
                                 },
                                 "subnets": {
                                   "subnet1": {
-                                    "label": "Subnet",
+                                    "label": "Virtual Machine Subnet",
                                     "defaultValue": {
-                                      "name": "vnet-subnet"
+                                      "name": "vnet-vm-subnet"
+                                    },
+                                    "constraints": {
+                                      "minAddressPrefixSize": "/24"
+                                    }
+                                  },
+                                  "subnet2": {
+                                    "label": "Applciation Gateway Subnet",
+                                    "defaultValue": {
+                                      "name": "vnet-application-gateway-subnet",
+                                      "addressPrefixSize": "/24"
                                     },
                                     "constraints": {
                                       "minAddressPrefixSize": "/24"
@@ -215,54 +225,6 @@
                                 "visible": true
                             }
                         ]
-                    },
-                    {
-                        "name": "loadBalancer",
-                        "type": "Microsoft.Common.Section",
-                        "label": "Load Balancer",
-                        "elements": [
-                            {
-                                "name": "lbType",
-                                "type": "Microsoft.Common.OptionsGroup",
-                                "label": "Type",
-                                "defaultValue": "public",
-                                "toolTip": "Type of load balancer to use",
-                                "constraints": {
-                                    "allowedValues": [
-                                        {
-                                            "label": "public",
-                                            "value": "public"
-                                        },
-                                        {
-                                            "label": "internal",
-                                            "value": "internal"
-                                        }
-                                    ]
-                                },
-                                "visible": true
-                            },
-                            {
-                                "name": "lbIpv6",
-                                "type": "Microsoft.Common.OptionsGroup",
-                                "label": "IPv6",
-                                "defaultValue": "enable",
-                                "toolTip": "IPv6 address on the load balancer.",
-                                "constraints": {
-                                    "allowedValues": [
-                                        {
-                                            "label": "enable",
-                                            "value": "enable"
-                                        },
-                                        {
-                                            "label": "disable",
-                                            "value": "disable"
-                                        }
-                                    ]
-                                },
-                                "visible": "[equals(steps('resourceConfig').loadBalancer.lbType,'public')]"
-                            }
-                        ],
-                        "visible": "[greater(basics('numberofNodes'),1)]"
                     },
                     {
                         "name": "storage",
@@ -581,10 +543,9 @@
             "VnetName": "[steps('resourceConfig').network.vnet.name]",
             "VnetPrefix": "[first(steps('resourceConfig').network.vnet.addressPrefixes)]",
             "SubnetName": "[steps('resourceConfig').network.vnet.subnets.subnet1.name]",
-            "SubnetPrefix": "[steps('resourceConfig').network.vnet.subnets.subnet1.addressPrefix]",
-            "LoadBalancer": "[steps('resourceConfig').loadBalancer.lbType]",
+            "VmSubnetPrefix": "[steps('resourceConfig').network.vnet.subnets.subnet1.addressPrefix]",
+            "AppGatewaySubnetPrefix": "[steps('resourceConfig').network.vnet.subnets.subnet2.addressPrefix]",
             "OSStorage": "[steps('resourceConfig').storage.osStorage]",
-            "LoadBalancerIPV6": "[steps('resourceConfig').loadBalancer.lbIpv6]",
             "DataStorage": "[steps('resourceConfig').storage.dataStorage]",
             "VirtualMachineUser": "[steps('resourceConfig').virtualMachine.vmUser]",
             "SSHPublicKey": "[steps('resourceConfig').virtualMachine.vmCredential.sshPublicKey]",

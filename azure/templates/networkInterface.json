@@ -8,7 +8,7 @@
     },
     "variables": {
         "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('networkInterfaceSetting').vnetName, parameters('networkInterfaceSetting').subnetName)]",
-        "lbBackendPoolIpv4Id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools',parameters('networkInterfaceSetting').lbName,parameters('networkInterfaceSetting').lbBackendPoolIpv4Name)]",
+        "appGatewayBackendPoolId": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools',parameters('networkInterfaceSetting').appGatewayName,parameters('networkInterfaceSetting').appGatewayBackendPoolName)]"
     },
     "resources": [
         {
@@ -23,7 +23,7 @@
             "properties": {
                 "ipConfigurations": [
                     {
-                        "name": "ipconfigv4",
+                        "name": "ipconfig",
                         "properties": {
                             "subnet": {
                                 "id": "[variables('subnetId')]"
@@ -33,9 +33,9 @@
                             "publicIpAddress": {
                                 "id": "[resourceId('Microsoft.Network/publicIpAddresses',concat(parameters('networkInterfaceSetting').nodePublicIpName,copyIndex()))]"
                             },
-                            "loadBalancerBackendAddressPools": [
+                            "applicationGatewayBackendAddressPools": [
                               {
-                                "id": "[variables('lbBackendPoolIpv4Id')]"
+                                "id": "[variables('appGatewayBackendPoolId')]"
                               }
                             ]
                         }
