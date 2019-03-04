@@ -169,7 +169,7 @@ def on_create(event, context):
     id_hash = hashlib.md5(parent_stack_id.encode()).hexdigest()
     eni_tag_prefix = parent_stack_name + "-" + id_hash + "_"
 
-    dns = []
+    addresses = []
     # craete ENIs
     for i in range(0,zone_count):
         for j in range(0,nodes_per_zone):
@@ -181,12 +181,15 @@ def on_create(event, context):
                 log.warning(reason)
                 continue
             eni_id = eni_info["NetworkInterfaceId"]
-            eni_dns = eni_info["PrivateDnsName"]
+            if "PrivateDnsName" in eni_info:
+                eni_address = eni_info["PrivateDnsName"]
+            else:
+                eni_address = eni_info["PrivateIpAddress"]
             eni_assign_tag(eni_id=eni_id, tag=tag)
-            dns.append(eni_dns)
+            addresses.append(eni_address)
 
     return cfn_success_response(event,data={
-        "Addresses": ",".join(dns)
+        "Addresses": ",".join(addresses)
     })
 
 @handler.update
