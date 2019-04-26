@@ -104,7 +104,7 @@ Parameters:
   InstanceType:
     Description: Type of EC2 instance to launch
     Type: String
-    Default: r3.8xlarge
+    Default: r5.4xlarge
     AllowedValues:
       - ---- Essential Enterprise and Bring-Your-Own-License ----
       - m4.xlarge
