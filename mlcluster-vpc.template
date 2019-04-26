@@ -135,6 +135,12 @@ Parameters:
       - m5a.4xlarge
       - m5a.12xlarge
       - m5a.24xlarge
+      - m5ad.large
+      - m5ad.xlarge
+      - m5ad.2xlarge
+      - m5ad.4xlarge
+      - m5ad.12xlarge
+      - m5ad.24xlarge
       - c3.xlarge
       - c4.xlarge
       - c4.2xlarge
@@ -172,6 +178,12 @@ Parameters:
       - r5a.4xlarge
       - r5a.12xlarge
       - r5a.24xlarge
+      - r5ad.large
+      - r5ad.xlarge
+      - r5ad.2xlarge
+      - r5ad.4xlarge
+      - r5ad.12xlarge
+      - r5ad.24xlarge
       - p3.2xlarge
       - p3.8xlarge
       - p3.16xlarge
