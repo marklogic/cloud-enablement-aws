@@ -219,6 +219,7 @@ Parameters:
       - p2.16xlarge
       - g2.2xlarge
       - g2.8xlarge
+      - g3s.xlarge
       - g3.4xlarge
       - g3.8xlarge
       - g3.16xlarge
