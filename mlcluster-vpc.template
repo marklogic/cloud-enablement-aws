@@ -489,7 +489,7 @@ Resources:
       Size: !Ref VolumeSize
       Tags:
         - Key: Name
-          Value: MarkLogicData 1
+          Value: MarkLogic-NodeA#1-Volume0
       VolumeType: !Ref VolumeType
       Encrypted: !If [UseVolumeEncryption, 'true', 'false']
       KmsKeyId: !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, !Ref 'AWS::NoValue']
@@ -504,7 +504,7 @@ Resources:
       Size: !Ref VolumeSize
       Tags:
         - Key: Name
-          Value: MarkLogicData 2
+          Value: MarkLogic-NodeB#1-Volume0
       VolumeType: !Ref VolumeType
       Encrypted: !If [UseVolumeEncryption, 'true', 'false']
       KmsKeyId: !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, !Ref 'AWS::NoValue']
@@ -519,7 +519,7 @@ Resources:
       Size: !Ref VolumeSize
       Tags:
         - Key: Name
-          Value: MarkLogicData 3
+          Value: MarkLogic-NodeC#1-Volume0
       VolumeType: !Ref VolumeType
       Encrypted: !If [UseVolumeEncryption, 'true', 'false']
       KmsKeyId: !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, !Ref 'AWS::NoValue']
