@@ -361,9 +361,6 @@ Mappings:
     eu-west-3:
       Enterprise: ami-9f9425e2
       BYOL: ami-999726e4
-    us-gov-west-1:
-      Enterprise: ami-32ba2d53
-      BYOL: ami-cb72e5aa
 Resources:
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
