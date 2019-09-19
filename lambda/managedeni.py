@@ -142,16 +142,28 @@ def detach_eni(eni_id, attachment_id):
     return True
 
 def eni_assign_tag(eni_id, tag):
-    eni = ec2_resource.NetworkInterface(id=eni_id)
-    tag = eni.create_tags(
-        Tags=[
-            {
-                'Key': 'cluster-eni-id',
-                'Value': tag
-            }
-        ]
-    )
-    pass
+    max_retry = 10
+    retries = 0
+    sleep_interval = 5
+    while True and retries < max_retry:
+        try:
+            eni = ec2_resource.NetworkInterface(id=eni_id)
+            tag = eni.create_tags(
+                Tags=[
+                    {
+                        'Key': 'cluster-eni-id',
+                        'Value': tag
+                    }
+                ]
+            )
+        except ClientError as e:
+            log.warning("Failed to tag eni {}".format(eni_id))
+            retries += 1
+            if (retries > max_retry):
+                raise e
+            log.exception(e)
+            time.sleep(sleep_interval)
+            continue
 
 @handler.create
 def on_create(event, context):
