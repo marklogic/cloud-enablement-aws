@@ -164,6 +164,7 @@ def eni_assign_tag(eni_id, tag):
             log.exception(e)
             time.sleep(sleep_interval)
             continue
+        break
 
 @handler.create
 def on_create(event, context):
