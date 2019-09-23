@@ -145,7 +145,7 @@ def eni_assign_tag(eni_id, tag):
     max_retry = 10
     retries = 0
     sleep_interval = 5
-    while True and retries < max_retry:
+    while True:
         try:
             eni = ec2_resource.NetworkInterface(id=eni_id)
             tag = eni.create_tags(
@@ -157,9 +157,8 @@ def eni_assign_tag(eni_id, tag):
                 ]
             )
         except ClientError as e:
-            log.warning("Failed to tag eni {}".format(eni_id))
             retries += 1
-            if (retries > max_retry):
+            if (retries >= max_retry):
                 raise e
             log.exception(e)
             time.sleep(sleep_interval)
