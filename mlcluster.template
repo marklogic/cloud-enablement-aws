@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS in existing VPC (Virtual Private Cloud).
 Metadata:
-  version: 9.0-6
-  binary: MarkLogic-9.0-5.x86_64.rpm # TODO
+  version: 9.0-10.3
+  binary: MarkLogic-9.0-10.3.x86_64.rpm
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -11,6 +11,8 @@ Metadata:
           - IAMRole
           - VolumeSize
           - VolumeType
+          - VolumeEncryption
+          - VolumeEncryptionKey
           - InstanceType
           - SpotPrice
           - KeyName
@@ -22,7 +24,8 @@ Metadata:
           default: "Network Configuration"
         Parameters:
           - VPC
-          - Subnets
+          - PublicSubnets
+          - PrivateSubnets
       - Label:
           default: "MarkLogic Configuration"
         Parameters:
@@ -47,6 +50,10 @@ Metadata:
         default: Volume Size
       VolumeType:
         default: Volume Type
+      VolumeEncryption:
+        default: Volume Encryption
+      VolumeEncryptionKey:
+        default: Volume Encryption Key ARN
       InstanceType:
         default: Instance Type
       SpotPrice:
@@ -61,8 +68,10 @@ Metadata:
         default: Availability Zone
       VPC:
         default: VPC
-      Subnets:
-        default: Subnets
+      PublicSubnets:
+        default: Public Subnets
+      PrivateSubnets:
+        default: Private Subnets
 Parameters:
   # resource configuration
   IAMRole:
@@ -81,10 +90,21 @@ Parameters:
       - standard
       - gp2
     Default: gp2
+  VolumeEncryption:
+    Description: Whether to enable volume encryption
+    Type: String
+    AllowedValues:
+      - enable
+      - disable
+    Default: enable
+  VolumeEncryptionKey:
+    Description: The key ID of AWS KMS key to encrypt volumes - Optional
+    Type: String
+    Default: ""
   InstanceType:
     Description: Type of EC2 instance to launch
     Type: String
-    Default: r3.8xlarge
+    Default: r5.4xlarge
     AllowedValues:
       - ---- Essential Enterprise and Bring-Your-Own-License ----
       - m4.xlarge
@@ -97,6 +117,17 @@ Parameters:
       - m5.4xlarge
       - m5.12xlarge
       - m5.24xlarge
+      - m5a.xlarge
+      - m5a.2xlarge
+      - m5a.4xlarge
+      - m5a.12xlarge
+      - m5a.24xlarge
+      - m5ad.large
+      - m5ad.xlarge
+      - m5ad.2xlarge
+      - m5ad.4xlarge
+      - m5ad.12xlarge
+      - m5ad.24xlarge
       - c3.xlarge
       - c4.xlarge
       - c4.2xlarge
@@ -122,20 +153,28 @@ Parameters:
       - r4.4xlarge
       - r4.8xlarge
       - r4.16xlarge
-      - r5.large
       - r5.xlarge
       - r5.2xlarge
       - r5.4xlarge
       - r5.12xlarge
       - r5.24xlarge
-      - p3.2xlarge
-      - p3.8xlarge
-      - p3.16xlarge
+      - r5a.xlarge
+      - r5a.2xlarge
+      - r5a.4xlarge
+      - r5a.12xlarge
+      - r5a.24xlarge
+      - r5ad.large
+      - r5ad.xlarge
+      - r5ad.2xlarge
+      - r5ad.4xlarge
+      - r5ad.12xlarge
+      - r5ad.24xlarge
       - i3.xlarge
       - i3.2xlarge
       - i3.4xlarge
       - i3.8xlarge
       - i3.16xlarge
+      - i3.metal
       - -------------- Bring-Your-Own-License Only --------------
       - t2.small
       - t2.medium
@@ -162,6 +201,7 @@ Parameters:
       - p2.16xlarge
       - g2.2xlarge
       - g2.8xlarge
+      - g3s.xlarge
       - g3.4xlarge
       - g3.8xlarge
       - g3.16xlarge
@@ -227,8 +267,11 @@ Parameters:
   VPC:
     Description: ID of an existing Virtual Private Cloud (VPC)
     Type: 'AWS::EC2::VPC::Id'
-  Subnets:
-    Description: Subnets in the VPC. Accept either 1 subnet or 3 subnets. The order must be same as Availability Zone(s) selected.
+  PublicSubnets:
+    Description: Public Subnets in the VPC. Accept either 1 subnet or 3 subnets. The order must be same as Availability Zone(s) selected.
+    Type: 'List<AWS::EC2::Subnet::Id>'
+  PrivateSubnets:
+    Description: Private Subnets in the VPC. Accept either 1 subnet or 3 subnets. The order must be same as Availability Zone(s) selected.
     Type: 'List<AWS::EC2::Subnet::Id>'
   # marklogic configuration
   AdminUser:
@@ -256,63 +299,62 @@ Conditions:
     !Not [!Equals [!Ref NumberOfZones, 1]]
   EssentialEnterprise:
     !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']]
+  UseVolumeEncryption: !Equals [!Ref VolumeEncryption, 'enable']
+  HasCustomEBSKey: !Not [!Equals [!Ref VolumeEncryptionKey, '']]
 Mappings:
   Variable:
     LambdaPackageBucket:
-      base: 'marklogic-lambda-' # update when release
+      base: 'marklogic-lambda-'
     TemplateUrl:
-      base: 'https://s3.amazonaws.com/marklogic-releases' # update when release
+      base: 'https://s3.amazonaws.com/marklogic-releases'
     S3Directory:
-      base: '9.0-6'
+      base: '9.0-10.3'
   LicenseRegion2AMI:
     us-east-1:
-      Enterprise: ami-f755d188
-      BYOL: ami-3952d646
+      Enterprise: ami-08dcfd988a2988e01
+      BYOL: ami-078c0f5757e1ffdd7
     us-east-2:
-      Enterprise: ami-ce7e43ab
-      BYOL: ami-827f42e7
+      Enterprise: ami-0d21c05c6835d4b81
+      BYOL: ami-0e6f38b4221bed02b
     us-west-1:
-      Enterprise: ami-33d7c853
-      BYOL: ami-7cd8c71c
+      Enterprise: ami-0626861b0a3fa7838
+      BYOL: ami-0777f5d827b5028c7
     us-west-2:
-      Enterprise: ami-904334e8
-      BYOL: ami-1a423562
+      Enterprise: ami-05f8419833cb0eea5
+      BYOL: ami-0ab64b38cc950304f
     eu-central-1:
-      Enterprise: ami-090724e2
-      BYOL: ami-b9052652
+      Enterprise: ami-070d4ecdf78d202ee
+      BYOL: ami-080828d2a8b7b6c87
     eu-west-1:
-      Enterprise: ami-d29ab1ab
-      BYOL: ami-2e9ab157
+      Enterprise: ami-0282e753183971529
+      BYOL: ami-040e40ad9f8e1d32c
     ap-south-1:
-      Enterprise: ami-debc9cb1
-      BYOL: ami-74bd9d1b
+      Enterprise: ami-0bacaba952c98b488
+      BYOL: ami-0ea26aa174eac5a1e
     ap-southeast-1:
-      Enterprise: ami-00b09b7c
-      BYOL: ami-7eb79c02
+      Enterprise: ami-07aecf7ab363bbe67
+      BYOL: ami-041a6bfdba2bf001d
     ap-southeast-2:
-      Enterprise: ami-5c40943e
-      BYOL: ami-da4793b8
+      Enterprise: ami-01725557fb5840b61
+      BYOL: ami-0bae5d366efa1b563
     ap-northeast-1:
-      Enterprise: ami-958b64ea
-      BYOL: ami=ami-3089664f
+      Enterprise: ami-0b604dc63ba708d3b
+      BYOL: ami-0f7c21d7ed26fdad5
     ap-northeast-2:
-      Enterprise: ami-264ee748
-      BYOL: ami-884be2e6
+      Enterprise: ami-01c21baf2bbd9aa0a
+      BYOL: ami-09afa89c8a215a055
     sa-east-1:
-      Enterprise: ami-58e5b734
-      BYOL: ami-06e7b56a
+      Enterprise: ami-079d2a7849bfa9fd2
+      BYOL: ami-0ce7e3e43e862a8dd
     eu-west-2:
-      Enterprise: ami-04d83a63
-      BYOL: ami-70de3c17
+      Enterprise: ami-0ab2e6194c6bfb96e
+      BYOL: ami-057eb7e008570302b
     ca-central-1:
-      Enterprise: ami-a8e767cc
-      BYOL: ami-ede56589
+      Enterprise: ami-0eed745d7a11fb63d
+      BYOL: ami-0979a5ef42cbbc40f
     eu-west-3:
-      Enterprise: ami-9f9425e2
-      BYOL: ami-999726e4
-    us-gov-west-1:
-      Enterprise: ami-32ba2d53
-      BYOL: ami-cb72e5aa
+      Enterprise: ami-07f3e5d342c135ee9
+      BYOL: ami-06006b61dcd114239
 Resources:
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
@@ -329,7 +371,7 @@ Resources:
         S3Directory: !FindInMap [Variable,"S3Directory","base"]
         NodesPerZone: !Ref NodesPerZone
         NumberOfZones: !Ref NumberOfZones
-        Subnets: !If [MultiZone, !Join [',', !Ref Subnets], !Select [0, !Ref Subnets]]
+        Subnets: !If [MultiZone, !Join [',', !Ref PrivateSubnets], !Select [0, !Ref PrivateSubnets]]
         ParentStackName: !Ref 'AWS::StackName'
         ParentStackId: !Ref 'AWS::StackId'
         SecurityGroup: !Ref InstanceSecurityGroup
@@ -356,8 +398,10 @@ Resources:
       Size: !Ref VolumeSize
       Tags:
         - Key: Name
-          Value: MarkLogicData 1
+          Value: MarkLogic-GroupA-Host1-Volume0
       VolumeType: !Ref VolumeType
+      Encrypted: !If [UseVolumeEncryption, 'true', 'false']
+      KmsKeyId: !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, !Ref 'AWS::NoValue']
     Metadata:
       'AWS::CloudFormation::Designer':
         id: c81032f7-b0ec-47ca-a236-e24d57b49ae3
@@ -369,8 +413,10 @@ Resources:
       Size: !Ref VolumeSize
       Tags:
         - Key: Name
-          Value: MarkLogicData 2
+          Value: MarkLogic-GroupB-Host1-Volume0
       VolumeType: !Ref VolumeType
+      Encrypted: !If [UseVolumeEncryption, 'true', 'false']
+      KmsKeyId: !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, !Ref 'AWS::NoValue']
     Metadata:
       'AWS::CloudFormation::Designer':
         id: ddb55ae1-a00b-42ed-addd-5e03e4a2764b
@@ -382,8 +428,10 @@ Resources:
       Size: !Ref VolumeSize
       Tags:
         - Key: Name
-          Value: MarkLogicData 3
+          Value: MarkLogic-GroupC-Host1-Volume0
       VolumeType: !Ref VolumeType
+      Encrypted: !If [UseVolumeEncryption, 'true', 'false']
+      KmsKeyId: !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, !Ref 'AWS::NoValue']
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 9094a65e-9d01-4c4c-9586-c33720e2cc9c
@@ -409,7 +457,7 @@ Resources:
       - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier:
-        - !Select [0, !Ref Subnets]
+        - !Select [0, !Ref PrivateSubnets]
       LaunchConfigurationName: !Ref LaunchConfig1
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -452,7 +500,7 @@ Resources:
       - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier:
-        - !Select [1, !Ref Subnets]
+        - !Select [1, !Ref PrivateSubnets]
       LaunchConfigurationName: !Ref LaunchConfig2
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -495,7 +543,7 @@ Resources:
       - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier:
-        - !Select [2, !Ref Subnets]
+        - !Select [2, !Ref PrivateSubnets]
       LaunchConfigurationName: !Ref LaunchConfig3
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -638,6 +686,17 @@ Resources:
             - !Ref LogSNS
             - |+
 
+            - !If
+              - UseVolumeEncryption
+              - !Join
+                - ''
+                - - 'MARKLOGIC_EBS_KEY='
+                  - !If
+                    - HasCustomEBSKey
+                    - !Ref VolumeEncryptionKey
+                    - 'default'
+              - ''
+
       SecurityGroups:
         - !Ref InstanceSecurityGroup
       InstanceType: !Ref InstanceType
@@ -699,6 +758,17 @@ Resources:
             - MARKLOGIC_LOG_SNS=
             - !Ref LogSNS
             - |+
+
+            - !If
+              - UseVolumeEncryption
+              - !Join
+                - ''
+                - - 'MARKLOGIC_EBS_KEY='
+                  - !If
+                    - HasCustomEBSKey
+                    - !Ref VolumeEncryptionKey
+                    - 'default'
+              - ''
 
       SecurityGroups:
         - !Ref InstanceSecurityGroup
@@ -762,6 +832,17 @@ Resources:
             - !Ref LogSNS
             - |+
 
+            - !If
+              - UseVolumeEncryption
+              - !Join
+                - ''
+                - - 'MARKLOGIC_EBS_KEY='
+                  - !If
+                    - HasCustomEBSKey
+                    - !Ref VolumeEncryptionKey
+                    - 'default'
+              - ''
+
       SecurityGroups:
         - !Ref InstanceSecurityGroup
       InstanceType: !Ref InstanceType
@@ -784,9 +865,9 @@ Resources:
       SecurityGroups:
         - !Ref ElbSecurityGroup
       Subnets:
-        - !Select [0, !Ref Subnets]
-        - !If [MultiZone, !Select [1, !Ref Subnets], !Ref 'AWS::NoValue']
-        - !If [MultiZone, !Select [2, !Ref Subnets], !Ref 'AWS::NoValue']
+        - !Select [0, !Ref PublicSubnets]
+        - !If [MultiZone, !Select [1, !Ref PublicSubnets], !Ref 'AWS::NoValue']
+        - !If [MultiZone, !Select [2, !Ref PublicSubnets], !Ref 'AWS::NoValue']
       ConnectionDrainingPolicy:
         Enabled: 'true'
         Timeout: '60'
