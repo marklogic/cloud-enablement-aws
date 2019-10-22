@@ -426,9 +426,6 @@ Mappings:
     eu-west-3:
       Enterprise: ami-9f9425e2
       BYOL: ami-999726e4
-    eu-north-1:
-      Enterprise: ami-9f9425e2
-      BYOL: ami-999726e4
 Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
