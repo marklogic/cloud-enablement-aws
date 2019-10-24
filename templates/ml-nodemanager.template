@@ -66,7 +66,7 @@ Resources:
                   - 'logs:CreateLogStream'
                   - 'logs:PutLogEvents'
                 Resource: 'arn:aws:logs:*:*:*'
-  NodeManagerFunction:
+  NodeManagerFunction1:
     Type: 'AWS::Lambda::Function'
     DependsOn: NodeManagerExecRole
     Properties:
@@ -77,28 +77,95 @@ Resources:
       Role: !GetAtt [NodeManagerExecRole, Arn]
       Runtime: python3.6
       Timeout: '180'
-  NodeManagerSnsTopic:
-    Type: "AWS::SNS::Topic"
-    DependsOn: NodeManagerFunction
+      ReservedConcurrentExecutions: 1
+  NodeManagerFunction2:
+    Type: 'AWS::Lambda::Function'
+    DependsOn: NodeManagerExecRole
     Properties:
-      # TopicName: !Join ['-', ['NodeManagerSnsTopic', !Ref 'AWS::StackId']]
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Join ['/', [!Ref S3Directory,'node_manager.zip']]
+      Handler: nodemanager.handler
+      Role: !GetAtt [NodeManagerExecRole, Arn]
+      Runtime: python3.6
+      Timeout: '180'
+      ReservedConcurrentExecutions: 1
+  NodeManagerFunction3:
+    Type: 'AWS::Lambda::Function'
+    DependsOn: NodeManagerExecRole
+    Properties:
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: !Join ['/', [!Ref S3Directory,'node_manager.zip']]
+      Handler: nodemanager.handler
+      Role: !GetAtt [NodeManagerExecRole, Arn]
+      Runtime: python3.6
+      Timeout: '180'
+      ReservedConcurrentExecutions: 1
+  NodeManagerSnsTopic1:
+    Type: "AWS::SNS::Topic"
+    DependsOn: NodeManagerFunction1
+    Properties:
+      # TopicName: !Join ['-', ['NodeManagerSnsTopic1', !Ref 'AWS::StackId']]
       Subscription:
-        - Endpoint: !GetAtt [NodeManagerFunction, Arn]
+        - Endpoint: !GetAtt [NodeManagerFunction1, Arn]
           Protocol: "lambda"
-  NodeManagerInvokePerm:
+  NodeManagerSnsTopic2:
+    Type: "AWS::SNS::Topic"
+    DependsOn: NodeManagerFunction2
+    Properties:
+      # TopicName: !Join ['-', ['NodeManagerSnsTopic2', !Ref 'AWS::StackId']]
+      Subscription:
+        - Endpoint: !GetAtt [NodeManagerFunction2, Arn]
+          Protocol: "lambda"
+  NodeManagerSnsTopic3:
+    Type: "AWS::SNS::Topic"
+    DependsOn: NodeManagerFunction3
+    Properties:
+      # TopicName: !Join ['-', ['NodeManagerSnsTopic3', !Ref 'AWS::StackId']]
+      Subscription:
+        - Endpoint: !GetAtt [NodeManagerFunction3, Arn]
+          Protocol: "lambda"
+  NodeManagerInvokePerm1:
     Type: "AWS::Lambda::Permission"
     DependsOn:
-      - NodeManagerFunction
-      - NodeManagerSnsTopic
+      - NodeManagerFunction1
+      - NodeManagerSnsTopic1
     Properties:
       Action: "lambda:InvokeFunction"
-      FunctionName: !GetAtt [NodeManagerFunction, Arn]
+      FunctionName: !GetAtt [NodeManagerFunction1, Arn]
       Principal: "sns.amazonaws.com"
-      SourceArn: !Ref NodeManagerSnsTopic
+      SourceArn: !Ref NodeManagerSnsTopic1
+  NodeManagerInvokePerm2:
+    Type: "AWS::Lambda::Permission"
+    DependsOn:
+      - NodeManagerFunction2
+      - NodeManagerSnsTopic2
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !GetAtt [NodeManagerFunction2, Arn]
+      Principal: "sns.amazonaws.com"
+      SourceArn: !Ref NodeManagerSnsTopic2
+  NodeManagerInvokePerm3:
+    Type: "AWS::Lambda::Permission"
+    DependsOn:
+      - NodeManagerFunction3
+      - NodeManagerSnsTopic3
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !GetAtt [NodeManagerFunction3, Arn]
+      Principal: "sns.amazonaws.com"
+      SourceArn: !Ref NodeManagerSnsTopic3
 Outputs:
   NodeMgrIamArn:
     Description: Node Manager Execution IAM Role ARN
     Value: !GetAtt [NodeManagerExecRole, Arn]
-  NodeMgrSnsArn:
+  NodeMgrSnsArn1:
     Description: Node Manager SNS Topic ARN
-    Value: !Ref NodeManagerSnsTopic
+    Value: !Ref NodeManagerSnsTopic1
+  NodeMgrSnsArn2:
+    Description: Node Manager SNS Topic ARN
+    Value: !Ref NodeManagerSnsTopic2
+  NodeMgrSnsArn3:
+    Description: Node Manager SNS Topic ARN
+    Value: !Ref NodeManagerSnsTopic3
