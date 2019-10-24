@@ -490,7 +490,7 @@ Resources:
         - LifecycleTransition: 'autoscaling:EC2_INSTANCE_LAUNCHING'
           LifecycleHookName: NodeManager
           HeartbeatTimeout: 4800
-          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn]
+          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn1]
           RoleARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrIamArn]
     Metadata:
       'AWS::CloudFormation::Designer':
@@ -533,7 +533,7 @@ Resources:
         - LifecycleTransition: 'autoscaling:EC2_INSTANCE_LAUNCHING'
           LifecycleHookName: NodeManager
           HeartbeatTimeout: 4800
-          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn]
+          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn2]
           RoleARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrIamArn]
     Metadata:
       'AWS::CloudFormation::Designer':
@@ -576,7 +576,7 @@ Resources:
         - LifecycleTransition: 'autoscaling:EC2_INSTANCE_LAUNCHING'
           LifecycleHookName: NodeManager
           HeartbeatTimeout: 4800
-          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn]
+          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn3]
           RoleARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrIamArn]
     Metadata:
       'AWS::CloudFormation::Designer':
