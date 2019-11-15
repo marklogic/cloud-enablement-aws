@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Create a VPC for MarkLogic cluster
 Metadata:
-  version: 10.0-2
+  version: 10.0-2.1
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:

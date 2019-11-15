@@ -142,19 +142,30 @@ def detach_eni(eni_id, attachment_id):
     return True
 
 def eni_assign_tag(eni_id, tag):
-    eni = ec2_resource.NetworkInterface(id=eni_id)
-    tag = eni.create_tags(
-        Tags=[
-            {
-                'Key': 'cluster-eni-id',
-                'Value': tag
-            }
-        ]
-    )
-    pass
+    max_retry = 10
+    retries = 0
+    sleep_interval = 5
+    while True:
+        try:
+            eni = ec2_resource.NetworkInterface(id=eni_id)
+            tag = eni.create_tags(
+                Tags=[
+                    {
+                        'Key': 'cluster-eni-id',
+                        'Value': tag
+                    }
+                ]
+            )
+        except ClientError as e:
+            retries += 1
+            if (retries >= max_retry):
+                raise e
+            log.exception(e)
+            time.sleep(sleep_interval)
+            continue
+        break
 
-@handler.create
-def on_create(event, context):
+def on_create_handler(event, context):
     log.info("Handle resource create event %s" % json.dumps(event, indent=2))
     # get parameters passed in
     props = event["ResourceProperties"]
@@ -191,6 +202,14 @@ def on_create(event, context):
     return cfn_success_response(event,data={
         "Addresses": ",".join(addresses)
     })
+
+@handler.create
+def on_create(event, context):
+    try:
+        return on_create_handler(event, context)
+    except Exception as e:
+        log.exception(e)
+        return cfn_failure_response(event, str(e))
 
 @handler.update
 def on_update(event, context):
