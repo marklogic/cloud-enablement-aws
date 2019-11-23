@@ -747,6 +747,9 @@ Resources:
       - InstanceSecurityGroup
     Properties:
       BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 40
         - DeviceName: /dev/sdf
           NoDevice: true
           Ebs: {}
@@ -791,6 +794,10 @@ Resources:
             - !Ref LogSNS
             - |+
 
+            - MARKLOGIC_AWS_SWAP_SIZE=
+            - 32
+            - |+
+
             - !If
               - UseVolumeEncryption
               - !Join
@@ -820,6 +827,9 @@ Resources:
       - InstanceSecurityGroup
     Properties:
       BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 40
         - DeviceName: /dev/sdf
           NoDevice: true
           Ebs: {}
@@ -864,6 +874,10 @@ Resources:
             - !Ref LogSNS
             - |+
 
+            - MARKLOGIC_AWS_SWAP_SIZE=
+            - 32
+            - |+
+
             - !If
               - UseVolumeEncryption
               - !Join
@@ -893,6 +907,9 @@ Resources:
       - InstanceSecurityGroup
     Properties:
       BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 40
         - DeviceName: /dev/sdf
           NoDevice: true
           Ebs: {}
@@ -935,6 +952,10 @@ Resources:
 
             - MARKLOGIC_LOG_SNS=
             - !Ref LogSNS
+            - |+
+
+            - MARKLOGIC_AWS_SWAP_SIZE=
+            - 32
             - |+
 
             - !If
