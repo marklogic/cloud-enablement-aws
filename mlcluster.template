@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS in existing VPC (Virtual Private Cloud).
 Metadata:
-  version: 9.0-10.4
-  binary: MarkLogic-9.0-10.4.x86_64.rpm
+  version: 9.0-11
+  binary: MarkLogic-9.0-11.x86_64.rpm
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -115,12 +115,16 @@ Parameters:
       - m5.xlarge
       - m5.2xlarge
       - m5.4xlarge
+      - m5.8xlarge
       - m5.12xlarge
+      - m5.16xlarge
       - m5.24xlarge
       - m5a.xlarge
       - m5a.2xlarge
       - m5a.4xlarge
+      - m5a.8xlarge
       - m5a.12xlarge
+      - m5a.16xlarge
       - m5a.24xlarge
       - m5ad.large
       - m5ad.xlarge
@@ -128,6 +132,8 @@ Parameters:
       - m5ad.4xlarge
       - m5ad.12xlarge
       - m5ad.24xlarge
+      - m5d.8xlarge
+      - m5d.16xlarge
       - c3.xlarge
       - c4.xlarge
       - c4.2xlarge
@@ -156,12 +162,16 @@ Parameters:
       - r5.xlarge
       - r5.2xlarge
       - r5.4xlarge
+      - r5.8xlarge
       - r5.12xlarge
+      - r5.16xlarge
       - r5.24xlarge
       - r5a.xlarge
       - r5a.2xlarge
       - r5a.4xlarge
+      - r5a.8xlarge
       - r5a.12xlarge
+      - r5a.16xlarge
       - r5a.24xlarge
       - r5ad.large
       - r5ad.xlarge
@@ -169,6 +179,8 @@ Parameters:
       - r5ad.4xlarge
       - r5ad.12xlarge
       - r5ad.24xlarge
+      - r5d.8xlarge
+      - r5d.16xlarge
       - i3.xlarge
       - i3.2xlarge
       - i3.4xlarge
@@ -308,53 +320,53 @@ Mappings:
     TemplateUrl:
       base: 'https://s3.amazonaws.com/marklogic-releases'
     S3Directory:
-      base: '9.0-10.4'
+      base: '9.0-11'
   LicenseRegion2AMI:
     us-east-1:
-      Enterprise: ami-028a3d2a4da127834
-      BYOL: ami-0e88f58c69ffb1cb4
+      Enterprise: ami-0382a5cfb02a12c9b
+      BYOL: ami-068d67164e79dfa2b
     us-east-2:
-      Enterprise: ami-0ca2ff1fb59e18463
-      BYOL: ami-0d0c736cee18a3247
+      Enterprise: ami-0f0ad683bfbc0cd3b
+      BYOL: ami-0de878ca743dfb50b
     us-west-1:
-      Enterprise: ami-00e5251dc6748a0a4
-      BYOL: ami-00d9d888bd6110dd4
+      Enterprise: ami-057487a0332b63efd
+      BYOL: ami-017a3985c06919540
     us-west-2:
-      Enterprise: ami-01720c7dce8b2347d
-      BYOL: ami-01f644237d88e78e3
+      Enterprise: ami-0ba4a36bb3a60fdd3
+      BYOL: ami-0153c66d47895ee3c
     eu-central-1:
-      Enterprise: ami-037706e0998ec0b54
-      BYOL: ami-020df4c1792766d0a
+      Enterprise: ami-0f4e41c2d30163ff8
+      BYOL: ami-07c42a2035ae0dfab
     eu-west-1:
-      Enterprise: ami-0ccd383be4d573a7c
-      BYOL: ami-0b60b49afb76b414c
+      Enterprise: ami-07c48677ee8b2208b
+      BYOL: ami-07b00c64563abdab2
     ap-south-1:
-      Enterprise: ami-0abf56eeef76e348d
-      BYOL: ami-0091ebe3f8e8f71c0
+      Enterprise: ami-01d56923629805092
+      BYOL: ami-073af55bbb87c130f
     ap-southeast-1:
-      Enterprise: ami-03fbed10edff1b6ee
-      BYOL: ami-0abbd9cc02fddcb09
+      Enterprise: ami-0f7fb1b9d778209e8
+      BYOL: ami-01ca81cfc3aab6435
     ap-southeast-2:
-      Enterprise: ami-0bd4311ef2b869760
-      BYOL: ami-0db1df1f8f10a709a
+      Enterprise: ami-0409e574d5b48b5ad
+      BYOL: ami-0a3d7be180bdbb10e
     ap-northeast-1:
-      Enterprise: ami-0a8b4a5cbdbafa1ae
-      BYOL: ami-0f11c00a81e114a7f
+      Enterprise: ami-037ee5d57393aa158
+      BYOL: ami-007c13096af7a51ec
     ap-northeast-2:
-      Enterprise: ami-0e712c522f71e5d02
-      BYOL: ami-05bce0c7c5b5e7a94
+      Enterprise: ami-04e9cbbea9066a64c
+      BYOL: ami-08b3467533550b04e
     sa-east-1:
-      Enterprise: ami-034e965b0042ded91
-      BYOL: ami-05a4b56b1b71b80d1
+      Enterprise: ami-0963fb61f4012d36d
+      BYOL: ami-0e484457c8158036b
     eu-west-2:
-      Enterprise: ami-032915c2e73e27b74
-      BYOL: ami-0cbbcbd64a7ecf57f
+      Enterprise: ami-01fa11a93bc5c420e
+      BYOL: ami-0dec92208a9d843bc
     ca-central-1:
-      Enterprise: ami-051f833d13986d151
-      BYOL: ami-0dcfa404e41dee0ac
+      Enterprise: ami-0fcb4a7799e48188e
+      BYOL: ami-0d00a7373c8d8334d
     eu-west-3:
-      Enterprise: ami-0026d2b8b613303d6
-      BYOL: ami-052015ebe5453d5e1
+      Enterprise: ami-01ebbb2320ec16d38
+      BYOL: ami-0cf2b87b27d48ac50
 Resources:
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
@@ -487,7 +499,7 @@ Resources:
         - LifecycleTransition: 'autoscaling:EC2_INSTANCE_LAUNCHING'
           LifecycleHookName: NodeManager
           HeartbeatTimeout: 4800
-          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn]
+          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn1]
           RoleARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrIamArn]
     Metadata:
       'AWS::CloudFormation::Designer':
@@ -530,7 +542,7 @@ Resources:
         - LifecycleTransition: 'autoscaling:EC2_INSTANCE_LAUNCHING'
           LifecycleHookName: NodeManager
           HeartbeatTimeout: 4800
-          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn]
+          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn2]
           RoleARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrIamArn]
     Metadata:
       'AWS::CloudFormation::Designer':
@@ -573,7 +585,7 @@ Resources:
         - LifecycleTransition: 'autoscaling:EC2_INSTANCE_LAUNCHING'
           LifecycleHookName: NodeManager
           HeartbeatTimeout: 4800
-          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn]
+          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn3]
           RoleARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrIamArn]
     Metadata:
       'AWS::CloudFormation::Designer':
