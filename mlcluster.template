@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS in existing VPC (Virtual Private Cloud).
 Metadata:
-  version: 10.0-2.1
-  binary: MarkLogic-10.0-2.1.x86_64.rpm
+  version: 10.0-3
+  binary: MarkLogic-10.0-3.x86_64.rpm
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -325,53 +325,53 @@ Mappings:
     TemplateUrl:
       base: 'https://s3.amazonaws.com/marklogic-releases'
     S3Directory:
-      base: '10.0-2.1'
+      base: '10.0-3'
   LicenseRegion2AMI:
     us-east-1:
-      Enterprise: ami-072ec2a77547f9ea5
-      BYOL: ami-0ade534db8b60a808
+      Enterprise: ami-08bde30b7728b773c
+      BYOL: ami-0a89489a18c15493d
     us-east-2:
-      Enterprise: ami-01cf2c036c33ece29
-      BYOL: ami-0785d0d3b8be3a50f
+      Enterprise: ami-0232f94a147187569
+      BYOL: ami-01d15f077ed94438c
     us-west-1:
-      Enterprise: ami-0202b9fe50ffe4ca7
-      BYOL: ami-0dfbde2e96e550432
+      Enterprise: ami-08e32f0223963d22f
+      BYOL: ami-0219a3c826714a65a
     us-west-2:
-      Enterprise: ami-031932618fae4c2b3
-      BYOL: ami-0bbd7ce6e998eeb02
+      Enterprise: ami-0370cee9c1c2d2046
+      BYOL: ami-0c27c3b5f896e297a
     eu-central-1:
-      Enterprise: ami-05fb73ae436f4cc53
-      BYOL: ami-0e4a73dba06357e3e
+      Enterprise: ami-0141fdbda2662ea6c
+      BYOL: ami-0ca626355eed1258e
     eu-west-1:
-      Enterprise: ami-033498e07c823a88c
-      BYOL: ami-02a3220855f8b0138
+      Enterprise: ami-0da04d4cc332cb09a
+      BYOL: ami-05cc544ba6bec0451
     ap-south-1:
-      Enterprise: ami-04aa2b458e0d67c55
-      BYOL: ami-0497e825c3e141e1e
+      Enterprise: ami-03df88db26f87a9fd
+      BYOL: ami-085e17bb4ac2b2d48
     ap-southeast-1:
-      Enterprise: ami-0a41f5094cd3a40e9
-      BYOL: ami-057541533bfa09aed
+      Enterprise: ami-0d048c93c4ea1c699
+      BYOL: ami-041f7e5ed8c733fda
     ap-southeast-2:
-      Enterprise: ami-0f9a0bff08cc6b199
-      BYOL: ami-07d7cb987a959a5eb
+      Enterprise: ami-0f575ad2081a65c11
+      BYOL: ami-0422b257d0a45c1db
     ap-northeast-1:
-      Enterprise: ami-09a55d5e48d2a1351
-      BYOL: ami-0244b97f9bec76f51
+      Enterprise: ami-083569a68138c36fb
+      BYOL: ami-0ef3661fb348d4105
     ap-northeast-2:
-      Enterprise: ami-0a74dcad4c72fa457
-      BYOL: ami-06b3dfc2d3efe96d3
+      Enterprise: ami-03e3cac31a9f3e042
+      BYOL: ami-010a8db965dac38d0
     sa-east-1:
-      Enterprise: ami-056975e34509c0595
-      BYOL: ami-0e6c2870b6d67e502
+      Enterprise: ami-07d7e31894ae8e0d5
+      BYOL: ami-04a546a9d226bd122
     eu-west-2:
-      Enterprise: ami-0b650def8b9d17143
-      BYOL: ami-0a769f4f99a22b4ba
+      Enterprise: ami-09a7851f4bb16fa63
+      BYOL: ami-01fc3b3bc2679ce15
     ca-central-1:
-      Enterprise: ami-05bd66d8ba9aadd19
-      BYOL: ami-08d6648938dfe7b07
+      Enterprise: ami-017740cf6337af37a
+      BYOL: ami-05f88dd42f74bd436
     eu-west-3:
-      Enterprise: ami-058c46da4557aab01
-      BYOL: ami-0fcabc1d12a02840f
+      Enterprise: ami-0eb17b12d06de3e06
+      BYOL: ami-09acf0e900303b6d2
 Resources:
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
@@ -659,6 +659,9 @@ Resources:
       - InstanceSecurityGroup
     Properties:
       BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 40
         - DeviceName: /dev/sdf
           NoDevice: true
           Ebs: {}
@@ -703,6 +706,10 @@ Resources:
             - !Ref LogSNS
             - |+
 
+            - MARKLOGIC_AWS_SWAP_SIZE=
+            - 32
+            - |+
+
             - !If
               - UseVolumeEncryption
               - !Join
@@ -732,6 +739,9 @@ Resources:
       - InstanceSecurityGroup
     Properties:
       BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 40
         - DeviceName: /dev/sdf
           NoDevice: true
           Ebs: {}
@@ -776,6 +786,10 @@ Resources:
             - !Ref LogSNS
             - |+
 
+            - MARKLOGIC_AWS_SWAP_SIZE=
+            - 32
+            - |+
+
             - !If
               - UseVolumeEncryption
               - !Join
@@ -805,6 +819,9 @@ Resources:
       - InstanceSecurityGroup
     Properties:
       BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 40
         - DeviceName: /dev/sdf
           NoDevice: true
           Ebs: {}
@@ -847,6 +864,10 @@ Resources:
 
             - MARKLOGIC_LOG_SNS=
             - !Ref LogSNS
+            - |+
+
+            - MARKLOGIC_AWS_SWAP_SIZE=
+            - 32
             - |+
 
             - !If
