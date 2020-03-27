@@ -357,11 +357,11 @@ Parameters:
   Licensee:
     Description: The MarkLogic Licensee or 'none'
     Type: String
-    Default: ''
+    Default: none
   LicenseKey:
     Description: The MarkLogic License Key or 'none'
     Type: String
-    Default: ''
+    Default: none
 Conditions:
   UseLogSNS: !Not [!Equals [!Ref LogSNS, "none"]]
   UseSpot: !Not
@@ -369,7 +369,7 @@ Conditions:
       - !Ref SpotPrice
       - 0
   MultiZone: !Not [!Equals [!Ref NumberOfZones, 1]]
-  EssentialEnterprise: !Not [!And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']]]
+  EssentialEnterprise: !Not [!And [!Equals [!Ref LicenseKey, 'none'], !Equals [!Ref Licensee, 'none']]]
   UseVolumeEncryption: !Equals [!Ref VolumeEncryption, 'enable']
   HasCustomEBSKey: !Not [!Equals [!Ref VolumeEncryptionKey, '']]
 Mappings:
