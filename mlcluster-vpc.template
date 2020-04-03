@@ -364,7 +364,7 @@ Conditions:
       - !Ref SpotPrice
       - 0
   MultiZone: !Not [!Equals [!Ref NumberOfZones, 1]]
-  EssentialEnterprise: !Not [!And [!Equals [!Ref LicenseKey, 'none'], !Equals [!Ref Licensee, 'none']]]
+  EssentialEnterprise: !Or [ !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']], !And [!Equals [!Ref LicenseKey, 'none'], !Equals [!Ref Licensee, 'none']] ]
   UseVolumeEncryption: !Equals [!Ref VolumeEncryption, 'enable']
   HasCustomEBSKey: !Not [!Equals [!Ref VolumeEncryptionKey, '']]
 Mappings:
