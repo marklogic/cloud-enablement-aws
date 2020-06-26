@@ -252,7 +252,7 @@ Parameters:
       - t3.2xlarge
       - t3.medium
   SpotPrice:
-    Description: Spot price for instances in USD/Hour - Optional/advanced
+    Description: Spot price for instances in USD/Hour - Optional/advanced.
     Type: Number
     MinValue: '0'
     MaxValue: '2'
@@ -274,7 +274,7 @@ Parameters:
     MaxValue: '20'
     Default: '1'
   AZ:
-    Description: The Availability Zones for VPC subnets. Accept either 1 zone or 3 zones. In the order of Subnet 1, Subnet 2 and Subnet 3 (if applicable).
+    Description: The Availability Zones for VPC subnets and instances. Accept either 1 zone or 3 zones. In the order of Subnet 1, Subnet 2 and Subnet 3 (if applicable).
     Type: 'List<AWS::EC2::AvailabilityZone::Name>'
   LogSNS:
     Description: SNS Topic for logging - optional/advanced.
@@ -312,10 +312,8 @@ Conditions:
     - !Equals
       - !Ref SpotPrice
       - 0
-  MultiZone:
-    !Not [!Equals [!Ref NumberOfZones, 1]]
-  EssentialEnterprise:
-    !Or [ !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']], !And [!Equals [!Ref LicenseKey, 'none'], !Equals [!Ref Licensee, 'none']] ]
+  MultiZone: !Not [!Equals [!Ref NumberOfZones, 1]]
+  EssentialEnterprise: !Or [ !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']], !And [!Equals [!Ref LicenseKey, 'none'], !Equals [!Ref Licensee, 'none']] ]
   UseVolumeEncryption: !Equals [!Ref VolumeEncryption, 'enable']
   HasCustomEBSKey: !Not [!Equals [!Ref VolumeEncryptionKey, '']]
 Mappings:
