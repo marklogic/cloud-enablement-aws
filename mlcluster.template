@@ -292,22 +292,22 @@ Parameters:
     Description: ID of an existing Virtual Private Cloud (VPC)
     Type: 'AWS::EC2::VPC::Id'
   PublicSubnet1:
-    Description: Public Subnet 1 in the VPC. This subnet should be residing in the 1st selected Availability Zone. Mandatorily provide all 3 subnets for successful deployment. In the case of one AZ selection, selected 2 & 3 subnets will be ignored.
+    Description: The public subnet 1 in the VPC. This subnet must reside within the first selected Availability Zone (AZ). You must provide values for all three public subnets. If you only select one AZ, the second and third subnets will be ignored.
     Type: 'AWS::EC2::Subnet::Id'
   PublicSubnet2:
-    Description: Public Subnet 2 in the VPC. This subnet should be residing in the 2nd selected Availability Zone. Mandatorily provide all 3 subnets for successful deployment. In the case of one AZ selection, selected 2 & 3 subnets will be ignored.
+    Description: The public subnet 2 in the VPC. This subnet must reside within the second selected Availability Zone (AZ). You must provide values for all three public subnets. If you only select one AZ, the second and third subnets will be ignored.
     Type: 'AWS::EC2::Subnet::Id'
   PublicSubnet3:
-    Description: Public Subnet 3 in the VPC. This subnet should be residing in the 3rd selected Availability Zone. Mandatorily provide all 3 subnets for successful deployment. In the case of one AZ selection, selected 2 & 3 subnets will be ignored.
+    Description: The public subnet 3 in the VPC. This subnet must reside within the third selected Availability Zone (AZ). You must provide values for all three public subnets. If you only select one AZ, the second and third subnets will be ignored.
     Type: 'AWS::EC2::Subnet::Id'
   PrivateSubnet1:
-    Description: Private Subnet 1 in the VPC. This subnet should be residing in the 1st selected Availability Zone. Mandatorily provide all 3 subnets for successful deployment. In the case of one AZ selection, selected 2 & 3 subnets will be ignored.
+    Description: The private subnet 1 in the VPC. This subnet must reside within the first selected Availability Zone (AZ). You must provide values for all three private subnets. If you only select one AZ, the second and third subnets will be ignored.
     Type: 'AWS::EC2::Subnet::Id'
   PrivateSubnet2:
-    Description: Private Subnet 2 in the VPC. This subnet should be residing in the 2nd selected Availability Zone. Mandatorily provide all 3 subnets for successful deployment. In the case of one AZ selection, selected 2 & 3 subnets will be ignored.
+    Description: The private subnet 2 in the VPC. This subnet must reside within the second selected Availability Zone (AZ). You must provide values for all three private subnets. If you only select one AZ, the second and third subnets will be ignored.
     Type: 'AWS::EC2::Subnet::Id'
   PrivateSubnet3:
-    Description: Private Subnet 3 in the VPC. This subnet should be residing in the 3rd selected Availability Zone. Mandatorily provide all 3 subnets for successful deployment. In the case of one AZ selection, selected 2 & 3 subnets will be ignored.
+    Description: The private subnet 3 in the VPC. This subnet must reside within the third selected Availability Zone (AZ). You must provide values for all three private subnets. If you only select one AZ, the second and third subnets will be ignored.
     Type: 'AWS::EC2::Subnet::Id'
   # marklogic configuration
   AdminUser:
