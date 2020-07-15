@@ -270,7 +270,7 @@ Parameters:
     MaxValue: '2'
     Default: '0'
   KeyName:
-    Description: Name of and existing EC2 KeyPair to enable SSH access to the instance.
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance.
     Type: String
   NumberOfZones:
     Description: Total number of Availability Zones. 1 or 3.
@@ -309,7 +309,6 @@ Parameters:
     ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
   PrivateSubnet2Cidr:
     Description: CIDR Block for the private subnet 2. Only applicable to multi-zone cluster.
-      Only applicable to multi-zone cluster.
     Type: String
     AllowedPattern: >-
       ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
@@ -317,7 +316,6 @@ Parameters:
     ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
   PrivateSubnet3Cidr:
     Description: CIDR Block for the private subnet 3. Only applicable to multi-zone cluster.
-      Only applicable to multi-zone cluster.
     Type: String
     AllowedPattern: >-
       ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
@@ -332,7 +330,6 @@ Parameters:
     ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
   PublicSubnet2Cidr:
     Description: CIDR Block for the public subnet 2. Only applicable to multi-zone cluster.
-      Only applicable to multi-zone cluster.
     Type: String
     AllowedPattern: >-
       ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
@@ -340,7 +337,6 @@ Parameters:
     ConstraintDescription: CIDR block must be in format x.x.x.x/16-28
   PublicSubnet3Cidr:
     Description: CIDR Block for the public subnet 3. Only applicable to multi-zone cluster.
-      Only applicable to multi-zone cluster.
     Type: String
     AllowedPattern: >-
       ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
