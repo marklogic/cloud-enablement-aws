@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS in existing VPC (Virtual Private Cloud).
 Metadata:
-  version: 10.0-4
-  binary: MarkLogic-10.0-4.x86_64.rpm
+  version: 10.0-4.2
+  binary: MarkLogic-10.0-4.2.x86_64.rpm
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -24,8 +24,12 @@ Metadata:
           default: "Network Configuration"
         Parameters:
           - VPC
-          - PublicSubnets
-          - PrivateSubnets
+          - PublicSubnet1
+          - PublicSubnet2
+          - PublicSubnet3
+          - PrivateSubnet1
+          - PrivateSubnet2
+          - PrivateSubnet3
       - Label:
           default: "MarkLogic Configuration"
         Parameters:
@@ -68,10 +72,18 @@ Metadata:
         default: Availability Zone
       VPC:
         default: VPC
-      PublicSubnets:
-        default: Public Subnets
-      PrivateSubnets:
-        default: Private Subnets
+      PublicSubnet1:
+        default: Public Subnet 1
+      PublicSubnet2:
+        default: Public Subnet 2
+      PublicSubnet3:
+        default: Public Subnet 3
+      PrivateSubnet1:
+        default: Private Subnet 1
+      PrivateSubnet2:
+        default: Private Subnet 2
+      PrivateSubnet3:
+        default: Private Subnet 3
 Parameters:
   # resource configuration
   IAMRole:
@@ -284,12 +296,24 @@ Parameters:
   VPC:
     Description: ID of an existing Virtual Private Cloud (VPC)
     Type: 'AWS::EC2::VPC::Id'
-  PublicSubnets:
-    Description: Public Subnets in the VPC. Accept either 1 subnet or 3 subnets. The order must be same as Availability Zone(s) selected.
-    Type: 'List<AWS::EC2::Subnet::Id>'
-  PrivateSubnets:
-    Description: Private Subnets in the VPC. Accept either 1 subnet or 3 subnets. The order must be same as Availability Zone(s) selected.
-    Type: 'List<AWS::EC2::Subnet::Id>'
+  PublicSubnet1:
+    Description: The public subnet 1 in the VPC. This subnet must reside within the first selected Availability Zone (AZ). You must provide values for all three public subnets. If you only select one AZ, the second and third subnets will be ignored.
+    Type: 'AWS::EC2::Subnet::Id'
+  PublicSubnet2:
+    Description: The public subnet 2 in the VPC. This subnet must reside within the second selected Availability Zone (AZ). You must provide values for all three public subnets. If you only select one AZ, the second and third subnets will be ignored.
+    Type: 'AWS::EC2::Subnet::Id'
+  PublicSubnet3:
+    Description: The public subnet 3 in the VPC. This subnet must reside within the third selected Availability Zone (AZ). You must provide values for all three public subnets. If you only select one AZ, the second and third subnets will be ignored.
+    Type: 'AWS::EC2::Subnet::Id'
+  PrivateSubnet1:
+    Description: The private subnet 1 in the VPC. This subnet must reside within the first selected Availability Zone (AZ). You must provide values for all three private subnets. If you only select one AZ, the second and third subnets will be ignored.
+    Type: 'AWS::EC2::Subnet::Id'
+  PrivateSubnet2:
+    Description: The private subnet 2 in the VPC. This subnet must reside within the second selected Availability Zone (AZ). You must provide values for all three private subnets. If you only select one AZ, the second and third subnets will be ignored.
+    Type: 'AWS::EC2::Subnet::Id'
+  PrivateSubnet3:
+    Description: The private subnet 3 in the VPC. This subnet must reside within the third selected Availability Zone (AZ). You must provide values for all three private subnets. If you only select one AZ, the second and third subnets will be ignored.
+    Type: 'AWS::EC2::Subnet::Id'
   # marklogic configuration
   AdminUser:
     Description: The MarkLogic administrator username
@@ -321,57 +345,57 @@ Conditions:
 Mappings:
   Variable:
     LambdaPackageBucket:
-      base: 'ml-lambda-'
+      base: 'ml-db-lambda-'
     TemplateUrl:
-      base: 'https://s3.amazonaws.com/marklogic-template-releases'
+      base: 'https://s3.amazonaws.com/marklogic-db-template-releases'
     S3Directory:
-      base: '10.0-4'
+      base: '10.0-4.2'
   LicenseRegion2AMI:
     us-east-1:
-      Enterprise: ami-0c763e06dd7324d55
-      BYOL: ami-0b08f9840dc6d5f9b
+      Enterprise: ami-07c982d9e9c7472e1
+      BYOL: ami-0707afecd3beed443
     us-east-2:
-      Enterprise: ami-024c23747c733da56
-      BYOL: ami-0fcf29f28c09cee9c
+      Enterprise: ami-09ed6d3876cd9d415
+      BYOL: ami-039b855f6e855bdd8
     us-west-1:
-      Enterprise: ami-004f919fa30f9f554
-      BYOL: ami-039293a34c1074839
+      Enterprise: ami-0d15bcc157db0a725
+      BYOL: ami-0d6c4ddc64485cb17
     us-west-2:
-      Enterprise: ami-031db5353e68026a1
-      BYOL: ami-07d59166cf3e8fce0
+      Enterprise: ami-0e7fd6f094b27515f
+      BYOL: ami-04b53896940ba176c
     eu-central-1:
-      Enterprise: ami-0a9161ef2f978c2d1
-      BYOL: ami-0e7bc252505a327f9
+      Enterprise: ami-0f10a501c39858f5b
+      BYOL: ami-05350479cdd3f5d5a
     eu-west-1:
-      Enterprise: ami-0073e2e69eba615b1
-      BYOL: ami-0672305e2466111bf
+      Enterprise: ami-006615ccc77b56368
+      BYOL: ami-02c38f27439c0a9ff
     ap-south-1:
-      Enterprise: ami-070e1076216c4b478
-      BYOL: ami-0fa05a0d71f8ff199
+      Enterprise: ami-05bc521a59c0a06f7
+      BYOL: ami-06255b04f31e6f0bc
     ap-southeast-1:
-      Enterprise: ami-0a1f0a7a86e21df51
-      BYOL: ami-02c727762312f3afe
+      Enterprise: ami-05c95418006b1c077
+      BYOL: ami-0c76eafdbf15e5958
     ap-southeast-2:
-      Enterprise: ami-0b9ff5f80a7713b1d
-      BYOL: ami-0b1e23c4ab4b967da
+      Enterprise: ami-05029a3aa192b53e7
+      BYOL: ami-0dde0cdc65623547a
     ap-northeast-1:
-      Enterprise: ami-096e04aab25d8436b
-      BYOL: ami-0455595c16c332205
+      Enterprise: ami-042fdc00e755cbee4
+      BYOL: ami-0af65c3caa29e0493
     ap-northeast-2:
-      Enterprise: ami-0b689e5bd5d6f16d8
-      BYOL: ami-0f526a6ee68bfa25b
+      Enterprise: ami-0e611bfff117c82a6
+      BYOL: ami-0a0ac0348557ce319
     sa-east-1:
-      Enterprise: ami-0e154412d1ca51fa0
-      BYOL: ami-0ea579ca64d4236d8
+      Enterprise: ami-08364dc5f9dad0bf4
+      BYOL: ami-005b8a5f33763d0b2
     eu-west-2:
-      Enterprise: ami-0f54aefe8ea3ced8c
-      BYOL: ami-06d176f766dcadb43
+      Enterprise: ami-053cfa6e9f8a43da8
+      BYOL: ami-008fdb186775fb814
     ca-central-1:
-      Enterprise: ami-0f2e74798c55c5a2d
-      BYOL: ami-09f1d25c19776efb7
+      Enterprise: ami-06d1bf9c671e02b18
+      BYOL: ami-03f2da0b61f1bee35
     eu-west-3:
-      Enterprise: ami-00ad7835b12989a3d
-      BYOL: ami-0603d40fb43f74ebf
+      Enterprise: ami-0d080abc691120197
+      BYOL: ami-05e369d0bef5edd24
 Resources:
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
@@ -388,7 +412,7 @@ Resources:
         S3Directory: !FindInMap [Variable,"S3Directory","base"]
         NodesPerZone: !Ref NodesPerZone
         NumberOfZones: !Ref NumberOfZones
-        Subnets: !If [MultiZone, !Join [',', !Ref PrivateSubnets], !Select [0, !Ref PrivateSubnets]]
+        Subnets: !If [MultiZone, !Join [',', [!Ref PrivateSubnet1, !Ref PrivateSubnet2, !Ref PrivateSubnet3]], !Ref PrivateSubnet1]
         ParentStackName: !Ref 'AWS::StackName'
         ParentStackId: !Ref 'AWS::StackId'
         SecurityGroup: !Ref InstanceSecurityGroup
@@ -474,7 +498,7 @@ Resources:
       - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier:
-        - !Select [0, !Ref PrivateSubnets]
+        - !Ref PrivateSubnet1
       LaunchConfigurationName: !Ref LaunchConfig1
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -517,7 +541,7 @@ Resources:
       - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier:
-        - !Select [1, !Ref PrivateSubnets]
+        - !Ref PrivateSubnet2
       LaunchConfigurationName: !Ref LaunchConfig2
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -560,7 +584,7 @@ Resources:
       - NodeMgrLambdaStack
     Properties:
       VPCZoneIdentifier:
-        - !Select [2, !Ref PrivateSubnets]
+        - !Ref PrivateSubnet3
       LaunchConfigurationName: !Ref LaunchConfig3
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
@@ -903,9 +927,9 @@ Resources:
       SecurityGroups:
         - !Ref ElbSecurityGroup
       Subnets:
-        - !Select [0, !Ref PublicSubnets]
-        - !If [MultiZone, !Select [1, !Ref PublicSubnets], !Ref 'AWS::NoValue']
-        - !If [MultiZone, !Select [2, !Ref PublicSubnets], !Ref 'AWS::NoValue']
+        - !Ref PublicSubnet1
+        - !If [MultiZone, !Ref PublicSubnet2, !Ref 'AWS::NoValue']
+        - !If [MultiZone, !Ref PublicSubnet3, !Ref 'AWS::NoValue']
       ConnectionDrainingPolicy:
         Enabled: 'true'
         Timeout: '60'

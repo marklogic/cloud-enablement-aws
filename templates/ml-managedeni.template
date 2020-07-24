@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Launch Managed ENI for MarkLogic Cluster on AWS
 Metadata:
-  version: 10.0-4
+  version: 10.0-4.2
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
