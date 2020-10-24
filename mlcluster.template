@@ -138,14 +138,6 @@ Parameters:
       - m5a.12xlarge
       - m5a.16xlarge
       - m5a.24xlarge
-      - m5ad.large
-      - m5ad.xlarge
-      - m5ad.2xlarge
-      - m5ad.4xlarge
-      - m5ad.12xlarge
-      - m5ad.24xlarge
-      - m5d.8xlarge
-      - m5d.16xlarge
       - c3.xlarge
       - c4.xlarge
       - c4.2xlarge
@@ -185,14 +177,6 @@ Parameters:
       - r5a.12xlarge
       - r5a.16xlarge
       - r5a.24xlarge
-      - r5ad.large
-      - r5ad.xlarge
-      - r5ad.2xlarge
-      - r5ad.4xlarge
-      - r5ad.12xlarge
-      - r5ad.24xlarge
-      - r5d.8xlarge
-      - r5d.16xlarge
       - p3.2xlarge
       - p3.8xlarge
       - p3.16xlarge
@@ -201,7 +185,6 @@ Parameters:
       - i3.4xlarge
       - i3.8xlarge
       - i3.16xlarge
-      - i3.metal
       - -------------- Bring-Your-Own-License Only --------------
       - t2.small
       - t2.medium
@@ -248,14 +231,6 @@ Parameters:
       - d2.2xlarge
       - d2.4xlarge
       - d2.8xlarge
-      - r5d.large
-      - r5d.xlarge
-      - r5d.2xlarge
-      - r5d.4xlarge
-      - r5d.8xlarge
-      - r5d.12xlarge
-      - r5d.16xlarge
-      - r5d.24xlarge
       - t3.nano
       - t3.large
       - t3.xlarge
@@ -352,50 +327,50 @@ Mappings:
       base: '10.0-4.2'
   LicenseRegion2AMI:
     us-east-1:
-      Enterprise: ami-07c982d9e9c7472e1
-      BYOL: ami-0707afecd3beed443
+      Enterprise: ami-00421233a5c8ea1e3
+      BYOL: ami-041b115cbec6adf25
     us-east-2:
-      Enterprise: ami-09ed6d3876cd9d415
-      BYOL: ami-039b855f6e855bdd8
+      Enterprise: ami-0e7168dc5c247d3e6
+      BYOL: ami-0635272ba4617c9db
     us-west-1:
-      Enterprise: ami-0d15bcc157db0a725
-      BYOL: ami-0d6c4ddc64485cb17
+      Enterprise: ami-01624a21486ed0229
+      BYOL: ami-036878c88bbb05047
     us-west-2:
-      Enterprise: ami-0e7fd6f094b27515f
-      BYOL: ami-04b53896940ba176c
+      Enterprise: ami-03d47e352d7a5d800
+      BYOL: ami-046eba69cdc8b76c0
     eu-central-1:
-      Enterprise: ami-0f10a501c39858f5b
-      BYOL: ami-05350479cdd3f5d5a
+      Enterprise: ami-0bdf7f8cd7cd98cc0
+      BYOL: ami-07d440cf47d13493d
     eu-west-1:
-      Enterprise: ami-006615ccc77b56368
-      BYOL: ami-02c38f27439c0a9ff
+      Enterprise: ami-0c275552e08f95fa6
+      BYOL: ami-049a02acb37399270
     ap-south-1:
-      Enterprise: ami-05bc521a59c0a06f7
-      BYOL: ami-06255b04f31e6f0bc
+      Enterprise: ami-04d0201ee873dfe7c
+      BYOL: ami-0738e46453c916530
     ap-southeast-1:
-      Enterprise: ami-05c95418006b1c077
-      BYOL: ami-0c76eafdbf15e5958
+      Enterprise: ami-048a9624ad7fe776c
+      BYOL: ami-069d7084af7012e15
     ap-southeast-2:
-      Enterprise: ami-05029a3aa192b53e7
-      BYOL: ami-0dde0cdc65623547a
+      Enterprise: ami-0be45470679a8b091
+      BYOL: ami-0bdddcb1fe034e2f1
     ap-northeast-1:
-      Enterprise: ami-042fdc00e755cbee4
-      BYOL: ami-0af65c3caa29e0493
+      Enterprise: ami-02dc5c3ee780530f2
+      BYOL: ami-0e5fdaf7a84854b9a
     ap-northeast-2:
-      Enterprise: ami-0e611bfff117c82a6
-      BYOL: ami-0a0ac0348557ce319
+      Enterprise: ami-0d877ca0a041b9414
+      BYOL: ami-057671150952eb1ba
     sa-east-1:
-      Enterprise: ami-08364dc5f9dad0bf4
-      BYOL: ami-005b8a5f33763d0b2
+      Enterprise: ami-01ff3c9cdff8ec04a
+      BYOL: ami-0df189d07bf5592cd
     eu-west-2:
-      Enterprise: ami-053cfa6e9f8a43da8
-      BYOL: ami-008fdb186775fb814
+      Enterprise: ami-0e2ea0d9e4d8d0f06
+      BYOL: ami-087861ac995da7728
     ca-central-1:
-      Enterprise: ami-06d1bf9c671e02b18
-      BYOL: ami-03f2da0b61f1bee35
+      Enterprise: ami-09ae87e09348643ac
+      BYOL: ami-07596b04132ef11c8
     eu-west-3:
-      Enterprise: ami-0d080abc691120197
-      BYOL: ami-05e369d0bef5edd24
+      Enterprise: ami-0a5a505e493d5f55e
+      BYOL: ami-0de9e44e0c25edca5
 Resources:
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
