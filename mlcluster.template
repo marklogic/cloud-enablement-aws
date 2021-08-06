@@ -324,50 +324,50 @@ Mappings:
       base: '9.0-13.4'
   LicenseRegion2AMI:
     us-east-1:
-      Enterprise: ami-0efb10c66b844979f
-      BYOL: ami-030c566fd987175d3
+      Enterprise: ami-0ec683ecbc9c48c5a
+      BYOL: ami-0c12e9c8f7cb50148
     us-east-2:
-      Enterprise: ami-05e60f4fa8f1f82f9
-      BYOL: ami-00cbc8f78bcbb8b3a
+      Enterprise: ami-06d2354b59afa2472
+      BYOL: ami-04d61b64bebd3c3d2
     us-west-1:
-      Enterprise: ami-0317dfb68571672e0
-      BYOL: ami-0ef411f7efb801fde
+      Enterprise: ami-07f5b049b4c533233
+      BYOL: ami-062e9fd6ca5e4b4e2
     us-west-2:
-      Enterprise: ami-0fda23367c9ab5a99
-      BYOL: ami-0a903736ff5cca11e
+      Enterprise: ami-0d1107906ce13bc83
+      BYOL: ami-0c0fa7076a327b919
     eu-central-1:
-      Enterprise: ami-01213b85225cb0354
-      BYOL: ami-07eed5acb96ebd6f6
+      Enterprise: ami-0352b1dfe6b4bb4b7
+      BYOL: ami-06bab297911dedffe
     eu-west-1:
-      Enterprise: ami-071410c642d381bd2
-      BYOL: ami-0dfb39a481185ac90
+      Enterprise: ami-02c6fbc642b44a0af
+      BYOL: ami-0fe6c4af1a93a0471
     ap-south-1:
-      Enterprise: ami-00b61e0ac5116b6f6
-      BYOL: ami-0ce473e4b167631f4
+      Enterprise: ami-0d7725b71544214cc
+      BYOL: ami-021d39d8fa370cd55
     ap-southeast-1:
-      Enterprise: ami-00e808859aabdc23e
-      BYOL: ami-0760f97ef80347c2f
+      Enterprise: ami-04a893410bd5cbf61
+      BYOL: ami-0551ee37b2fcf1cf4
     ap-southeast-2:
-      Enterprise: ami-0fcd71a51aa9f4f3c
-      BYOL: ami-09a426caf78c34904
+      Enterprise: ami-01c8f17bf9dbe2839
+      BYOL: ami-061d45f3f29bce87a
     ap-northeast-1:
-      Enterprise: ami-0e3924dd980a87629
-      BYOL: ami-0eca2c6bbef3622f4
+      Enterprise: ami-06b8f083da227abec
+      BYOL: ami-0c93548a370a134da
     ap-northeast-2:
-      Enterprise: ami-0f0d929bfd591d8e4
-      BYOL: ami-022cb7c0ab55714a9
+      Enterprise: ami-0808ea76407ff22d2
+      BYOL: ami-0a40987c3a8c1a4a9
     sa-east-1:
-      Enterprise: ami-011b912d0cae875b4
-      BYOL: ami-05059a8b6e323f308
+      Enterprise: ami-02ab3edccefe4abfa
+      BYOL: ami-0efb315d35db8fa7a
     eu-west-2:
-      Enterprise: ami-0319f97db5d085e11
-      BYOL: ami-0cf24fb46ad7af113
+      Enterprise: ami-0d17042dc151c08f5
+      BYOL: ami-080620db78d697aab
     ca-central-1:
-      Enterprise: ami-0105e63bbedd073b3
-      BYOL: ami-03ceab168947807af
+      Enterprise: ami-09aeeee054f44a5a0
+      BYOL: ami-0b9df79d7b8ebe013
     eu-west-3:
-      Enterprise: ami-0f00bc00774ad6ed1
-      BYOL: ami-0a1db4c25a0dc7364
+      Enterprise: ami-031c47ab99add9169
+      BYOL: ami-08802f9189b097e9a
 Resources:
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
