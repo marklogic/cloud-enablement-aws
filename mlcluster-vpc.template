@@ -326,11 +326,11 @@ Parameters:
     Type: String
     NoEcho: 'true'
   Licensee:
-    Description: The MarkLogic Licensee or 'none'
+    Description: The MarkLogic Licensee or 'none'. Provide none/none to choose "Pay as you Go"/Enterprise version. Provide valid Licensee/Licensekey to choose BYOL/developer version.
     Type: String
     Default: none
   LicenseKey:
-    Description: The MarkLogic License Key or 'none'
+    Description: The MarkLogic License Key or 'none'. Provide none/none to choose "Pay as you Go"/Enterprise version. Provide valid Licensee/Licensekey to choose BYOL/developer version.
     Type: String
     Default: none
 Conditions:
