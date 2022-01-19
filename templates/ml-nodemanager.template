@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Launch Lambda function for MarkLogic Node Manager on AWS
 Metadata:
-  version: 10.0-8.2
+  version: 10.0-8.3
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
