@@ -485,8 +485,6 @@ Resources:
       Cooldown: '300'
       HealthCheckType: EC2
       HealthCheckGracePeriod: '300'
-      LoadBalancerNames:
-        - !Ref ElasticLoadBalancer
       NotificationConfiguration: !If
         - UseLogSNS
         - TopicARN: !Ref LogSNS
@@ -1320,86 +1318,11 @@ Resources:
       LoadBalancerArn: !Ref Alb
       Port: 8008
       Protocol: HTTP
-  #Description of Classic Load Balancer for SingleZone deployment.
-  ElasticLoadBalancer:
-    Condition: SingleZone
-    Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
-    DependsOn:
-      - ElbSecurityGroup
-    Properties:
-      AppCookieStickinessPolicy:
-        - CookieName: SessionID
-          PolicyName: MLSession
-      SecurityGroups:
-        - !Ref ElbSecurityGroup
-      Subnets:
-        - !Ref PublicSubnet1
-        - !If [MultiZone, !Ref PublicSubnet2, !Ref 'AWS::NoValue']
-        - !If [MultiZone, !Ref PublicSubnet3, !Ref 'AWS::NoValue']
-      ConnectionDrainingPolicy:
-        Enabled: 'true'
-        Timeout: '60'
-      CrossZone: 'true'
-      Listeners:
-        - LoadBalancerPort: '8000'
-          InstancePort: '8000'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-        - LoadBalancerPort: '8001'
-          InstancePort: '8001'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-        - LoadBalancerPort: '8002'
-          InstancePort: '8002'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-        - LoadBalancerPort: '8003'
-          InstancePort: '8003'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-        - LoadBalancerPort: '8004'
-          InstancePort: '8004'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-        - LoadBalancerPort: '8005'
-          InstancePort: '8005'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-        - LoadBalancerPort: '8006'
-          InstancePort: '8006'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-        - LoadBalancerPort: '8007'
-          InstancePort: '8007'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-        - LoadBalancerPort: '8008'
-          InstancePort: '8008'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-      HealthCheck:
-        Target: 'HTTP:7997/'
-        HealthyThreshold: '3'
-        UnhealthyThreshold: '5'
-        Interval: '10'
-        Timeout: '5'
-    Metadata:
-      'AWS::CloudFormation::Designer':
-        id: e188e71e-5f01-4816-896e-9bd30b9a96c1
 Outputs:
   URL:
     Description: The URL of the MarkLogic Cluster
     Value: !Join
       - ''
       - - 'http://'
-        - !If [MultiZone, !GetAtt [Alb, DNSName], !GetAtt [ElasticLoadBalancer, DNSName]]
+        - !If [MultiZone, !GetAtt [Alb, DNSName], !GetAtt [ManagedEniStack, Outputs.ENI]]
         - ':8001'
