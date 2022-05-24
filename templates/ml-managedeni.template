@@ -107,7 +107,7 @@ Resources:
         S3Key: !Join ['/', [!Ref S3Directory,'managed_eni.zip']]
       Handler: managedeni.handler
       Role: !GetAtt [ManagedEniExecRole, Arn]
-      Runtime: python3.6
+      Runtime: python3.9
       Timeout: '180'
   ManagedEni:
     Type: 'Custom::ManagedEni'
