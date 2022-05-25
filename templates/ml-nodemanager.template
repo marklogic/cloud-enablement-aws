@@ -75,7 +75,7 @@ Resources:
         S3Key: !Join ['/', [!Ref S3Directory,'node_manager.zip']]
       Handler: nodemanager.handler
       Role: !GetAtt [NodeManagerExecRole, Arn]
-      Runtime: python3.6
+      Runtime: python3.9
       Timeout: '180'
   NodeManagerSnsTopic:
     Type: "AWS::SNS::Topic"
