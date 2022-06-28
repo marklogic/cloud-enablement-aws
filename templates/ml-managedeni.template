@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Launch Managed ENI for MarkLogic Cluster on AWS
 Metadata:
-  version: 10.0-9.1
+  version: 10.0-9.2
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -107,7 +107,7 @@ Resources:
         S3Key: !Join ['/', [!Ref S3Directory,'managed_eni.zip']]
       Handler: managedeni.handler
       Role: !GetAtt [ManagedEniExecRole, Arn]
-      Runtime: python3.6
+      Runtime: python3.9
       Timeout: '180'
   ManagedEni:
     Type: 'Custom::ManagedEni'
