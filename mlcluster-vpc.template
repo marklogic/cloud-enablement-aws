@@ -11,6 +11,8 @@ Metadata:
           - IAMRole
           - VolumeSize
           - VolumeType
+          - VolumeIops
+          - VolumeThroughput
           - VolumeEncryption
           - VolumeEncryptionKey
           - InstanceType
@@ -54,6 +56,10 @@ Metadata:
         default: Volume Size
       VolumeType:
         default: Volume Type
+      VolumeIops:
+        default: Volume Iops
+      VolumeThroughput:
+        default: Volume Throughput
       VolumeEncryption:
         default: Volume Encryption
       VolumeEncryptionKey:
@@ -101,7 +107,16 @@ Parameters:
     AllowedValues:
       - standard
       - gp2
+      - gp3
     Default: gp2
+  VolumeIops:
+    Description: The number of I/O operations per second for a gp3 volume
+    Type: String
+  VolumeThroughput:
+    Description: The throughput to provision for a gp3 volume
+    Type: Number
+    MinValue: '125'
+    MaxValue: '1000'
   VolumeEncryption:
     Description: Whether to enable volume encryption
     Type: String
@@ -345,6 +360,7 @@ Conditions:
   EssentialEnterprise: !Or [ !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']], !And [!Equals [!Ref LicenseKey, 'none'], !Equals [!Ref Licensee, 'none']] ]
   UseVolumeEncryption: !Equals [!Ref VolumeEncryption, 'enable']
   HasCustomEBSKey: !Not [!Equals [!Ref VolumeEncryptionKey, '']]
+  GP3: !Equals [!Ref VolumeType, 'gp3']
 Mappings:
   Variable:
     LambdaPackageBucket:
@@ -472,6 +488,8 @@ Resources:
         - Key: Name
           Value: MarkLogic-GroupA-Host1-Volume0
       VolumeType: !Ref VolumeType
+      Iops: !If [GP3, !Ref VolumeIops, !Ref 'AWS::NoValue']
+      Throughput: !If [GP3, !Ref VolumeThroughput, !Ref 'AWS::NoValue']
       Encrypted: !If [UseVolumeEncryption, 'true', 'false']
       KmsKeyId: !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, !Ref 'AWS::NoValue']
     Metadata:
@@ -487,6 +505,8 @@ Resources:
         - Key: Name
           Value: MarkLogic-GroupB-Host1-Volume0
       VolumeType: !Ref VolumeType
+      Iops: !If [GP3, !Ref VolumeIops, !Ref 'AWS::NoValue']
+      Throughput: !If [GP3, !Ref VolumeThroughput, !Ref 'AWS::NoValue']
       Encrypted: !If [UseVolumeEncryption, 'true', 'false']
       KmsKeyId: !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, !Ref 'AWS::NoValue']
     Metadata:
@@ -502,6 +522,8 @@ Resources:
         - Key: Name
           Value: MarkLogic-GroupC-Host1-Volume0
       VolumeType: !Ref VolumeType
+      Iops: !If [GP3, !Ref VolumeIops, !Ref 'AWS::NoValue']
+      Throughput: !If [GP3, !Ref VolumeThroughput, !Ref 'AWS::NoValue']
       Encrypted: !If [UseVolumeEncryption, 'true', 'false']
       KmsKeyId: !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, !Ref 'AWS::NoValue']
     Metadata:
