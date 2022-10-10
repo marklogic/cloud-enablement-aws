@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS in existing VPC (Virtual Private Cloud).
 Metadata:
-  version: 9.0-13.7
-  binary: MarkLogic-9.0-13.7.x86_64.rpm
+  version: 9.0-13.8
+  binary: MarkLogic-9.0-13.8.x86_64.rpm
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -245,7 +245,7 @@ Parameters:
     Description: Name of and existing EC2 KeyPair to enable SSH access to the instance
     Type: String
   NumberOfZones:
-    Description: Total number of Availability Zones, which can be 1 or 3. Load balancer type depends on the number of zones selected. Select 3 zones for Application Load Balancer (OR) Select 1 zone for Classic Load Balancer.
+    Description: Total number of Availability Zones, which can be 1 or 3. Three Zones have Application Load Balancer. Single Zone doesn't have any Load Balancer.
     Type: Number
     AllowedValues:
       - 1
@@ -323,53 +323,53 @@ Mappings:
     TemplateUrl:
       base: 'https://s3.amazonaws.com/marklogic-db-template-releases'
     S3Directory:
-      base: '9.0-13.7'
+      base: '9.0-13.8'
   LicenseRegion2AMI:
     us-east-1:
-      Enterprise: ami-01fe1c20ff83623e7
-      BYOL: ami-0148de6f69dd92823
+      Enterprise: ami-063f5159374c6a7a4
+      BYOL: ami-092330f38625f3d99
     us-east-2:
-      Enterprise: ami-039825930cf370590
-      BYOL: ami-0531615f13f6189ce
+      Enterprise: ami-02482cb81172f3949
+      BYOL: ami-0f2f96767da8d4f76
     us-west-1:
-      Enterprise: ami-0c77f99c8ca1a0634
-      BYOL: ami-0ce4e1ba306548d7e
+      Enterprise: ami-0f0c85d1e8ed49a85
+      BYOL: ami-0a040917407c5e258
     us-west-2:
-      Enterprise: ami-055d1ffdb06ddbe14
-      BYOL: ami-0e2ed761a04ba00f8
+      Enterprise: ami-07f700b54ae10900a
+      BYOL: ami-030cc78b6eb09e8ab
     eu-central-1:
-      Enterprise: ami-04596d261694ae223
-      BYOL: ami-0b21e784f2cfd694f
+      Enterprise: ami-0a0dcca76e3107fdc
+      BYOL: ami-0ccfbdf71f4b2933d
     eu-west-1:
-      Enterprise: ami-075d833dcf14daf2d
-      BYOL: ami-0c2db66c3a594e988
+      Enterprise: ami-0c18eb410d673b939
+      BYOL: ami-06d3f1dd17cd2e7b8
     ap-south-1:
-      Enterprise: ami-0ce7e73e0758b70c6
-      BYOL: ami-0b4a46e48f2fd46e3
+      Enterprise: ami-045c9d02d8862f54a
+      BYOL: ami-024b6655521322f41
     ap-southeast-1:
-      Enterprise: ami-00c9c2cc10edcf8eb
-      BYOL: ami-01b2230cfdbb553c9
+      Enterprise: ami-05ff13b85c24c02c9
+      BYOL: ami-09360e8ab4521325d
     ap-southeast-2:
-      Enterprise: ami-076bb1b5db0f29522
-      BYOL: ami-01630544383fdbb82
+      Enterprise: ami-0a20c730d3a9ff16e
+      BYOL: ami-014d85c165d103ed7
     ap-northeast-1:
-      Enterprise: ami-0df88dcc231d04198
-      BYOL: ami-03f47905bb0b4347c
+      Enterprise: ami-0e8842359556f9e51
+      BYOL: ami-00f9739ff504cb248
     ap-northeast-2:
-      Enterprise: ami-0074a5090ab641c76
-      BYOL: ami-0d071a34f82ce2e10
+      Enterprise: ami-0671e018398d5e727
+      BYOL: ami-0c0dab67ce3280665
     sa-east-1:
-      Enterprise: ami-03e1eef514704dc84
-      BYOL: ami-039f10a2da31bd018
+      Enterprise: ami-04b0a5f90ec882c45
+      BYOL: ami-075b002e6f68be456
     eu-west-2:
-      Enterprise: ami-0f152ba70354da2af
-      BYOL: ami-018c8742f85aedbaf
+      Enterprise: ami-00f90d04410c6b273
+      BYOL: ami-0a86841a35af51f49
     ca-central-1:
-      Enterprise: ami-011183f7151f6f259
-      BYOL: ami-09cdb72c57480b4d2
+      Enterprise: ami-008924285cd183f2d
+      BYOL: ami-0e3171f091ce2b45f
     eu-west-3:
-      Enterprise: ami-0a582efe0faa81e08
-      BYOL: ami-019b6bdb3052dc5e0
+      Enterprise: ami-05b03ac4c444a72c7
+      BYOL: ami-0a407c412bb0ae809
 Resources:
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
@@ -465,7 +465,7 @@ Resources:
     Metadata:
       'AWS::CloudFormation::Designer':
         id: e7190602-c2de-47ab-81e7-1315f8c01e2d
-  #AutoScalingGroup used for SingleZone deployments that is connected to Classic Load Balancer.
+  #AutoScalingGroup used for SingleZone deployments.
   MarkLogicServerGroup:
     Condition: SingleZone
     Type: 'AWS::AutoScaling::AutoScalingGroup'
