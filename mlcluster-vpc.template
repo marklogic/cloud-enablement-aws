@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS with a new VPC
 Metadata:
-  version: 9.0-13.7
-  binary: MarkLogic-9.0-13.7.x86_64.rpm
+  version: 9.0-13.8
+  binary: MarkLogic-9.0-13.8.x86_64.rpm
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -245,7 +245,7 @@ Parameters:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instance.
     Type: String
   NumberOfZones:
-    Description: Total number of Availability Zones. 1 or 3.
+    Description: Total number of Availability Zones, which can be 1 or 3. Three Zones have Application Load Balancer. Single Zone doesn't have any Load Balancer.
     Type: Number
     AllowedValues:
       - 1
@@ -323,11 +323,11 @@ Parameters:
     Type: String
     NoEcho: 'true'
   Licensee:
-    Description: The MarkLogic Licensee or 'none'
+    Description: The MarkLogic Licensee or 'none'. Provide none/none to choose "Pay as you Go"/Enterprise version. Provide valid Licensee/Licensekey to choose BYOL/developer version.
     Type: String
     Default: none
   LicenseKey:
-    Description: The MarkLogic License Key or 'none'
+    Description: The MarkLogic License Key or 'none'. Provide none/none to choose "Pay as you Go"/Enterprise version. Provide valid Licensee/Licensekey to choose BYOL/developer version.
     Type: String
     Default: none
 Conditions:
@@ -336,7 +336,9 @@ Conditions:
     - !Equals
       - !Ref SpotPrice
       - 0
+  #MultiZone (3 zones) and SingleZone conditions used for the conditional resource creation based on number of zones selected.
   MultiZone: !Not [!Equals [!Ref NumberOfZones, 1]]
+  SingleZone: !Equals [!Ref NumberOfZones, 1]
   EssentialEnterprise: !Or [ !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']], !And [!Equals [!Ref LicenseKey, 'none'], !Equals [!Ref Licensee, 'none']] ]
   UseVolumeEncryption: !Equals [!Ref VolumeEncryption, 'enable']
   HasCustomEBSKey: !Not [!Equals [!Ref VolumeEncryptionKey, '']]
@@ -347,53 +349,53 @@ Mappings:
     TemplateUrl:
       base: 'https://s3.amazonaws.com/marklogic-db-template-releases'
     S3Directory:
-      base: '9.0-13.7'
+      base: '9.0-13.8'
   LicenseRegion2AMI:
     us-east-1:
-      Enterprise: ami-01fe1c20ff83623e7
-      BYOL: ami-0148de6f69dd92823
+      Enterprise: ami-063f5159374c6a7a4
+      BYOL: ami-092330f38625f3d99
     us-east-2:
-      Enterprise: ami-039825930cf370590
-      BYOL: ami-0531615f13f6189ce
+      Enterprise: ami-02482cb81172f3949
+      BYOL: ami-0f2f96767da8d4f76
     us-west-1:
-      Enterprise: ami-0c77f99c8ca1a0634
-      BYOL: ami-0ce4e1ba306548d7e
+      Enterprise: ami-0f0c85d1e8ed49a85
+      BYOL: ami-0a040917407c5e258
     us-west-2:
-      Enterprise: ami-055d1ffdb06ddbe14
-      BYOL: ami-0e2ed761a04ba00f8
+      Enterprise: ami-07f700b54ae10900a
+      BYOL: ami-030cc78b6eb09e8ab
     eu-central-1:
-      Enterprise: ami-04596d261694ae223
-      BYOL: ami-0b21e784f2cfd694f
+      Enterprise: ami-0a0dcca76e3107fdc
+      BYOL: ami-0ccfbdf71f4b2933d
     eu-west-1:
-      Enterprise: ami-075d833dcf14daf2d
-      BYOL: ami-0c2db66c3a594e988
+      Enterprise: ami-0c18eb410d673b939
+      BYOL: ami-06d3f1dd17cd2e7b8
     ap-south-1:
-      Enterprise: ami-0ce7e73e0758b70c6
-      BYOL: ami-0b4a46e48f2fd46e3
+      Enterprise: ami-045c9d02d8862f54a
+      BYOL: ami-024b6655521322f41
     ap-southeast-1:
-      Enterprise: ami-00c9c2cc10edcf8eb
-      BYOL: ami-01b2230cfdbb553c9
+      Enterprise: ami-05ff13b85c24c02c9
+      BYOL: ami-09360e8ab4521325d
     ap-southeast-2:
-      Enterprise: ami-076bb1b5db0f29522
-      BYOL: ami-01630544383fdbb82
+      Enterprise: ami-0a20c730d3a9ff16e
+      BYOL: ami-014d85c165d103ed7
     ap-northeast-1:
-      Enterprise: ami-0df88dcc231d04198
-      BYOL: ami-03f47905bb0b4347c
+      Enterprise: ami-0e8842359556f9e51
+      BYOL: ami-00f9739ff504cb248
     ap-northeast-2:
-      Enterprise: ami-0074a5090ab641c76
-      BYOL: ami-0d071a34f82ce2e10
+      Enterprise: ami-0671e018398d5e727
+      BYOL: ami-0c0dab67ce3280665
     sa-east-1:
-      Enterprise: ami-03e1eef514704dc84
-      BYOL: ami-039f10a2da31bd018
+      Enterprise: ami-04b0a5f90ec882c45
+      BYOL: ami-075b002e6f68be456
     eu-west-2:
-      Enterprise: ami-0f152ba70354da2af
-      BYOL: ami-018c8742f85aedbaf
+      Enterprise: ami-00f90d04410c6b273
+      BYOL: ami-0a86841a35af51f49
     ca-central-1:
-      Enterprise: ami-011183f7151f6f259
-      BYOL: ami-09cdb72c57480b4d2
+      Enterprise: ami-008924285cd183f2d
+      BYOL: ami-0e3171f091ce2b45f
     eu-west-3:
-      Enterprise: ami-0a582efe0faa81e08
-      BYOL: ami-019b6bdb3052dc5e0
+      Enterprise: ami-05b03ac4c444a72c7
+      BYOL: ami-0a407c412bb0ae809
 Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
@@ -517,7 +519,9 @@ Resources:
     Metadata:
       'AWS::CloudFormation::Designer':
         id: e7190602-c2de-47ab-81e7-1315f8c01e2d
-  MarkLogicServerGroup1:
+  #AutoScalingGroup used for SingleZone deployments.
+  MarkLogicServerGroup:
+    Condition: SingleZone
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     DependsOn:
       - VpcStack
@@ -533,8 +537,59 @@ Resources:
       Cooldown: '300'
       HealthCheckType: EC2
       HealthCheckGracePeriod: '300'
-      LoadBalancerNames:
-        - !Ref ElasticLoadBalancer
+      NotificationConfiguration: !If
+        - UseLogSNS
+        - TopicARN: !Ref LogSNS
+          NotificationTypes:
+            - 'autoscaling:EC2_INSTANCE_LAUNCH'
+            - 'autoscaling:EC2_INSTANCE_LAUNCH_ERROR'
+            - 'autoscaling:EC2_INSTANCE_TERMINATE'
+            - 'autoscaling:EC2_INSTANCE_TERMINATE_ERROR'
+        - !Ref 'AWS::NoValue'
+      Tags:
+        - Key: marklogic:stack:name
+          Value: !Ref 'AWS::StackName'
+          PropagateAtLaunch: 'true'
+        - Key: marklogic:stack:id
+          Value: !Ref 'AWS::StackId'
+          PropagateAtLaunch: 'true'
+      LifecycleHookSpecificationList:
+        - LifecycleTransition: 'autoscaling:EC2_INSTANCE_LAUNCHING'
+          LifecycleHookName: NodeManager
+          HeartbeatTimeout: 4800
+          NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn]
+          RoleARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrIamArn]
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 31621dd0-4b18-4dcd-b443-db9cef64ebb1
+  #AutoScalingGroup used for MultiZone deployments (3 zones) that is connected to Application Load Balancer via 9 TargetGroups.
+  #All of the instances in this AutoScalingGroup will be registered to all 9 TargetGroups.
+  MarkLogicServerGroup1:
+    Condition: MultiZone
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    DependsOn:
+      - VpcStack
+      - ManagedEniStack
+      - NodeMgrLambdaStack
+      - AlbTargetGroup1
+      - AlbTargetGroup2
+      - AlbTargetGroup3
+      - AlbTargetGroup4
+      - AlbTargetGroup5
+      - AlbTargetGroup6
+      - AlbTargetGroup7      
+      - AlbTargetGroup8
+      - AlbTargetGroup9
+    Properties:
+      VPCZoneIdentifier:
+        - !GetAtt [VpcStack, Outputs.PrivateSubnet1Id]
+      LaunchConfigurationName: !Ref LaunchConfig1
+      MinSize: '0'
+      MaxSize: !Ref NodesPerZone
+      DesiredCapacity: !Ref NodesPerZone
+      Cooldown: '300'
+      HealthCheckType: EC2
+      HealthCheckGracePeriod: '300'
       NotificationConfiguration: !If
         - UseLogSNS
         - TopicARN: !Ref LogSNS
@@ -557,9 +612,21 @@ Resources:
           HeartbeatTimeout: 4800
           NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn1]
           RoleARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrIamArn]
+      TargetGroupARNs:
+        - !Ref AlbTargetGroup1
+        - !Ref AlbTargetGroup2
+        - !Ref AlbTargetGroup3
+        - !Ref AlbTargetGroup4
+        - !Ref AlbTargetGroup5
+        - !Ref AlbTargetGroup6
+        - !Ref AlbTargetGroup7
+        - !Ref AlbTargetGroup8
+        - !Ref AlbTargetGroup9
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 31621dd0-4b18-4dcd-b443-db9cef64ebb1
+  #AutoScalingGroup used for MultiZone deployments (3 zones) that is connected to Application Load Balancer via 9 TargetGroups.
+  #All of the instances in this AutoScalingGroup will be registered to all 9 TargetGroups.
   MarkLogicServerGroup2:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::AutoScalingGroup'
@@ -567,6 +634,15 @@ Resources:
       - VpcStack
       - ManagedEniStack
       - NodeMgrLambdaStack
+      - AlbTargetGroup1
+      - AlbTargetGroup2
+      - AlbTargetGroup3
+      - AlbTargetGroup4
+      - AlbTargetGroup5
+      - AlbTargetGroup6
+      - AlbTargetGroup7      
+      - AlbTargetGroup8
+      - AlbTargetGroup9
     Properties:
       VPCZoneIdentifier:
         - !GetAtt [VpcStack, Outputs.PrivateSubnet2Id]
@@ -577,8 +653,6 @@ Resources:
       Cooldown: '300'
       HealthCheckType: EC2
       HealthCheckGracePeriod: '300'
-      LoadBalancerNames:
-        - !Ref ElasticLoadBalancer
       NotificationConfiguration: !If
         - UseLogSNS
         - TopicARN: !Ref LogSNS
@@ -601,9 +675,21 @@ Resources:
           HeartbeatTimeout: 4800
           NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn2]
           RoleARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrIamArn]
+      TargetGroupARNs:
+        - !Ref AlbTargetGroup1
+        - !Ref AlbTargetGroup2
+        - !Ref AlbTargetGroup3
+        - !Ref AlbTargetGroup4
+        - !Ref AlbTargetGroup5
+        - !Ref AlbTargetGroup6
+        - !Ref AlbTargetGroup7
+        - !Ref AlbTargetGroup8
+        - !Ref AlbTargetGroup9
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 87d75478-787a-41d5-bb21-9de6fe4b662e
+  #AutoScalingGroup used for MultiZone deployments (3 zones) that is connected to Application Load Balancer via 9 TargetGroups.
+  #All of the instances in this AutoScalingGroup will be registered to all 9 TargetGroups.
   MarkLogicServerGroup3:
     Condition: MultiZone
     Type: 'AWS::AutoScaling::AutoScalingGroup'
@@ -611,6 +697,15 @@ Resources:
       - VpcStack
       - ManagedEniStack
       - NodeMgrLambdaStack
+      - AlbTargetGroup1
+      - AlbTargetGroup2
+      - AlbTargetGroup3
+      - AlbTargetGroup4
+      - AlbTargetGroup5
+      - AlbTargetGroup6
+      - AlbTargetGroup7      
+      - AlbTargetGroup8
+      - AlbTargetGroup9
     Properties:
       VPCZoneIdentifier:
         - !GetAtt [VpcStack, Outputs.PrivateSubnet3Id]
@@ -621,8 +716,6 @@ Resources:
       Cooldown: '300'
       HealthCheckType: EC2
       HealthCheckGracePeriod: '300'
-      LoadBalancerNames:
-        - !Ref ElasticLoadBalancer
       NotificationConfiguration: !If
         - UseLogSNS
         - TopicARN: !Ref LogSNS
@@ -645,6 +738,16 @@ Resources:
           HeartbeatTimeout: 4800
           NotificationTargetARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrSnsArn3]
           RoleARN: !GetAtt [NodeMgrLambdaStack, Outputs.NodeMgrIamArn]
+      TargetGroupARNs:
+        - !Ref AlbTargetGroup1
+        - !Ref AlbTargetGroup2
+        - !Ref AlbTargetGroup3
+        - !Ref AlbTargetGroup4
+        - !Ref AlbTargetGroup5
+        - !Ref AlbTargetGroup6
+        - !Ref AlbTargetGroup7
+        - !Ref AlbTargetGroup8
+        - !Ref AlbTargetGroup9
     Metadata:
       'AWS::CloudFormation::Designer':
         id: bbd8314a-6e59-4102-9ed5-232739dd0dfa
@@ -948,89 +1051,357 @@ Resources:
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 7fa68c90-39bc-4874-ad20-8cd8c974ed52
-  ElasticLoadBalancer:
-    Type: 'AWS::ElasticLoadBalancing::LoadBalancer'
+  #Application Load Balancer description for MultiZone deployments (3 zones).
+  Alb:
+    Condition: MultiZone
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     DependsOn:
       - VpcStack
       - ElbSecurityGroup
-    Properties:
-      AppCookieStickinessPolicy:
-        - CookieName: SessionID
-          PolicyName: MLSession
-      SecurityGroups:
+    Properties: 
+      SecurityGroups: 
         - !Ref ElbSecurityGroup
-      Subnets:
+      Subnets: 
         - !GetAtt [VpcStack, Outputs.PublicSubnet1Id]
         - !If [MultiZone, !GetAtt [VpcStack, Outputs.PublicSubnet2Id], !Ref 'AWS::NoValue']
         - !If [MultiZone, !GetAtt [VpcStack, Outputs.PublicSubnet3Id], !Ref 'AWS::NoValue']
-      ConnectionDrainingPolicy:
-        Enabled: 'true'
-        Timeout: '60'
-      CrossZone: 'true'
-      Listeners:
-        - LoadBalancerPort: '8000'
-          InstancePort: '8000'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-        - LoadBalancerPort: '8001'
-          InstancePort: '8001'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-        - LoadBalancerPort: '8002'
-          InstancePort: '8002'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-        - LoadBalancerPort: '8003'
-          InstancePort: '8003'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-        - LoadBalancerPort: '8004'
-          InstancePort: '8004'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-        - LoadBalancerPort: '8005'
-          InstancePort: '8005'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-        - LoadBalancerPort: '8006'
-          InstancePort: '8006'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-        - LoadBalancerPort: '8007'
-          InstancePort: '8007'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-        - LoadBalancerPort: '8008'
-          InstancePort: '8008'
-          Protocol: HTTP
-          PolicyNames:
-            - MLSession
-      HealthCheck:
-        Target: 'HTTP:7997/'
-        HealthyThreshold: '3'
-        UnhealthyThreshold: '5'
-        Interval: '10'
-        Timeout: '5'
     Metadata:
       'AWS::CloudFormation::Designer':
         id: e188e71e-5f01-4816-896e-9bd30b9a96c1
+  #Descriptions of the 9 TargetGroups for MultiZone deployments (3 zones). TargetGroups route requests to registered targets.
+  #Health checks are performed on each TargetGroup.
+  AlbTargetGroup1:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    DependsOn:
+      - VpcStack
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 8000
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId: !GetAtt [VpcStack, Outputs.VpcId]
+  AlbTargetGroup2:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    DependsOn:
+      - VpcStack
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 8001
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId: !GetAtt [VpcStack, Outputs.VpcId]
+  AlbTargetGroup3:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    DependsOn:
+      - VpcStack
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 8002
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId: !GetAtt [VpcStack, Outputs.VpcId]
+  AlbTargetGroup4:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    DependsOn:
+      - VpcStack
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 8003
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId: !GetAtt [VpcStack, Outputs.VpcId]
+  AlbTargetGroup5:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    DependsOn:
+      - VpcStack
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 8004
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId: !GetAtt [VpcStack, Outputs.VpcId]
+  AlbTargetGroup6:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    DependsOn:
+      - VpcStack
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 8005
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId: !GetAtt [VpcStack, Outputs.VpcId]
+  AlbTargetGroup7:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    DependsOn:
+      - VpcStack
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 8006
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId: !GetAtt [VpcStack, Outputs.VpcId]
+  AlbTargetGroup8:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    DependsOn:
+      - VpcStack
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 8007
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId: !GetAtt [VpcStack, Outputs.VpcId]
+  AlbTargetGroup9:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    DependsOn:
+      - VpcStack
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 8008
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId: !GetAtt [VpcStack, Outputs.VpcId]
+  #Descriptions of the 9 Listeners for MultiZone deployments (3 zones). Each Listener connects Application Load Balancer to a TargetGroup with a particular port.
+  AlbListener1:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    DependsOn:
+      - Alb
+      - AlbTargetGroup1
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref AlbTargetGroup1
+          Type: forward
+      LoadBalancerArn: !Ref Alb
+      Port: 8000
+      Protocol: HTTP
+  AlbListener2:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    DependsOn:
+      - Alb
+      - AlbTargetGroup2
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref AlbTargetGroup2
+          Type: forward
+      LoadBalancerArn: !Ref Alb
+      Port: 8001
+      Protocol: HTTP
+  AlbListener3:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    DependsOn:
+      - Alb
+      - AlbTargetGroup3
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref AlbTargetGroup3
+          Type: forward
+      LoadBalancerArn: !Ref Alb
+      Port: 8002
+      Protocol: HTTP
+  AlbListener4:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    DependsOn:
+      - Alb
+      - AlbTargetGroup4
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref AlbTargetGroup4
+          Type: forward
+      LoadBalancerArn: !Ref Alb
+      Port: 8003
+      Protocol: HTTP
+  AlbListener5:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    DependsOn:
+      - Alb
+      - AlbTargetGroup5
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref AlbTargetGroup5
+          Type: forward
+      LoadBalancerArn: !Ref Alb
+      Port: 8004
+      Protocol: HTTP
+  AlbListener6:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    DependsOn:
+      - Alb
+      - AlbTargetGroup6
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref AlbTargetGroup6
+          Type: forward
+      LoadBalancerArn: !Ref Alb
+      Port: 8005
+      Protocol: HTTP
+  AlbListener7:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    DependsOn:
+      - Alb
+      - AlbTargetGroup7
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref AlbTargetGroup7
+          Type: forward
+      LoadBalancerArn: !Ref Alb
+      Port: 8006
+      Protocol: HTTP
+  AlbListener8:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    DependsOn:
+      - Alb
+      - AlbTargetGroup8
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref AlbTargetGroup8
+          Type: forward
+      LoadBalancerArn: !Ref Alb
+      Port: 8007
+      Protocol: HTTP
+  AlbListener9:
+    Condition: MultiZone
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    DependsOn:
+      - Alb
+      - AlbTargetGroup9
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref AlbTargetGroup9
+          Type: forward
+      LoadBalancerArn: !Ref Alb
+      Port: 8008
+      Protocol: HTTP
 Outputs:
   URL:
     Description: The URL of the MarkLogic Cluster
     Value: !Join
       - ''
       - - 'http://'
-        - !GetAtt
-          - ElasticLoadBalancer
-          - DNSName
+        - !If [MultiZone, !GetAtt [Alb, DNSName], !GetAtt [ManagedEniStack, Outputs.ENI]]
         - ':8001'
   PrivateSubnetRouteTableID:
     Description: Private Subnet Route Table ID

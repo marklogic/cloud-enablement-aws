@@ -10,8 +10,8 @@ For deploying MarkLogic on Azure, please visit [cloud-enablement-azure](https://
 
 | Template Type | Launch in US West 2 (Oregon) |
 | -- | -- |
-| MarkLogic in New VPC | [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?region=us-west-2&stackName=mlClusterStack&templateURL=https://s3.amazonaws.com/marklogic-releases/9.0-5/mlcluster-vpc.template) |
-| MarkLogic in Existing VPC | [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?region=us-west-2&stackName=mlClusterStack&templateURL=https://s3.amazonaws.com/marklogic-releases/9.0-5/mlcluster.template) |
+| MarkLogic in New VPC | [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?region=us-west-2&stackName=mlClusterStack&templateURL=https://marklogic-db-template-releases.s3.us-west-2.amazonaws.com/9.0-latest/mlcluster-vpc.template) |
+| MarkLogic in Existing VPC | [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?region=us-west-2&stackName=mlClusterStack&templateURL=https://marklogic-db-template-releases.s3.us-west-2.amazonaws.com/9.0-latest/mlcluster.template) |
 
 - To deploy from MarkLogic Website, go to [MarkLogic and Amazon Web Service](https://developer.marklogic.com/products/cloud/aws).
 - To deploy from this GitHub repository, click on `Launch Stack` button above.
@@ -37,7 +37,16 @@ This directory contains master templates, sub-templates and other resources that
 ## Documentation
 
 - [MarkLogic Server on AWS Guide](http://docs.marklogic.com/guide/ec2)
-- [MarkLogic on Azure](https://developer.marklogic.com/products/cloud/aws)  
+- [MarkLogic on AWS](https://developer.marklogic.com/products/cloud/aws)  
+
+## Additional Notes
+### AWS Classic Load Balancer Removed from Single Zone Deployments:
+
+Since AWS is retiring the Classic Load Balancer (CLB) as of August 15, 2022, the CLB has been removed for single-zone deployments in the MarkLogic CloudFormation templates. The URL in the outputs of the CloudFormation stack is now replaced with a private DNS name, which can be used to access the MarkLogic cluster.
+
+### Python Upgrade for Lambda Functions in the MarkLogic CloudFormation Templates:
+
+The lambda functions in MarkLogic CloudFormation templates used on AWS are now configured to use Python 3.9. AWS has scheduled the end of support for Python 3.6 by July 2022.
 
 ## Support
 
