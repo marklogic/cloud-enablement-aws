@@ -325,6 +325,9 @@ Parameters:
     Description: The MarkLogic administrator password
     Type: String
     NoEcho: 'true'
+    AllowedPattern: >-
+      ^(?!.*[*]).*$
+    ConstraintDescription: Admin password must contain any characters except asterisk (*).
   Licensee:
     Description: The MarkLogic Licensee or 'none'. Provide none/none to choose "Pay as you Go"/Enterprise version. Provide valid Licensee/Licensekey to choose BYOL/developer version.
     Type: String
