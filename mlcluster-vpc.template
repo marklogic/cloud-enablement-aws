@@ -110,7 +110,7 @@ Parameters:
       - gp3
     Default: gp2
   VolumeIOPS:
-    Description: The number of I/O operations per second for a gp3 volume
+    Description: The number of I/O operations per second for a gp3 volume. This parameter is only applicable for a gp3 volume
     Type: Number
     MinValue: '3000'
     MaxValue: '16000'
@@ -120,6 +120,7 @@ Parameters:
     Type: Number
     MinValue: '125'
     MaxValue: '1000'
+    Default: '125'
   VolumeEncryption:
     Description: Whether to enable volume encryption
     Type: String
