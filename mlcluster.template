@@ -809,8 +809,18 @@ Resources:
             - !Ref VolumeSize
             - '::'
             - !Ref VolumeType
+            - ':'
+            - !If
+              - GP3
+              - !Ref VolumeIOPS
+              - ''
+            - ':'
+            - !If
+              - GP3
+              - !Ref VolumeThroughput
+              - ''
             - |
-              ::,*
+              :,*
             - |
               MARKLOGIC_NODE_NAME=NodeA#
             - MARKLOGIC_ADMIN_USERNAME=
@@ -889,8 +899,18 @@ Resources:
             - !Ref VolumeSize
             - '::'
             - !Ref VolumeType
+            - ':'
+            - !If
+              - GP3
+              - !Ref VolumeIOPS
+              - ''
+            - ':'
+            - !If
+              - GP3
+              - !Ref VolumeThroughput
+              - ''
             - |
-              ::,*
+              :,*
             - |
               MARKLOGIC_NODE_NAME=NodeB#
             - MARKLOGIC_ADMIN_USERNAME=
@@ -969,8 +989,18 @@ Resources:
             - !Ref VolumeSize
             - '::'
             - !Ref VolumeType
+            - ':'
+            - !If
+              - GP3
+              - !Ref VolumeIOPS
+              - ''
+            - ':'
+            - !If
+              - GP3
+              - !Ref VolumeThroughput
+              - ''
             - |
-              ::,*
+              :,*
             - |
               MARKLOGIC_NODE_NAME=NodeC#
             - MARKLOGIC_ADMIN_USERNAME=
