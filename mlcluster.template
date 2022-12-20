@@ -11,6 +11,8 @@ Metadata:
           - IAMRole
           - VolumeSize
           - VolumeType
+          - VolumeIOPS
+          - VolumeThroughput
           - VolumeEncryption
           - VolumeEncryptionKey
           - InstanceType
@@ -54,6 +56,10 @@ Metadata:
         default: Volume Size
       VolumeType:
         default: Volume Type
+      VolumeIOPS:
+        default: Volume Iops
+      VolumeThroughput:
+        default: Volume Throughput
       VolumeEncryption:
         default: Volume Encryption
       VolumeEncryptionKey:
@@ -101,7 +107,20 @@ Parameters:
     AllowedValues:
       - standard
       - gp2
+      - gp3
     Default: gp2
+  VolumeIOPS:
+    Description: The number of I/O operations per second for a gp3 volume. This parameter is only applicable for a gp3 volume
+    Type: Number
+    MinValue: '3000'
+    MaxValue: '16000'
+    Default: '3000'
+  VolumeThroughput:
+    Description: The throughput to provision for a gp3 volume. This parameter is only applicable for a gp3 volume
+    Type: Number
+    MinValue: '125'
+    MaxValue: '1000'
+    Default: '125'
   VolumeEncryption:
     Description: Whether to enable volume encryption
     Type: String
@@ -297,6 +316,9 @@ Parameters:
     Description: The MarkLogic administrator password
     Type: String
     NoEcho: 'true'
+    AllowedPattern: >-
+      ^(?!.*[*]).*$
+    ConstraintDescription: Admin password must contain any characters except asterisk (*).
   Licensee:
     Description: The MarkLogic Licensee or 'none'. Provide none/none to choose "Pay as you Go"/Enterprise version. Provide valid Licensee/Licensekey to choose BYOL/developer version.
     Type: String
@@ -418,6 +440,8 @@ Resources:
         - Key: Name
           Value: MarkLogic-GroupA-Host1-Volume0
       VolumeType: !Ref VolumeType
+      Iops: !If [GP3, !Ref VolumeIOPS, !Ref 'AWS::NoValue']
+      Throughput: !If [GP3, !Ref VolumeThroughput, !Ref 'AWS::NoValue']
       Encrypted: !If [UseVolumeEncryption, 'true', 'false']
       KmsKeyId: !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, !Ref 'AWS::NoValue']
     Metadata:
@@ -433,6 +457,8 @@ Resources:
         - Key: Name
           Value: MarkLogic-GroupB-Host1-Volume0
       VolumeType: !Ref VolumeType
+      Iops: !If [GP3, !Ref VolumeIOPS, !Ref 'AWS::NoValue']
+      Throughput: !If [GP3, !Ref VolumeThroughput, !Ref 'AWS::NoValue']
       Encrypted: !If [UseVolumeEncryption, 'true', 'false']
       KmsKeyId: !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, !Ref 'AWS::NoValue']
     Metadata:
@@ -448,6 +474,8 @@ Resources:
         - Key: Name
           Value: MarkLogic-GroupC-Host1-Volume0
       VolumeType: !Ref VolumeType
+      Iops: !If [GP3, !Ref VolumeIOPS, !Ref 'AWS::NoValue']
+      Throughput: !If [GP3, !Ref VolumeThroughput, !Ref 'AWS::NoValue']
       Encrypted: !If [UseVolumeEncryption, 'true', 'false']
       KmsKeyId: !If [HasCustomEBSKey, !Ref VolumeEncryptionKey, !Ref 'AWS::NoValue']
     Metadata:
@@ -781,8 +809,18 @@ Resources:
             - !Ref VolumeSize
             - '::'
             - !Ref VolumeType
+            - ':'
+            - !If
+              - GP3
+              - !Ref VolumeIOPS
+              - ''
+            - ':'
+            - !If
+              - GP3
+              - !Ref VolumeThroughput
+              - ''
             - |
-              ::,*
+              :,*
             - |
               MARKLOGIC_NODE_NAME=NodeA#
             - MARKLOGIC_ADMIN_USERNAME=
@@ -861,8 +899,18 @@ Resources:
             - !Ref VolumeSize
             - '::'
             - !Ref VolumeType
+            - ':'
+            - !If
+              - GP3
+              - !Ref VolumeIOPS
+              - ''
+            - ':'
+            - !If
+              - GP3
+              - !Ref VolumeThroughput
+              - ''
             - |
-              ::,*
+              :,*
             - |
               MARKLOGIC_NODE_NAME=NodeB#
             - MARKLOGIC_ADMIN_USERNAME=
@@ -941,8 +989,18 @@ Resources:
             - !Ref VolumeSize
             - '::'
             - !Ref VolumeType
+            - ':'
+            - !If
+              - GP3
+              - !Ref VolumeIOPS
+              - ''
+            - ':'
+            - !If
+              - GP3
+              - !Ref VolumeThroughput
+              - ''
             - |
-              ::,*
+              :,*
             - |
               MARKLOGIC_NODE_NAME=NodeC#
             - MARKLOGIC_ADMIN_USERNAME=
