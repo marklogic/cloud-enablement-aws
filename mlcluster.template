@@ -264,7 +264,7 @@ Parameters:
     MaxValue: '2'
     Default: '0'
   KeyName:
-    Description: Name of and existing EC2 KeyPair to enable SSH access to the instance
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
     Type: String
   NumberOfZones:
     Description: Total number of Availability Zones, which can be 1 or 3. Load balancer type depends on the number of zones selected. Select 3 zones for Application Load Balancer (OR) Select 1 zone for Classic Load Balancer.
@@ -341,6 +341,7 @@ Conditions:
     !Or [ !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']], !And [!Equals [!Ref LicenseKey, 'none'], !Equals [!Ref Licensee, 'none']] ]
   UseVolumeEncryption: !Equals [!Ref VolumeEncryption, 'enable']
   HasCustomEBSKey: !Not [!Equals [!Ref VolumeEncryptionKey, '']]
+  GP3: !Equals [!Ref VolumeType, 'gp3']
 Mappings:
   Variable:
     LambdaPackageBucket:
