@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS in existing VPC (Virtual Private Cloud).
 Metadata:
-  version: 11.0.0
-  binary: MarkLogic-11.0.0-rhel.x86_64.rpm
+  version: 11.0.2
+  binary: MarkLogic-11.0.2-rhel.x86_64.rpm
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -153,6 +153,20 @@ Parameters:
       - c5.12xlarge
       - c5.18xlarge
       - c5.24xlarge
+      - c5a.xlarge
+      - c5a.2xlarge
+      - c5a.4xlarge
+      - c5a.8xlarge
+      - c5a.12xlarge
+      - c5a.16xlarge
+      - c5a.24xlarge
+      - c5ad.xlarge
+      - c5ad.2xlarge
+      - c5ad.4xlarge
+      - c5ad.8xlarge
+      - c5ad.12xlarge
+      - c5ad.16xlarge
+      - c5ad.24xlarge
       - c5d.xlarge
       - c5d.2xlarge
       - c5d.4xlarge
@@ -160,6 +174,37 @@ Parameters:
       - c5d.12xlarge
       - c5d.18xlarge
       - c5d.24xlarge
+      - c5n.xlarge
+      - c5n.2xlarge
+      - c5n.4xlarge
+      - c5n.9xlarge
+      - c5n.18xlarge
+      - c6a.xlarge
+      - c6a.2xlarge
+      - c6a.4xlarge
+      - c6a.8xlarge
+      - c6a.12xlarge
+      - c6a.16xlarge
+      - c6a.24xlarge
+      - c6a.32xlarge
+      - c6a.48xlarge
+      - c6i.xlarge
+      - c6i.2xlarge
+      - c6i.4xlarge
+      - c6i.8xlarge
+      - c6i.12xlarge
+      - c6i.16xlarge
+      - c6i.24xlarge
+      - c6i.32xlarge
+      - c6id.xlarge
+      - c6id.2xlarge
+      - c6id.4xlarge
+      - c6id.8xlarge
+      - c6id.12xlarge
+      - c6id.16xlarge
+      - c6id.24xlarge
+      - c6id.32xlarge
+      - cc2.8xlarge
       - i2.2xlarge
       - i2.4xlarge
       - i2.8xlarge
@@ -169,6 +214,18 @@ Parameters:
       - i3.4xlarge
       - i3.8xlarge
       - i3.16xlarge
+      - i3en.xlarge
+      - i3en.2xlarge
+      - i3en.3xlarge
+      - i3en.6xlarge
+      - i3en.12xlarge
+      - i3en.24xlarge
+      - i4i.xlarge
+      - i4i.2xlarge
+      - i4i.4xlarge
+      - i4i.8xlarge
+      - i4i.16xlarge
+      - i4i.32xlarge
       - m3.xlarge
       - m3.2xlarge
       - m4.xlarge
@@ -204,6 +261,50 @@ Parameters:
       - m5ad.12xlarge
       - m5ad.16xlarge
       - m5ad.24xlarge
+      - m5zn.xlarge
+      - m5zn.2xlarge
+      - m5zn.3xlarge
+      - m5zn.6xlarge
+      - m5zn.12xlarge
+      - m5n.xlarge
+      - m5n.2xlarge
+      - m5n.4xlarge
+      - m5n.8xlarge
+      - m5n.12xlarge
+      - m5n.16xlarge
+      - m5n.24xlarge
+      - m5dn.xlarge
+      - m5dn.2xlarge
+      - m5dn.4xlarge
+      - m5dn.8xlarge
+      - m5dn.12xlarge
+      - m5dn.16xlarge
+      - m5dn.24xlarge
+      - m6a.xlarge
+      - m6a.2xlarge
+      - m6a.4xlarge
+      - m6a.8xlarge
+      - m6a.12xlarge
+      - m6a.16xlarge
+      - m6a.24xlarge
+      - m6a.32xlarge
+      - m6a.48xlarge
+      - m6i.xlarge
+      - m6i.2xlarge
+      - m6i.4xlarge
+      - m6i.8xlarge
+      - m6i.12xlarge
+      - m6i.16xlarge
+      - m6i.24xlarge
+      - m6i.32xlarge
+      - m6id.xlarge
+      - m6id.2xlarge
+      - m6id.4xlarge
+      - m6id.8xlarge
+      - m6id.12xlarge
+      - m6id.16xlarge
+      - m6id.24xlarge
+      - m6id.32xlarge
       - p2.xlarge
       - p2.8xlarge
       - p2.16xlarge
@@ -242,6 +343,13 @@ Parameters:
       - r5ad.12xlarge
       - r5ad.16xlarge
       - r5ad.24xlarge
+      - r5b.xlarge
+      - r5b.2xlarge
+      - r5b.4xlarge
+      - r5b.8xlarge
+      - r5b.12xlarge
+      - r5b.16xlarge
+      - r5b.24xlarge
       - r5d.xlarge
       - r5d.2xlarge
       - r5d.4xlarge
@@ -249,6 +357,45 @@ Parameters:
       - r5d.12xlarge
       - r5d.16xlarge
       - r5d.24xlarge
+      - r5dn.xlarge
+      - r5dn.2xlarge
+      - r5dn.4xlarge
+      - r5dn.8xlarge
+      - r5dn.12xlarge
+      - r5dn.16xlarge
+      - r5dn.24xlarge
+      - r5n.xlarge
+      - r5n.2xlarge
+      - r5n.4xlarge
+      - r5n.8xlarge
+      - r5n.12xlarge
+      - r5n.16xlarge
+      - r5n.24xlarge
+      - r6a.xlarge
+      - r6a.2xlarge
+      - r6a.4xlarge
+      - r6a.8xlarge
+      - r6a.12xlarge
+      - r6a.16xlarge
+      - r6a.24xlarge
+      - r6a.32xlarge
+      - r6a.48xlarge
+      - r6i.xlarge
+      - r6i.2xlarge
+      - r6i.4xlarge
+      - r6i.8xlarge
+      - r6i.12xlarge
+      - r6i.16xlarge
+      - r6i.24xlarge
+      - r6i.32xlarge
+      - r6id.xlarge
+      - r6id.2xlarge
+      - r6id.4xlarge
+      - r6id.8xlarge
+      - r6id.12xlarge
+      - r6id.16xlarge
+      - r6id.24xlarge
+      - r6id.32xlarge
       - x1.16xlarge
       - x1.32xlarge
       - x1e.xlarge
@@ -257,10 +404,36 @@ Parameters:
       - x1e.8xlarge
       - x1e.16xlarge
       - x1e.32xlarge
+      - x2idn.16xlarge
+      - x2idn.24xlarge
+      - x2idn.32xlarge
+      - x2iedn.xlarge
+      - x2iedn.2xlarge
+      - x2iedn.4xlarge
+      - x2iedn.8xlarge
+      - x2iedn.16xlarge
+      - x2iedn.24xlarge
+      - x2iedn.32xlarge
+      - x2iezn.2xlarge
+      - x2iezn.4xlarge
+      - x2iezn.6xlarge
+      - x2iezn.8xlarge
+      - x2iezn.12xlarge
       - d2.xlarge
       - d2.2xlarge
       - d2.4xlarge
       - d2.8xlarge
+      - d3.xlarge
+      - d3.2xlarge
+      - d3.4xlarge
+      - d3.8xlarge
+      - d3en.xlarge
+      - d3en.2xlarge
+      - d3en.4xlarge
+      - d3en.6xlarge
+      - d3en.8xlarge
+      - d3en.12xlarge
+      - dl1.24xlarge
       - f1.2xlarge
       - f1.4xlarge
       - f1.16xlarge
@@ -270,10 +443,44 @@ Parameters:
       - g3.8xlarge
       - g3.16xlarge
       - g3s.xlarge
+      - g4ad.xlarge
+      - g4ad.2xlarge
+      - g4ad.4xlarge
+      - g4ad.8xlarge
+      - g4ad.16xlarge
+      - g4dn.xlarge
+      - g4dn.2xlarge
+      - g4dn.4xlarge
+      - g4dn.8xlarge
+      - g4dn.12xlarge
+      - g4dn.16xlarge
+      - g5.xlarge
+      - g5.2xlarge
+      - g5.4xlarge
+      - g5.8xlarge
+      - g5.12xlarge
+      - g5.16xlarge
+      - g5.24xlarge
+      - g5.48xlarge
       - h1.2xlarge
       - h1.4xlarge
       - h1.8xlarge
       - h1.16xlarge
+      - inf1.xlarge
+      - inf1.2xlarge
+      - inf1.6xlarge
+      - inf1.24xlarge
+      - trn1.2xlarge
+      - trn1.32xlarge
+      - u-3tb1.56xlarge
+      - u-6tb1.56xlarge
+      - u-6tb1.112xlarge
+      - u-9tb1.112xlarge
+      - u-12tb1.112xlarge
+      - u-18tb1.112xlarge
+      - vt1.3xlarge
+      - vt1.6xlarge
+      - vt1.24xlarge
       - z1d.xlarge
       - z1d.2xlarge
       - z1d.3xlarge
@@ -284,9 +491,24 @@ Parameters:
       - c4.large
       - c5.metal
       - c5.large
+      - c5a.large
+      - c5ad.large
       - c5d.metal
       - c5d.large
+      - c5n.large
+      - c5n.metal
+      - c6a.large
+      - c6a.metal
+      - c6i.large
+      - c6i.metal
+      - c6id.large
+      - c6id.metal
+      - g4dn.metal
       - i3.large
+      - i3en.large
+      - i3en.metal
+      - i4i.large
+      - i4i.metal
       - m3.large
       - m3.medium
       - m4.large
@@ -296,6 +518,17 @@ Parameters:
       - m5ad.large
       - m5d.metal
       - m5d.large
+      - m5zn.large
+      - m5zn.metal
+      - m5n.large
+      - m5dn.large
+      - m5dn.metal
+      - m6a.large
+      - m6a.metal
+      - m6i.large
+      - m6i.metal
+      - m6id.large
+      - m6id.metal
       - r3.large
       - r4.large
       - r5.metal
@@ -304,6 +537,18 @@ Parameters:
       - r5d.metal
       - r5ad.large
       - r5d.large
+      - r5dn.large
+      - r5dn.metal
+      - r5b.large
+      - r5b.metal
+      - r5n.large
+      - r5n.metal
+      - r6a.large
+      - r6a.metal
+      - r6i.large
+      - r6i.metal
+      - r6id.large
+      - r6id.metal
       - t2.2xlarge
       - t2.large
       - t2.medium
@@ -325,6 +570,14 @@ Parameters:
       - t3a.nano
       - t3a.small
       - t3a.xlarge
+      - u-6tb1.metal
+      - u-9tb1.metal
+      - u-12tb1.metal
+      - u-18tb1.metal
+      - u-24tb1.metal
+      - x2idn.metal
+      - x2iedn.metal
+      - x2iezn.metal
       - z1d.metal
       - z1d.large
   SpotPrice:
@@ -419,53 +672,53 @@ Mappings:
     TemplateUrl:
       base: 'https://s3.amazonaws.com/marklogic-db-template-releases'
     S3Directory:
-      base: '11.0.0'
+      base: '11.0.2'
   LicenseRegion2AMI:
     us-east-1:
-      Enterprise: ami-0b0463ab03cb7d1d4
-      BYOL: ami-052aea33189cbd043
+      Enterprise: ami-0bf7e657fab67e971
+      BYOL: ami-07d160aaa381d98d3
     us-east-2:
-      Enterprise: ami-07183e9d015059ba5
-      BYOL: ami-03cc2b11ca8ffafb2
+      Enterprise: ami-0b364b6c340494cde
+      BYOL: ami-02fc4c59b1e0f84fc
     us-west-1:
-      Enterprise: ami-08eb34f602b4fb914
-      BYOL: ami-05eec93e0a5870eca
+      Enterprise: ami-0427f5f4c4ec4fb1a
+      BYOL: ami-0db1c9ca54f60c93a
     us-west-2:
-      Enterprise: ami-0891e34875fc450cb
-      BYOL: ami-01cb0a2a6fc3717c3
+      Enterprise: ami-0f4226d039f3538a4
+      BYOL: ami-036d6f6629eeae6ae
     eu-central-1:
-      Enterprise: ami-099bfdc9863f9fe54
-      BYOL: ami-047fad8200c0bf102
+      Enterprise: ami-0adde7fcee8e0abac
+      BYOL: ami-0175f20a0ff9b2b41
     eu-west-1:
-      Enterprise: ami-0a6a921a3deba7334
-      BYOL: ami-043625f77bca90844
+      Enterprise: ami-0adad0df164f5d3d2
+      BYOL: ami-0162fd6fe0c778804
     ap-south-1:
-      Enterprise: ami-0ea78f5721a2eb55c
-      BYOL: ami-0284772f3e551ff8a
+      Enterprise: ami-05cb78bc62095559e
+      BYOL: ami-0b6472e5b25075c3a
     ap-southeast-1:
-      Enterprise: ami-0ded209b81d0597c4
-      BYOL: ami-04cf23ba7e9f5d83c
+      Enterprise: ami-0ace4c492256d582b
+      BYOL: ami-0337694124652af4a
     ap-southeast-2:
-      Enterprise: ami-019ad4d6de08ea6cb
-      BYOL: ami-05c5c56ad911a1ff3
+      Enterprise: ami-09b42852706d80f61
+      BYOL: ami-03d830bd349cddcbc
     ap-northeast-1:
-      Enterprise: ami-04879c5087a3bc1c2
-      BYOL: ami-004898fe223f8d7b1
+      Enterprise: ami-0860fd2cf7c494dfc
+      BYOL: ami-0f810574accbd33b2
     ap-northeast-2:
-      Enterprise: ami-0e6bf205d0cbfce35
-      BYOL: ami-0aa793e101330dd8d
+      Enterprise: ami-09e07ba03b2662e4b
+      BYOL: ami-04f97692a8557b493
     sa-east-1:
-      Enterprise: ami-051714a037e32a8e6
-      BYOL: ami-0e9a8085ad0c769ea
+      Enterprise: ami-0b94055f72e2d3a30
+      BYOL: ami-00aadd4fc8a06eeff
     eu-west-2:
-      Enterprise: ami-02fabf5772b0d12e2
-      BYOL: ami-020d4875e3b0aa4c9
+      Enterprise: ami-01da8900f033938cb
+      BYOL: ami-016eaaa73edae05a9
     ca-central-1:
-      Enterprise: ami-06017c9333ca2d020
-      BYOL: ami-0fc66b1f0c4f7c254
+      Enterprise: ami-0229c2f9c0da8bfb4
+      BYOL: ami-083a7db6e6afd6067
     eu-west-3:
-      Enterprise: ami-0cf8389fc6c137144
-      BYOL: ami-0f70b53ffe7a01480
+      Enterprise: ami-0ac4d1b01ef025708
+      BYOL: ami-0b44d169075494c13
 Resources:
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
