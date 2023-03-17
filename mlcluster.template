@@ -521,6 +521,7 @@ Parameters:
       - m5zn.large
       - m5zn.metal
       - m5n.large
+      - m5n.metal
       - m5dn.large
       - m5dn.metal
       - m6a.large
@@ -570,11 +571,6 @@ Parameters:
       - t3a.nano
       - t3a.small
       - t3a.xlarge
-      - u-6tb1.metal
-      - u-9tb1.metal
-      - u-12tb1.metal
-      - u-18tb1.metal
-      - u-24tb1.metal
       - x2idn.metal
       - x2iedn.metal
       - x2iezn.metal
