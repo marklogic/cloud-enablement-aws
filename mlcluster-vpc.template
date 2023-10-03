@@ -1254,7 +1254,7 @@ Resources:
           - !Ref InstanceSecurityGroup
         InstanceType: !Ref InstanceType
         IamInstanceProfile: 
-          Arn: !Ref IAMRole
+          Name: !Ref IAMRole
         MetadataOptions:
           HttpTokens: required
         InstanceMarketOptions: !If
@@ -1350,7 +1350,7 @@ Resources:
           - !Ref InstanceSecurityGroup
         InstanceType: !Ref InstanceType
         IamInstanceProfile: 
-          Arn: !Ref IAMRole
+          Name: !Ref IAMRole
         MetadataOptions:
           HttpTokens: required
         InstanceMarketOptions: !If
@@ -1446,7 +1446,7 @@ Resources:
           - !Ref InstanceSecurityGroup
         InstanceType: !Ref InstanceType
         IamInstanceProfile: 
-          Arn: !Ref IAMRole
+          Name: !Ref IAMRole
         MetadataOptions:
           HttpTokens: required
         InstanceMarketOptions: !If
