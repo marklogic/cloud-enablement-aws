@@ -48,6 +48,12 @@ Since AWS is retiring the Classic Load Balancer (CLB) as of August 15, 2022, the
 
 The lambda functions in MarkLogic CloudFormation templates used on AWS are now configured to use Python 3.9. AWS has scheduled the end of support for Python 3.6 by July 2022.
 
+### Launch Templates and IMDSv2 support in the MarkLogic CloudFormation Templates:
+
+Starting with MarkLogic 10.0-11, the MarkLogic CloudFormation Templates replaces the use of Launch Configurations with Launch Templates. This ensures that MarkLogic CFT users can make use of all of the Amazon EC2 Auto Scaling features now available in Launch Templates.
+
+Additionally, MarkLogic 10.0-11 adds support for IMDSv2. The IMDSv2 option is set to "required" by default in the 10.0-11 and later CFTs of MarkLogic version 10. In order to use MarkLogic Server AMIs before 10.0-11 with the new templates, the templates need to be modified to set IMDSv2 to "optional" as IMDSv2 is not supported in earlier versions of the MarkLogic AMI.
+
 ## Support
 
 The cloud-enablement-azre repository is maintained by MarkLogic Engineering and distributed under the [Apache 2.0 license](https://github.com/marklogic/cloud-enablement-aws/blob/master/LICENSE.TXT). Everyone is encouraged to file bug reports, feature requests, and pull requests through [GitHub](https://github.com/marklogic/cloud-enablement-aws/issues/new). Your input is important and will be carefully considered. However, we can’t promise a specific resolution or timeframe for any request. In addition, MarkLogic provides technical support for [releases](https://github.com/marklogic/cloud-enablement-aws/releases) of cloud-enablement-aws to licensed customers under the terms outlined in the [Support Handbook](http://www.marklogic.com/files/Mark_Logic_Support_Handbook.pdf). For more information or to sign up for support, visit [help.marklogic.com](http://help.marklogic.com).
