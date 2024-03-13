@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS with a new VPC
 Metadata:
-  version: 10.0-10.2
-  binary: MarkLogic-10.0-10.2.x86_64.rpm
+  version: 10.0-11
+  binary: MarkLogic-10.0-11.x86_64.rpm
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -586,7 +586,7 @@ Parameters:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instance.
     Type: String
   NumberOfZones:
-    Description: Total number of Availability Zones, which can be 1 or 3. Load balancer type depends on the number of zones selected. Select 3 zones for Application Load Balancer (OR) Select 1 zone for Classic Load Balancer. 
+    Description: Total number of Availability Zones, which can be 1 or 3. Select 3 zones for Application Load Balancer. Once the stack has been created, the number of Availability Zones cannot be changed. 
     Type: Number
     AllowedValues:
       - 1
@@ -694,53 +694,53 @@ Mappings:
     TemplateUrl:
       base: 'https://s3.amazonaws.com/marklogic-db-template-releases'
     S3Directory:
-      base: '10.0-10.2'
+      base: '10.0-11'
   LicenseRegion2AMI:
     us-east-1:
-      Enterprise: ami-08f7150b3286ad04e
-      BYOL: ami-0360ab3578a41510b
+      Enterprise: ami-03d1cc584e153092d
+      BYOL: ami-0a47cff3ab42e64a9
     us-east-2:
-      Enterprise: ami-0bd81a705a21e2ec6
-      BYOL: ami-0daa978daab471943
+      Enterprise: ami-0294b7ada4020fd25
+      BYOL: ami-0202bbdbf363b23f7
     us-west-1:
-      Enterprise: ami-0b9fa1a2bfecfdd47
-      BYOL: ami-065a78f5ba02c0daf
+      Enterprise: ami-0a18905dcec47b268
+      BYOL: ami-00f2bf091bd4f364b
     us-west-2:
-      Enterprise: ami-08467a61903448208
-      BYOL: ami-0b8c5c0bd0c03d99b
+      Enterprise: ami-0ba1e0a8cf563fbd7
+      BYOL: ami-099ea987f469924f0
     eu-central-1:
-      Enterprise: ami-07e1f01a0440d632d
-      BYOL: ami-08027728cfb6b4683
+      Enterprise: ami-0774d27c9f3de7778
+      BYOL: ami-01a228d2aedeb67a6
     eu-west-1:
-      Enterprise: ami-0be032de93e3072aa
-      BYOL: ami-072f9d963cd827efb
+      Enterprise: ami-0a341a7b0f51d3029
+      BYOL: ami-0b5c3b68cf4a6977b
     ap-south-1:
-      Enterprise: ami-0e12317c22a41a0cb
-      BYOL: ami-0d99351614ffd115f
+      Enterprise: ami-0eaaa4806fad36519
+      BYOL: ami-05129934afad2fd40
     ap-southeast-1:
-      Enterprise: ami-0f41f0aafdffe2dbd
-      BYOL: ami-02a7b86550c57d87d
+      Enterprise: ami-082835fbf1e350e44
+      BYOL: ami-034ce7433514919a1
     ap-southeast-2:
-      Enterprise: ami-0c8ce8f7d5a8f4426
-      BYOL: ami-006e4c283f3c21d59
+      Enterprise: ami-030415f420ddb2b2c
+      BYOL: ami-041f9984410ee13e8
     ap-northeast-1:
-      Enterprise: ami-071dde0cf1b867fd4
-      BYOL: ami-0faa6a81fdae5b310
+      Enterprise: ami-0c52fa1108b700194
+      BYOL: ami-000aed0074ec2dfea
     ap-northeast-2:
-      Enterprise: ami-063f7aba6808243e0
-      BYOL: ami-010b9d412c9f798da
+      Enterprise: ami-0232a7746145b06ac
+      BYOL: ami-049d1dee0483590bf
     sa-east-1:
-      Enterprise: ami-080e322219bf3b798
-      BYOL: ami-0661f78eee8b7a208
+      Enterprise: ami-0b26662c18dc85afa
+      BYOL: ami-0e7704698decb0d7e
     eu-west-2:
-      Enterprise: ami-0bcc7c085bdf8f6e6
-      BYOL: ami-00fc8e2a49a12f18e
+      Enterprise: ami-0569b6e12c81e24cc
+      BYOL: ami-0535e57fc298c8a11
     ca-central-1:
-      Enterprise: ami-0f1dc137e04a6cda6
-      BYOL: ami-0b17456df2bbfb488
+      Enterprise: ami-0213bfe78e8cf8de2
+      BYOL: ami-07bafb9ebcd64fab7
     eu-west-3:
-      Enterprise: ami-08bc0a37e5167ebd5
-      BYOL: ami-07a1b6348899426c3
+      Enterprise: ami-023becc299fe537d6
+      BYOL: ami-094c139414c75a28c
 Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
@@ -881,7 +881,9 @@ Resources:
     Properties:
       VPCZoneIdentifier:
         - !GetAtt [VpcStack, Outputs.PrivateSubnet1Id]
-      LaunchConfigurationName: !Ref LaunchConfig1
+      LaunchTemplate: 
+        LaunchTemplateId: !Ref LaunchTemp1
+        Version: !GetAtt LaunchTemp1.LatestVersionNumber
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
       DesiredCapacity: !Ref NodesPerZone
@@ -934,7 +936,9 @@ Resources:
     Properties:
       VPCZoneIdentifier:
         - !GetAtt [VpcStack, Outputs.PrivateSubnet1Id]
-      LaunchConfigurationName: !Ref LaunchConfig1
+      LaunchTemplate: 
+        LaunchTemplateId: !Ref LaunchTemp1
+        Version: !GetAtt LaunchTemp1.LatestVersionNumber
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
       DesiredCapacity: !Ref NodesPerZone
@@ -997,7 +1001,9 @@ Resources:
     Properties:
       VPCZoneIdentifier:
         - !GetAtt [VpcStack, Outputs.PrivateSubnet2Id]
-      LaunchConfigurationName: !Ref LaunchConfig2
+      LaunchTemplate: 
+        LaunchTemplateId: !Ref LaunchTemp2
+        Version: !GetAtt LaunchTemp2.LatestVersionNumber
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
       DesiredCapacity: !Ref NodesPerZone
@@ -1060,7 +1066,9 @@ Resources:
     Properties:
       VPCZoneIdentifier:
         - !GetAtt [VpcStack, Outputs.PrivateSubnet3Id]
-      LaunchConfigurationName: !Ref LaunchConfig3
+      LaunchTemplate: 
+        LaunchTemplateId: !Ref LaunchTemp3
+        Version: !GetAtt LaunchTemp3.LatestVersionNumber
       MinSize: '0'
       MaxSize: !Ref NodesPerZone
       DesiredCapacity: !Ref NodesPerZone
@@ -1163,272 +1171,290 @@ Resources:
           FromPort: '7997'
           ToPort: '7997'
           CidrIp: 0.0.0.0/0
-  LaunchConfig1:
-    Type: 'AWS::AutoScaling::LaunchConfiguration'
+  LaunchTemp1:
+    Type: 'AWS::EC2::LaunchTemplate'
     DependsOn:
       - InstanceSecurityGroup
     Properties:
-      BlockDeviceMappings:
-        - DeviceName: /dev/xvda
-          Ebs:
-            VolumeSize: 40
-        - DeviceName: /dev/sdf
-          NoDevice: true
-          Ebs: {}
-      KeyName: !Ref KeyName
-      ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
-      UserData: !Base64
-        'Fn::Join':
-          - ''
-          - - MARKLOGIC_CLUSTER_NAME=
-            - !Ref MarkLogicDDBTable
-            - |+
+      LaunchTemplateData:
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: 40
+          - DeviceName: /dev/sdf
+            NoDevice: true
+            Ebs: {}
+        KeyName: !Ref KeyName
+        ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
+        UserData: !Base64
+          'Fn::Join':
+            - ''
+            - - MARKLOGIC_CLUSTER_NAME=
+              - !Ref MarkLogicDDBTable
+              - |+
 
-            - MARKLOGIC_EBS_VOLUME=
-            - !Ref MarklogicVolume1
-            - ',:'
-            - !Ref VolumeSize
-            - '::'
-            - !Ref VolumeType
-            - ':'
-            - !If
-              - GP3
-              - !Ref VolumeIOPS
-              - ''
-            - ':'
-            - !If
-              - GP3
-              - !Ref VolumeThroughput
-              - ''
-            - |
-              :,*
-            - |
-              MARKLOGIC_NODE_NAME=NodeA#
-            - MARKLOGIC_ADMIN_USERNAME=
-            - !Ref AdminUser
-            - |+
-
-            - MARKLOGIC_ADMIN_PASSWORD=
-            - !Ref AdminPass
-            - |+
-
-            - |
-              MARKLOGIC_CLUSTER_MASTER=1
-            - MARKLOGIC_LICENSEE=
-            - !Ref Licensee
-            - |+
-
-            - MARKLOGIC_LICENSE_KEY=
-            - !Ref LicenseKey
-            - |+
-
-            - MARKLOGIC_LOG_SNS=
-            - !Ref LogSNS
-            - |+
-
-            - MARKLOGIC_AWS_SWAP_SIZE=
-            - 32
-            - |+
-
-            - !If
-              - UseVolumeEncryption
-              - !Join
+              - MARKLOGIC_EBS_VOLUME=
+              - !Ref MarklogicVolume1
+              - ',:'
+              - !Ref VolumeSize
+              - '::'
+              - !Ref VolumeType
+              - ':'
+              - !If
+                - GP3
+                - !Ref VolumeIOPS
                 - ''
-                - - 'MARKLOGIC_EBS_KEY='
-                  - !If
-                    - HasCustomEBSKey
-                    - !Ref VolumeEncryptionKey
-                    - 'default'
-              - ''
+              - ':'
+              - !If
+                - GP3
+                - !Ref VolumeThroughput
+                - ''
+              - |
+                :,*
+              - |
+                MARKLOGIC_NODE_NAME=NodeA#
+              - MARKLOGIC_ADMIN_USERNAME=
+              - !Ref AdminUser
+              - |+
 
-      SecurityGroups:
-        - !Ref InstanceSecurityGroup
-      InstanceType: !Ref InstanceType
-      IamInstanceProfile: !Ref IAMRole
-      SpotPrice: !If
-        - UseSpot
-        - !Ref SpotPrice
-        - !Ref 'AWS::NoValue'
+              - MARKLOGIC_ADMIN_PASSWORD=
+              - !Ref AdminPass
+              - |+
+
+              - |
+                MARKLOGIC_CLUSTER_MASTER=1
+              - MARKLOGIC_LICENSEE=
+              - !Ref Licensee
+              - |+
+
+              - MARKLOGIC_LICENSE_KEY=
+              - !Ref LicenseKey
+              - |+
+
+              - MARKLOGIC_LOG_SNS=
+              - !Ref LogSNS
+              - |+
+
+              - MARKLOGIC_AWS_SWAP_SIZE=
+              - 32
+              - |+
+
+              - !If
+                - UseVolumeEncryption
+                - !Join
+                  - ''
+                  - - 'MARKLOGIC_EBS_KEY='
+                    - !If
+                      - HasCustomEBSKey
+                      - !Ref VolumeEncryptionKey
+                      - 'default'
+                - ''
+
+        SecurityGroupIds:
+          - !Ref InstanceSecurityGroup
+        InstanceType: !Ref InstanceType
+        IamInstanceProfile: 
+          Name: !Ref IAMRole
+        MetadataOptions:
+          HttpTokens: required
+        InstanceMarketOptions: !If
+          - UseSpot
+          - MarketType: spot 
+            SpotOptions: 
+              MaxPrice: !Ref SpotPrice
+          - !Ref 'AWS::NoValue'
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 2efb8cfb-df53-401d-8ff2-34af0dd25993
-  LaunchConfig2:
+  LaunchTemp2:
     Condition: MultiZone
-    Type: 'AWS::AutoScaling::LaunchConfiguration'
+    Type: 'AWS::EC2::LaunchTemplate'
     DependsOn:
       - InstanceSecurityGroup
     Properties:
-      BlockDeviceMappings:
-        - DeviceName: /dev/xvda
-          Ebs:
-            VolumeSize: 40
-        - DeviceName: /dev/sdf
-          NoDevice: true
-          Ebs: {}
-      KeyName: !Ref KeyName
-      ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
-      UserData: !Base64
-        'Fn::Join':
-          - ''
-          - - MARKLOGIC_CLUSTER_NAME=
-            - !Ref MarkLogicDDBTable
-            - |+
+      LaunchTemplateData:
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: 40
+          - DeviceName: /dev/sdf
+            NoDevice: true
+            Ebs: {}
+        KeyName: !Ref KeyName
+        ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
+        UserData: !Base64
+          'Fn::Join':
+            - ''
+            - - MARKLOGIC_CLUSTER_NAME=
+              - !Ref MarkLogicDDBTable
+              - |+
 
-            - MARKLOGIC_EBS_VOLUME=
-            - !Ref MarklogicVolume2
-            - ',:'
-            - !Ref VolumeSize
-            - '::'
-            - !Ref VolumeType
-            - ':'
-            - !If
-              - GP3
-              - !Ref VolumeIOPS
-              - ''
-            - ':'
-            - !If
-              - GP3
-              - !Ref VolumeThroughput
-              - ''
-            - |
-              :,*
-            - |
-              MARKLOGIC_NODE_NAME=NodeB#
-            - MARKLOGIC_ADMIN_USERNAME=
-            - !Ref AdminUser
-            - |+
-
-            - MARKLOGIC_ADMIN_PASSWORD=
-            - !Ref AdminPass
-            - |+
-
-            - |
-              MARKLOGIC_CLUSTER_MASTER=0
-            - MARKLOGIC_LICENSEE=
-            - !Ref Licensee
-            - |+
-
-            - MARKLOGIC_LICENSE_KEY=
-            - !Ref LicenseKey
-            - |+
-
-            - MARKLOGIC_LOG_SNS=
-            - !Ref LogSNS
-            - |+
-
-            - MARKLOGIC_AWS_SWAP_SIZE=
-            - 32
-            - |+
-
-            - !If
-              - UseVolumeEncryption
-              - !Join
+              - MARKLOGIC_EBS_VOLUME=
+              - !Ref MarklogicVolume2
+              - ',:'
+              - !Ref VolumeSize
+              - '::'
+              - !Ref VolumeType
+              - ':'
+              - !If
+                - GP3
+                - !Ref VolumeIOPS
                 - ''
-                - - 'MARKLOGIC_EBS_KEY='
-                  - !If
-                    - HasCustomEBSKey
-                    - !Ref VolumeEncryptionKey
-                    - 'default'
-              - ''
+              - ':'
+              - !If
+                - GP3
+                - !Ref VolumeThroughput
+                - ''
+              - |
+                :,*
+              - |
+                MARKLOGIC_NODE_NAME=NodeB#
+              - MARKLOGIC_ADMIN_USERNAME=
+              - !Ref AdminUser
+              - |+
 
-      SecurityGroups:
-        - !Ref InstanceSecurityGroup
-      InstanceType: !Ref InstanceType
-      IamInstanceProfile: !Ref IAMRole
-      SpotPrice: !If
-        - UseSpot
-        - !Ref SpotPrice
-        - !Ref 'AWS::NoValue'
+              - MARKLOGIC_ADMIN_PASSWORD=
+              - !Ref AdminPass
+              - |+
+
+              - |
+                MARKLOGIC_CLUSTER_MASTER=0
+              - MARKLOGIC_LICENSEE=
+              - !Ref Licensee
+              - |+
+
+              - MARKLOGIC_LICENSE_KEY=
+              - !Ref LicenseKey
+              - |+
+
+              - MARKLOGIC_LOG_SNS=
+              - !Ref LogSNS
+              - |+
+
+              - MARKLOGIC_AWS_SWAP_SIZE=
+              - 32
+              - |+
+
+              - !If
+                - UseVolumeEncryption
+                - !Join
+                  - ''
+                  - - 'MARKLOGIC_EBS_KEY='
+                    - !If
+                      - HasCustomEBSKey
+                      - !Ref VolumeEncryptionKey
+                      - 'default'
+                - ''
+
+        SecurityGroupIds:
+          - !Ref InstanceSecurityGroup
+        InstanceType: !Ref InstanceType
+        IamInstanceProfile: 
+          Name: !Ref IAMRole
+        MetadataOptions:
+          HttpTokens: required
+        InstanceMarketOptions: !If
+          - UseSpot
+          - MarketType: spot 
+            SpotOptions: 
+              MaxPrice: !Ref SpotPrice
+          - !Ref 'AWS::NoValue'
     Metadata:
       'AWS::CloudFormation::Designer':
         id: c8296a50-a29e-4646-aa74-8f1b735a9a3f
-  LaunchConfig3:
+  LaunchTemp3:
     Condition: MultiZone
-    Type: 'AWS::AutoScaling::LaunchConfiguration'
+    Type: 'AWS::EC2::LaunchTemplate'
     DependsOn:
       - InstanceSecurityGroup
     Properties:
-      BlockDeviceMappings:
-        - DeviceName: /dev/xvda
-          Ebs:
-            VolumeSize: 40
-        - DeviceName: /dev/sdf
-          NoDevice: true
-          Ebs: {}
-      KeyName: !Ref KeyName
-      ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
-      UserData: !Base64
-        'Fn::Join':
-          - ''
-          - - MARKLOGIC_CLUSTER_NAME=
-            - !Ref MarkLogicDDBTable
-            - |+
+      LaunchTemplateData:
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: 40
+          - DeviceName: /dev/sdf
+            NoDevice: true
+            Ebs: {}
+        KeyName: !Ref KeyName
+        ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
+        UserData: !Base64
+          'Fn::Join':
+            - ''
+            - - MARKLOGIC_CLUSTER_NAME=
+              - !Ref MarkLogicDDBTable
+              - |+
 
-            - MARKLOGIC_EBS_VOLUME=
-            - !Ref MarklogicVolume3
-            - ',:'
-            - !Ref VolumeSize
-            - '::'
-            - !Ref VolumeType
-            - ':'
-            - !If
-              - GP3
-              - !Ref VolumeIOPS
-              - ''
-            - ':'
-            - !If
-              - GP3
-              - !Ref VolumeThroughput
-              - ''
-            - |
-              :,*
-            - |
-              MARKLOGIC_NODE_NAME=NodeC#
-            - MARKLOGIC_ADMIN_USERNAME=
-            - !Ref AdminUser
-            - |+
-
-            - MARKLOGIC_ADMIN_PASSWORD=
-            - !Ref AdminPass
-            - |+
-
-            - |
-              MARKLOGIC_CLUSTER_MASTER=0
-            - MARKLOGIC_LICENSEE=
-            - !Ref Licensee
-            - |+
-
-            - MARKLOGIC_LICENSE_KEY=
-            - !Ref LicenseKey
-            - |+
-
-            - MARKLOGIC_LOG_SNS=
-            - !Ref LogSNS
-            - |+
-
-            - MARKLOGIC_AWS_SWAP_SIZE=
-            - 32
-            - |+
-
-            - !If
-              - UseVolumeEncryption
-              - !Join
+              - MARKLOGIC_EBS_VOLUME=
+              - !Ref MarklogicVolume3
+              - ',:'
+              - !Ref VolumeSize
+              - '::'
+              - !Ref VolumeType
+              - ':'
+              - !If
+                - GP3
+                - !Ref VolumeIOPS
                 - ''
-                - - 'MARKLOGIC_EBS_KEY='
-                  - !If
-                    - HasCustomEBSKey
-                    - !Ref VolumeEncryptionKey
-                    - 'default'
-              - ''
+              - ':'
+              - !If
+                - GP3
+                - !Ref VolumeThroughput
+                - ''
+              - |
+                :,*
+              - |
+                MARKLOGIC_NODE_NAME=NodeC#
+              - MARKLOGIC_ADMIN_USERNAME=
+              - !Ref AdminUser
+              - |+
 
-      SecurityGroups:
-        - !Ref InstanceSecurityGroup
-      InstanceType: !Ref InstanceType
-      IamInstanceProfile: !Ref IAMRole
-      SpotPrice: !If
-        - UseSpot
-        - !Ref SpotPrice
-        - !Ref 'AWS::NoValue'
+              - MARKLOGIC_ADMIN_PASSWORD=
+              - !Ref AdminPass
+              - |+
+
+              - |
+                MARKLOGIC_CLUSTER_MASTER=0
+              - MARKLOGIC_LICENSEE=
+              - !Ref Licensee
+              - |+
+
+              - MARKLOGIC_LICENSE_KEY=
+              - !Ref LicenseKey
+              - |+
+
+              - MARKLOGIC_LOG_SNS=
+              - !Ref LogSNS
+              - |+
+
+              - MARKLOGIC_AWS_SWAP_SIZE=
+              - 32
+              - |+
+
+              - !If
+                - UseVolumeEncryption
+                - !Join
+                  - ''
+                  - - 'MARKLOGIC_EBS_KEY='
+                    - !If
+                      - HasCustomEBSKey
+                      - !Ref VolumeEncryptionKey
+                      - 'default'
+                - ''
+
+        SecurityGroupIds:
+          - !Ref InstanceSecurityGroup
+        InstanceType: !Ref InstanceType
+        IamInstanceProfile: 
+          Name: !Ref IAMRole
+        MetadataOptions:
+          HttpTokens: required
+        InstanceMarketOptions: !If
+          - UseSpot
+          - MarketType: spot 
+            SpotOptions: 
+              MaxPrice: !Ref SpotPrice
+          - !Ref 'AWS::NoValue'
     Metadata:
       'AWS::CloudFormation::Designer':
         id: 7fa68c90-39bc-4874-ad20-8cd8c974ed52
