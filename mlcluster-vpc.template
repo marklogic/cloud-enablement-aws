@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS with a new VPC
 Metadata:
-  version: 11.2.0
-  binary: MarkLogic-11.2.0-rhel.x86_64.rpm
+  version: 11.3.0
+  binary: MarkLogic-11.3.0-rhel.x86_64.rpm
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -694,53 +694,53 @@ Mappings:
     TemplateUrl:
       base: 'https://s3.amazonaws.com/marklogic-db-template-releases'
     S3Directory:
-      base: '11.2.0'
+      base: '11.3.0'
   LicenseRegion2AMI:
     us-east-1:
-      Enterprise: ami-03c310e56658f620e
-      BYOL: ami-00738e8ab5fa7fd02
+      Enterprise: ami-0b429720a9bf4ab97
+      BYOL: ami-0d95682b9a3321d05
     us-east-2:
-      Enterprise: ami-01630bf13e0d1ff4d
-      BYOL: ami-0eab7f88b3a3d9a64
+      Enterprise: ami-0748ab64ca136c750
+      BYOL: ami-025750fc85d81aaa4
     us-west-1:
-      Enterprise: ami-0ed03619b385e282e
-      BYOL: ami-09b765df2c6d286df
+      Enterprise: ami-0fb8b2d9fbadfeb36
+      BYOL: ami-0796c9647b7b79c57
     us-west-2:
-      Enterprise: ami-04420ee928da7bbed
-      BYOL: ami-04990aff5a6b29063
+      Enterprise: ami-0c9bb1a27d6b57379
+      BYOL: ami-0b94941543d6e1c36
     eu-central-1:
-      Enterprise: ami-0ef990e71e7c014d2
-      BYOL: ami-0657180bf390f5b15
+      Enterprise: ami-059acf323dbb93533
+      BYOL: ami-0ba27704d4dcd6baf
     eu-west-1:
-      Enterprise: ami-0951a5a10051ea8ce
-      BYOL: ami-095ef8c802d529f69
+      Enterprise: ami-0875df798d606090c
+      BYOL: ami-0cdc09b51bab3ada1
     ap-south-1:
-      Enterprise: ami-0b1b70b40dca301ce
-      BYOL: ami-0144f0247735fd61b
+      Enterprise: ami-0db2a7549a2a039df
+      BYOL: ami-0c8b0bb8ada838e20
     ap-southeast-1:
-      Enterprise: ami-0145bd526daab268d
-      BYOL: ami-09cf5cf6d4278549a
+      Enterprise: ami-02580b64fb516f3f5
+      BYOL: ami-0028e4944635a44b2
     ap-southeast-2:
-      Enterprise: ami-0fff9f59a725753b7
-      BYOL: ami-0f68e67988ca6ccbe
+      Enterprise: ami-0538c6ca276ad5538
+      BYOL: ami-03727457103f8455c
     ap-northeast-1:
-      Enterprise: ami-01c91020ac92fee51
-      BYOL: ami-0850bba6aead22982
+      Enterprise: ami-0a3296bafd29b844a
+      BYOL: ami-05a2fa26ef5fbbccb
     ap-northeast-2:
-      Enterprise: ami-0bef1e2e3a11d170b
-      BYOL: ami-02b5568aa58c1a2fa
+      Enterprise: ami-050323c4a1eb4b20a
+      BYOL: ami-055a682cd2896fad2
     sa-east-1:
-      Enterprise: ami-017761e06bf8197cd
-      BYOL: ami-0d8d45e7031e172ba
+      Enterprise: ami-0298644123c47293d
+      BYOL: ami-0a887341e4616560f
     eu-west-2:
-      Enterprise: ami-0616eaa22a3b95dd7
-      BYOL: ami-0afa733fb96c42a0b
+      Enterprise: ami-0eb31f129bbdb5be5
+      BYOL: ami-027a51845e7a9920c
     ca-central-1:
-      Enterprise: ami-0a7fb0ad64ef0dba3
-      BYOL: ami-030c2abc2a682a63a
+      Enterprise: ami-0913be358f1d41204
+      BYOL: ami-0ff0ec2845b68814c
     eu-west-3:
-      Enterprise: ami-06208528a68cbc5b5
-      BYOL: ami-093a03aba45bdc9cc
+      Enterprise: ami-00bfbebb4d50e1fc6
+      BYOL: ami-0f268c2bd2e089c39
 Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
