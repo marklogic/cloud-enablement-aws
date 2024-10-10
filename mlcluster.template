@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS in existing VPC (Virtual Private Cloud).
 Metadata:
   version: 11.3.0.1
-  binary: MarkLogic-11.3.0-rhel.x86_64.rpm
+  binary: MarkLogic-11.3.0
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -15,6 +15,7 @@ Metadata:
           - VolumeThroughput
           - VolumeEncryption
           - VolumeEncryptionKey
+          - OSType
           - InstanceType
           - SpotPrice
           - KeyName
@@ -64,6 +65,8 @@ Metadata:
         default: Volume Encryption
       VolumeEncryptionKey:
         default: Volume Encryption Key ARN
+      OSType:
+        default: AmazonLinux2 or AmazonLinux2023
       InstanceType:
         default: Instance Type
       SpotPrice:
@@ -132,6 +135,13 @@ Parameters:
     Description: The key ID of AWS KMS key to encrypt volumes - Optional
     Type: String
     Default: ""
+  OSType:
+    Description: OS of MarkLogic to create the cluster
+    Type: String
+    AllowedValues:
+      - AmazonLinux2
+      - AmazonLinux2023
+    Default: AmazonLinux2
   InstanceType:
     Description: Type of EC2 instance to launch
     Type: String
@@ -661,6 +671,7 @@ Conditions:
   UseVolumeEncryption: !Equals [!Ref VolumeEncryption, 'enable']
   HasCustomEBSKey: !Not [!Equals [!Ref VolumeEncryptionKey, '']]
   GP3: !Equals [!Ref VolumeType, 'gp3']
+  AmazonLinux2: !Equals [!Ref OSType, "AmazonLinux2"]
 Mappings:
   Variable:
     LambdaPackageBucket:
@@ -671,50 +682,80 @@ Mappings:
       base: '11.3.0.1'
   LicenseRegion2AMI:
     us-east-1:
-      Enterprise: ami-0b429720a9bf4ab97
-      BYOL: ami-0d95682b9a3321d05
+      EnterpriseAl2: ami-0b429720a9bf4ab97
+      BYOLAl2: ami-0d95682b9a3321d05
+      EnterpriseAl2023: ami-0b429720a9bf4ab97
+      BYOLAl2023: ami-0d95682b9a3321d05
     us-east-2:
-      Enterprise: ami-0748ab64ca136c750
-      BYOL: ami-025750fc85d81aaa4
+      EnterpriseAl2: ami-0748ab64ca136c750
+      BYOLAl2: ami-025750fc85d81aaa4
+      EnterpriseAl2023: ami-0748ab64ca136c750
+      BYOLAl2023: ami-025750fc85d81aaa4
     us-west-1:
-      Enterprise: ami-0fb8b2d9fbadfeb36
-      BYOL: ami-0796c9647b7b79c57
+      EnterpriseAl2: ami-0fb8b2d9fbadfeb36
+      BYOLAl2: ami-0796c9647b7b79c57
+      EnterpriseAl2023: ami-0fb8b2d9fbadfeb36
+      BYOLAl2023: ami-0796c9647b7b79c57
     us-west-2:
-      Enterprise: ami-0c9bb1a27d6b57379
-      BYOL: ami-0b94941543d6e1c36
+      EnterpriseAl2: ami-0c9bb1a27d6b57379
+      BYOLAl2: ami-0b94941543d6e1c36
+      EnterpriseAl2023: ami-0c9bb1a27d6b57379
+      BYOLAl2023: ami-0b94941543d6e1c36
     eu-central-1:
-      Enterprise: ami-059acf323dbb93533
-      BYOL: ami-0ba27704d4dcd6baf
+      EnterpriseAl2: ami-059acf323dbb93533
+      BYOLAl2: ami-0ba27704d4dcd6baf
+      EnterpriseAl2023: ami-059acf323dbb93533
+      BYOLAl2023: ami-0ba27704d4dcd6baf
     eu-west-1:
-      Enterprise: ami-0875df798d606090c
-      BYOL: ami-0cdc09b51bab3ada1
+      EnterpriseAl2: ami-0875df798d606090c
+      BYOLAl2: ami-0cdc09b51bab3ada1
+      EnterpriseAl2023: ami-0875df798d606090c
+      BYOLAl2023: ami-0cdc09b51bab3ada1
     ap-south-1:
-      Enterprise: ami-0db2a7549a2a039df
-      BYOL: ami-0c8b0bb8ada838e20
+      EnterpriseAl2: ami-0db2a7549a2a039df
+      BYOLAl2: ami-0c8b0bb8ada838e20
+      EnterpriseAl2023: ami-0db2a7549a2a039df
+      BYOLAl2023: ami-0c8b0bb8ada838e20
     ap-southeast-1:
-      Enterprise: ami-02580b64fb516f3f5
-      BYOL: ami-0028e4944635a44b2
+      EnterpriseAl2: ami-02580b64fb516f3f5
+      BYOLAl2: ami-0028e4944635a44b2
+      EnterpriseAl2023: ami-02580b64fb516f3f5
+      BYOLAl2023: ami-0028e4944635a44b2
     ap-southeast-2:
-      Enterprise: ami-0538c6ca276ad5538
-      BYOL: ami-03727457103f8455c
+      EnterpriseAl2: ami-0538c6ca276ad5538
+      BYOLAl2: ami-03727457103f8455c
+      EnterpriseAl2023: ami-0538c6ca276ad5538
+      BYOLAl2023: ami-03727457103f8455c
     ap-northeast-1:
-      Enterprise: ami-0a3296bafd29b844a
-      BYOL: ami-05a2fa26ef5fbbccb
+      EnterpriseAl2: ami-0a3296bafd29b844a
+      BYOLAl2: ami-05a2fa26ef5fbbccb
+      EnterpriseAl2023: ami-0a3296bafd29b844a
+      BYOLAl2023: ami-05a2fa26ef5fbbccb
     ap-northeast-2:
-      Enterprise: ami-050323c4a1eb4b20a
-      BYOL: ami-055a682cd2896fad2
+      EnterpriseAl2: ami-050323c4a1eb4b20a
+      BYOLAl2: ami-055a682cd2896fad2
+      EnterpriseAl2023: ami-050323c4a1eb4b20a
+      BYOLAl2023: ami-055a682cd2896fad2
     sa-east-1:
-      Enterprise: ami-0298644123c47293d
-      BYOL: ami-0a887341e4616560f
+      EnterpriseAl2: ami-0298644123c47293d
+      BYOLAl2: ami-0a887341e4616560f
+      EnterpriseAl2023: ami-0298644123c47293d
+      BYOLAl2023: ami-0a887341e4616560f
     eu-west-2:
-      Enterprise: ami-0eb31f129bbdb5be5
-      BYOL: ami-027a51845e7a9920c
+      EnterpriseAl2: ami-0eb31f129bbdb5be5
+      BYOLAl2: ami-027a51845e7a9920c
+      EnterpriseAl2023: ami-0eb31f129bbdb5be5
+      BYOLAl2023: ami-027a51845e7a9920c
     ca-central-1:
-      Enterprise: ami-0913be358f1d41204
-      BYOL: ami-0ff0ec2845b68814c
+      EnterpriseAl2: ami-0913be358f1d41204
+      BYOLAl2: ami-0ff0ec2845b68814c
+      EnterpriseAl2023: ami-0913be358f1d41204
+      BYOLAl2023: ami-0ff0ec2845b68814c
     eu-west-3:
-      Enterprise: ami-00bfbebb4d50e1fc6
-      BYOL: ami-0f268c2bd2e089c39
+      EnterpriseAl2: ami-00bfbebb4d50e1fc6
+      BYOLAl2: ami-0f268c2bd2e089c39
+      EnterpriseAl2023: ami-00bfbebb4d50e1fc6
+      BYOLAl2023: ami-0f268c2bd2e089c39
 Resources:
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
@@ -1124,7 +1165,10 @@ Resources:
             NoDevice: true
             Ebs: {}
         KeyName: !Ref KeyName
-        ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
+        ImageId: !If 
+          - AmazonLinux2
+          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2"]]
+          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
         UserData: !Base64
           'Fn::Join':
             - ''
@@ -1220,7 +1264,10 @@ Resources:
             NoDevice: true
             Ebs: {}
         KeyName: !Ref KeyName
-        ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
+        ImageId: !If 
+          - AmazonLinux2
+          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2"]]
+          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
         UserData: !Base64
           'Fn::Join':
             - ''
@@ -1316,7 +1363,10 @@ Resources:
             NoDevice: true
             Ebs: {}
         KeyName: !Ref KeyName
-        ImageId: !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"Enterprise"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOL"]]
+        ImageId: !If 
+          - AmazonLinux2
+          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2"]]
+          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
         UserData: !Base64
           'Fn::Join':
             - ''
