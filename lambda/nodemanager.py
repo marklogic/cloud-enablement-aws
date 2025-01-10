@@ -1,4 +1,4 @@
-# Copyright 2002-2018 MarkLogic Corporation.  All Rights Reserved.
+# Copyright 2018-2024 MarkLogic Corporation.  All Rights Reserved.
 
 import boto3
 import botocore

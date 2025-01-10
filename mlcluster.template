@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS in existing VPC (Virtual Private Cloud).
 Metadata:
-  version: 10.0-11.0.1
-  binary: MarkLogic-10.0-11.x86_64.rpm
+  version: 10.0-11.1
+  binary: MarkLogic-10.0-11.1.x86_64.rpm
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -668,53 +668,53 @@ Mappings:
     TemplateUrl:
       base: 'https://s3.amazonaws.com/marklogic-db-template-releases'
     S3Directory:
-      base: '10.0-11.0.1'
+      base: '10.0-11.1'
   LicenseRegion2AMI:
     us-east-1:
-      Enterprise: ami-0718d7aafb857665e
-      BYOL: ami-08b8488a9c408357c
+      Enterprise: ami-08ec91c35877f600a
+      BYOL: ami-008b6ad1298dbebf5
     us-east-2:
-      Enterprise: ami-08ed055e1daa7df17
-      BYOL: ami-0291b18401f460524
+      Enterprise: ami-027cb2658b1c3c581
+      BYOL: ami-0624e699f5d25dc54
     us-west-1:
-      Enterprise: ami-070138c86ccfd5bfa
-      BYOL: ami-0b199a613e453c7a5
+      Enterprise: ami-0fb9d7776864773d4
+      BYOL: ami-032fdf272809041fb
     us-west-2:
-      Enterprise: ami-03c0c6bb1b88f4ad7
-      BYOL: ami-079f37f12acf5ecb8
+      Enterprise: ami-0d3c98ded122a48f4
+      BYOL: ami-0fed3d6c23c1b7115
     eu-central-1:
-      Enterprise: ami-0993480ddeff0dec5
-      BYOL: ami-04a3c26f3fe96f86f
+      Enterprise: ami-07cdaf95593ca3e79
+      BYOL: ami-04a29a4bd5a56407f
     eu-west-1:
-      Enterprise: ami-0756c34cc05d552a6
-      BYOL: ami-0e4e17f5b1d9e6b36
+      Enterprise: ami-016a06d33f1b8a195
+      BYOL: ami-0dc04a5b995f1b688
     ap-south-1:
-      Enterprise: ami-0e41b20682de1f6da
-      BYOL: ami-0595b6cde22a27662
+      Enterprise: ami-00459304bfe07e3d2
+      BYOL: ami-01466d5e61fa5022b
     ap-southeast-1:
-      Enterprise: ami-02882e9f4bf854812
-      BYOL: ami-060efb3fff9be68ad
+      Enterprise: ami-04fcd3e43d344569d
+      BYOL: ami-0cd8c0104abf428da
     ap-southeast-2:
-      Enterprise: ami-04ad900068b80bfbc
-      BYOL: ami-021add1684e5b4c28
+      Enterprise: ami-04c0e634183c0c8b3
+      BYOL: ami-01bf3ee4888daa82c
     ap-northeast-1:
-      Enterprise: ami-01e61e821bfa88cd3
-      BYOL: ami-07f52403ef1cc277b
+      Enterprise: ami-04624ae02cdcfb4af
+      BYOL: ami-0c6c05cce71a0a32c
     ap-northeast-2:
-      Enterprise: ami-02bc71758ea055bd7
-      BYOL: ami-0f31e18e85b98adb3
+      Enterprise: ami-03758b8845e1497fd
+      BYOL: ami-0f8f095e0f803be7c
     sa-east-1:
-      Enterprise: ami-0ff72dce543c7c178
-      BYOL: ami-017dea8ccc8d48ee9
+      Enterprise: ami-00970c05b5bd8552f
+      BYOL: ami-061b65878c94d796a
     eu-west-2:
-      Enterprise: ami-0cc74122d3094148d
-      BYOL: ami-0728cf700eaa37373
+      Enterprise: ami-09bd3defbe9a1634b
+      BYOL: ami-0622e6e85d5fa0cfd
     ca-central-1:
-      Enterprise: ami-0ff1fde3a722f7549
-      BYOL: ami-0410dde98984ef087
+      Enterprise: ami-0ed5b133371f76420
+      BYOL: ami-0a059be0af984e604
     eu-west-3:
-      Enterprise: ami-06140362dd8424368
-      BYOL: ami-01fc89df41f87f1f7
+      Enterprise: ami-01d0d904f8c942dec
+      BYOL: ami-05cfefe211a39724c
 Resources:
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
