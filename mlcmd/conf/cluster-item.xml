@@ -1,0 +1,29 @@
+<!-- Sample normalized 'item' record from MDB (simpleDB or dynamoDB )  -->
+<item>
+  <node>NodeB-us-east-1d1</node>
+  <create-date>2015-04-25T13:37:14.547Z</create-date>
+  <host>ec2-107-22-24-106.compute-1.amazonaws.com</host>
+  <hostid>13531794882487074886</hostid>
+  <index>1</index>
+  <instance>i-8f003373</instance>
+  <instance-state>running</instance-state>
+  <instance-time>2015-04-25T13:56:04.135Z</instance-time>
+  <master>0</master>
+  <state>initialized</state>
+  <state-instance>i-8f003373</state-instance>
+  <zone>us-east-1d</zone>
+  <devices>
+    <device>
+      <ebs>/dev/sdf</ebs>
+      <devid>/dev/xvdf</devid>
+      <volume>voli-dabc</volume>
+      <mount>/var/opt/MarkLogic</mount>
+    </device>
+        <device>
+      <ebs>/dev/sdg</ebs>
+      <devid>/dev/xvdg</devid>
+      <volume>volid-efg</volume>
+      <mount>/var/opt/volume1</mount>
+    </device>
+  </devices>
+</item>
