@@ -1,0 +1,83 @@
+#!/bin/sh
+# Copyright (c) 2021 MarkLogic Corporation
+export MARKLOGIC_INSTALL_DIR=/opt/MarkLogic
+
+if ! [ -f "$MARKLOGIC_INSTALL_DIR/bin/cloud/setmlvars.sh" ] ; then 
+    logger -t MarkLogic "Fatal Error: $0 missing file: $MARKLOGIC_INSTALL_DIR/bin/cloud/setmlvars.sh"
+    exit 1
+fi
+
+## Pre-export variables - includes MARKLOGIC_MLCMD_CONF
+. "$MARKLOGIC_INSTALL_DIR/bin/cloud/setmlvars.sh"
+_exportall
+
+export XMLSH=$MARKLOGIC_INSTALL_DIR/mlcmd
+export MLCMD_HOME=$XMLSH
+export CLASSPATH=$MLCMD_HOME/lib/*
+[ -n "$MLCMD_CLASSPATH" ] && CLASSPATH="$MLCMD_CLASSPATH:$CLASSPATH"
+export XMODPATH=$MLCMD_HOME/ext
+export XPATH=$MLCMD_HOME/scripts
+export XLOGFILE=${XLOGFILE:-/var/log/mlcmd}
+export XLOGLEVEL=${XLOGLEVEL:-warn}
+export XLOG4JPATH=${XLOG4JPATH:-$MARKLOGIC_INSTALL_DIR/mlcmd/conf/log4j2.xml}
+
+[ -n "$JAVA_HOME" ] && PATH=$JAVA_HOME/bin:$PATH
+
+usage()
+{
+   echo
+   echo "Usage: $0 command [args]"
+   echo
+   echo "Commands"
+   echo "  mlcmd sync-volumes-from-mdb"
+   echo "  mlcmd sync-volumes-to-mdb"
+   echo "  mlcmd init-volumes-from-system"
+   echo "  mlcmd leave-cluster [-terminate]"
+   echo
+   exit 1
+}
+ 
+[ $# -eq 0 ] && usage
+case "$1" in 
+   -i) shift ;;                 # INTERNAL USE ONLY
+   sync-volumes-from-mdb) ;;
+   sync-volumes-to-mdb) ;;
+   init-volumes-from-system) ;;
+   leave-cluster)                # Remove crontab before leaving cluster 
+      crontab -l | sed '/^# MarkLogic start/,/^# MarkLogic stop/d' | crontab
+     ;;
+   *) usage ;;
+esac
+
+
+# Adjust VM args below to your taste
+MLCMD_OPTS=${MLCMD_OPTS:-" -norc "}
+MLCMD_JAVAOPTS=${MLCMD_JAVAOPTS:-" -Xmx128m -Xms16m -XX:+UseConcMarkSweepGC"}
+MLCMD_LOGOPTS=${MLCMD_LOGOPTS:-" -Dmlcmd.logfile=$XLOGFILE -Dmlcmd.tracefile=/var/tmp/mlcmd.trace -Dlog4j.configurationFile=$MARKLOGIC_INSTALL_DIR/mlcmd/conf/log4j2.xml"}
+MLCMD_LD_LIB_PATH=$LD_LIBRARY_PATH
+[ -z ${ORIGINAL_LD_LIBRARY_PATH+x} ] && MLCMD_LD_LIB_PATH=$ORIGINAL_LD_LIBRARY_PATH
+LD_LIBRARY_PATH=$MLCMD_LD_LIB_PATH java $MLCMD_JAVAOPTS $MLCMD_LOGOPTS org.xmlsh.sh.shell.Shell $MLCMD_OPTS "$@"
+_RET=$?
+if [ $_RET != 0 ] ; then
+	echo ""
+	echo "Warning: $1 did not complete successfully"
+	echo "Check the error logs for details"
+  	echo ""
+	exit $_RET
+else
+  case "$1" in 
+  leave-cluster) 
+	# remove cached files
+        rm -f /var/local/mlcmd.conf
+	rm -f /tmp/marklogic.host
+	rm -f /var/tmp/mlcmd.trace
+	rm -f /var/log/mlcmd*
+	echo ""
+	echo "Success: $1 completed successfully"
+	echo "You may now stop or initialize MarkLogic on this host"
+	echo ""
+	_RET=0
+      ;;
+   esac
+fi;
+exit $_RET
