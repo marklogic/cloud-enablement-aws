@@ -16,9 +16,10 @@ echo "Starting install section"
 mkdir -p %{buildroot}/opt/MarkLogic/bin/cloud
 mkdir -p %{buildroot}/opt/MarkLogic/mlcmd
 cp -r %{project_dir}/mlcmd/bin %{buildroot}/opt/MarkLogic/mlcmd/bin
-cp -r %{project_dir}/mlcmd/bin %{buildroot}/opt/MarkLogic/mlcmd/conf
-cp -r %{project_dir}/mlcmd/bin %{buildroot}/opt/MarkLogic/mlcmd/ext
-cp -r %{project_dir}/mlcmd/bin %{buildroot}/opt/MarkLogic/mlcmd/scripts
+cp -r %{project_dir}/mlcmd/conf %{buildroot}/opt/MarkLogic/mlcmd/conf
+cp -r %{project_dir}/mlcmd/ext %{buildroot}/opt/MarkLogic/mlcmd/ext
+cp -r %{project_dir}/mlcmd/lib %{buildroot}/opt/MarkLogic/mlcmd/lib
+cp -r %{project_dir}/mlcmd/scripts %{buildroot}/opt/MarkLogic/mlcmd/scripts
 cp -fp %{project_dir}/mlcmd/mlcmd.sh %{buildroot}/opt/MarkLogic/bin/cloud/mlcmd
 chmod -R 755 %{buildroot}/opt/MarkLogic/mlcmd
 echo "Completed install section"
