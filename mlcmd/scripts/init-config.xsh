@@ -120,38 +120,50 @@ function run-init-config()
       local _a
       _a=mdb-get-attributes-from-instance( $INSTANCE )
       _N=mdb-get-attribute( $_a node )
-      #Setup the network interface predicatable name for AL2/AL2023
-      NETWORK_INTERFACE_NAME="eth1"
-      if [ -f /etc/os-release ] ; then
-        AWS_OS_VERSION=`(grep '^VERSION_ID=' /etc/os-release | cut -d'=' -f2 | awk -F'"' '{print $2}')`
-        if [ "$AWS_OS_VERSION" = 2023 ] ; then
-          NETWORK_INTERFACE_NAME="ens4"
-        fi
-      fi
+      
       #find hostname of the current host from secondary network interface.
       GET_ENI=0
-      [ "$MARKLOGIC_MANAGED_NODE" != "0" ] && [ -n "$MARKLOGIC_CLUSTER_NAME" -a -n "$MARKLOGIC_NODE_NAME" ] \
+      [ "$MARKLOGIC_MANAGED_NODE" = "1" ] && [ -n "$MARKLOGIC_CLUSTER_NAME" -a -n "$MARKLOGIC_NODE_NAME" ] \
         && GET_ENI=1
-      
-      if [ "$GET_ENI" = 1 ] ; then
-        if [ -z "$ENI_HOSTNAME" ] ; then 
-          message "Detecting secondary network interface from operating system"
-          COUNTER=1
-          _IP=`(ifconfig $NETWORK_INTERFACE_NAME 2> /dev/null | grep 'inet'| cut -d: -f2 | awk '{print $2}' ) || echo ''`
-          # bug:49783
-          while [ -z $_IP ] && [ $COUNTER -le 20 ] ; do
-              message "Waiting for secondary network interface to be plugged in. Retry $COUNTER/20"
-              sleep 1
-              _IP=`(ifconfig $NETWORK_INTERFACE_NAME 2> /dev/null | grep 'inet'| cut -d: -f2 | awk '{print $2}' ) || echo ''`
-              COUNTER=$(expr $COUNTER + 1)
-          done
-          if [ $_IP ] ; then
-            message "IP is found from the secondary network interface after lessthan 20 tries IP : $_IP"
-            message "Found private IP address of secondary network interface: $_IP"
-            _DNS=`nslookup $_IP | grep "name = " | awk '{print $4}' | sed 's/.$//'`
-            message "DNS is fetched as well : $_DNS"
-            [ $_DNS ] && ENI_HOSTNAME=$_DNS
-          fi 
+
+      if [ "$TRY_ENI" = 1 ] ; then
+        if [ -z "$ENI_HOSTNAME" ] ; then
+            message "Detecting secondary network interface"
+            MAX_RETRIES=20
+            RETRY_COUNT=0
+
+            while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+                MACS=$(ec2-get-meta network/interfaces/macs/)
+                for _MAC in $MACS; do
+                    _DEVICE=$(ec2-get-meta network/interfaces/macs/$_MAC/device-number)
+                    if [ "$_DEVICE" = "1" ]; then
+                        ENI_HOSTNAME=$(ec2-get-meta network/interfaces/macs/$_MAC/local-hostname)
+                        if [ -z "$ENI_HOSTNAME" ]; then
+                            ENI_HOSTNAME=$(ec2-get-meta network/interfaces/macs/$_MAC/local-ipv4s)
+                        fi
+                        if [ -n "$ENI_HOSTNAME" ]; then
+                            message "Successfully detected secondary network interface: $ENI_HOSTNAME"
+                            break 2
+                        fi
+                    fi
+                done
+
+                # Added Retry and more sleep time for new detach logic added to CFT Node Manager Lambda Fucntion
+                # To wait for the secondary network interface to be attached to the node
+                RETRY_COUNT=$((RETRY_COUNT + 1))
+                if [ $RETRY_COUNT -le 5 ]; then
+                    SLEEP_INTERVAL=5
+                elif [ $RETRY_COUNT -le 10 ]; then
+                    SLEEP_INTERVAL=10
+                elif [ $RETRY_COUNT -le 15 ]; then
+                    SLEEP_INTERVAL=15
+                else
+                    SLEEP_INTERVAL=20
+                fi
+
+                message "Device-number 1 not available. Retrying in $SLEEP_INTERVAL seconds (Attempt $RETRY_COUNT/$MAX_RETRIES)"
+                sleep $SLEEP_INTERVAL
+            done
         else
           message "ENI_HOSTNAME is already present so we skipped the secondary network interface detection"
         fi
