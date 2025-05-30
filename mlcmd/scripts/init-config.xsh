@@ -126,7 +126,7 @@ function run-init-config()
       [ "$MARKLOGIC_MANAGED_NODE" = "1" ] && [ -n "$MARKLOGIC_CLUSTER_NAME" -a -n "$MARKLOGIC_NODE_NAME" ] \
         && GET_ENI=1
 
-      if [ "$TRY_ENI" = 1 ] ; then
+      if [ "$GET_ENI" = 1 ] ; then
         if [ -z "$ENI_HOSTNAME" ] ; then
             message "Detecting secondary network interface"
             MAX_RETRIES=20
