@@ -1,5 +1,5 @@
 #!/bin/sh mlcmd
-# Copyright (c) 2020 MarkLogic Corporation 
+# Copyright (c) 2013-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 . init
 # ( <item> .. 
 nodes=mdb-get-all-items()

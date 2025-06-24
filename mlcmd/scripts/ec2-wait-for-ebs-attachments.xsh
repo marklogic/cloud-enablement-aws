@@ -1,5 +1,5 @@
 # ec2-wait-for-ebs-attachments
-# Copyright (c) 2020 MarkLogic Corporation 
+# Copyright (c) 2013-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 # Wait for all EBS devices in the process of attaching to be attached
 
 . init

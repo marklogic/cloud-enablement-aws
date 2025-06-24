@@ -1,6 +1,6 @@
 
 # common functions
-# Copyright (c) 2022 MarkLogic Corporation
+# Copyright (c) 2013-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 [ -n "$_FUNCTIONS_INIT" ] && return 0
 
 import commands xs=xs

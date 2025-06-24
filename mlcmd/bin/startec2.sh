@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2020 MarkLogic Corporation 
+# Copyright (c) 2013-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 # This script is ONLY to be called from /etc/init.d/MarkLogic (or) /etc/MarkLogic/MarkLogic-service.sh
 # Note that this is run from start_daemon which means that the PATH variable has been reset  
 

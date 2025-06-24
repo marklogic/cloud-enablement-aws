@@ -1,5 +1,5 @@
 # 
-# Copyright (c) 2021 MarkLogic Corporation
+# Copyright (c) 2013-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 # init-volume volume-spec  [volid]
 . init
 [ $# -lt 1 ] && usage "$0: volume-spec [volume-id]"

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020 MarkLogic Corporation
+# Copyright (c) 2013-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 # Initializes/Accepts the license agreement and any supplied license key
 #
 . init

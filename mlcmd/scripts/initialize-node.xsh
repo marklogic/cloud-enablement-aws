@@ -1,5 +1,5 @@
 # !/bin/sh mlcmd
-# Copyright (c) 2024 MarkLogic Corporation
+# Copyright (c) 2013-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 # Initialize a node  - called by /etc/init.d/MarkLogic (or) /etc/MarkLogic/MarkLogic-service.sh on startup 
 . init
 

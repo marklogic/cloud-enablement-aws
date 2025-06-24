@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2021 MarkLogic Corporation
+# Copyright (c) 2013-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 export MARKLOGIC_INSTALL_DIR=/opt/MarkLogic
 
 if ! [ -f "$MARKLOGIC_INSTALL_DIR/bin/cloud/setmlvars.sh" ] ; then 

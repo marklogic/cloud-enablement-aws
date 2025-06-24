@@ -1,5 +1,5 @@
 # ec2-startup
-# Copyright (c) 2024 MarkLogic Corporation 
+# Copyright (c) 2013-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 # Startup script on every launch of MarkLogic
 ##
 ## This is called from /etc/MarkLogic/init.d (or) /etc/MarkLogic/MarkLogic-service.sh in the parent startup process prior to 

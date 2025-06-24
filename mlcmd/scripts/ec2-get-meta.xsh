@@ -1,4 +1,4 @@
-# Copyright (c) 2024 MarkLogic Corporation 
+# Copyright (c) 2013-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 # ec2-get-meta [property]
 # Get EC2 metadata 
 metaurl=http://169.254.169.254/latest/meta-data

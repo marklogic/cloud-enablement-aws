@@ -1,5 +1,5 @@
 # rest-uri  [ -host host ] [-port port ] [ -scheme scheme] [-uri uri ] [ -path path ] 
-# Copyright (c) 2020 MarkLogic Corporation 
+# Copyright (c) 2013-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 . init
 
 _opts=$<(xgetopts -o "host:,port:,scheme:,uri:,path:" -a -noargs --  "$@")

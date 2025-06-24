@@ -1,5 +1,5 @@
 # init-config
-# Copyright (c) 2024 MarkLogic Corporation
+# Copyright (c) 2013-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 # Save MARKLOGIC_NODE_NAME before .init which reads
 #   the mlcmd config file /var/local/mlcmd.conf
 # Since stdout is used for the config file, all outupt that is not intended for  
