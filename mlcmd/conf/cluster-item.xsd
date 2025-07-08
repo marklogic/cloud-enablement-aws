@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="item">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="node" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="create-date" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="host" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="hostid" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="index" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="instance" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="instance-state" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="instance-time" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="master" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="state" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="state-instance" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="zone" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="devices" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="node" type="xs:string"/>
+  <xs:element name="create-date" type="xs:dateTime"/>
+  <xs:element name="host" type="xs:string"/>
+  <xs:element name="hostid" type="xs:string"/>
+  <xs:element name="index" type="xs:integer"/>
+  <xs:element name="instance" type="xs:string"/>
+  <xs:element name="instance-state" type="xs:string"/>
+  <xs:element name="instance-time" type="xs:dateTime"/>
+  <xs:element name="master" >
+    <xs:simpleType>
+      <xs:restriction base="xs:integer"><xs:minInclusive value="0"/><xs:maxInclusive value="1"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
+  <xs:element name="state" type="xs:string"/>
+  <xs:element name="state-instance" type="xs:string"/>
+  <xs:element name="zone" type="xs:string"/>
+  <xs:element name="devices">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="device" minOccurs="1" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="device">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ebs" minOccurs="1"/>
+        <xs:element ref="devid" minOccurs="1"/>
+        <xs:element ref="volume" minOccurs="1"/>
+        <xs:element ref="mount" minOccurs="1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ebs" type="xs:string"/>
+  <xs:element name="devid" type="xs:string"/>
+  <xs:element name="volume" type="xs:string"/>
+  <xs:element name="mount" type="xs:string"/>
+</xs:schema>

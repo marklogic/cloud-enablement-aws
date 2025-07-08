@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<devices>
+    <platform os="redhat">
+        <device name="/dev/sdf" mountpoint="/var/opt/MarkLogic">
+            <instance family="" device="/dev/xvdj"/>
+        </device>
+        <device name="/dev/sdg" mountpoint="/var/opt/volume1">
+            <instance family="" device="/dev/xvdk"/>
+        </device>
+        <device name="/dev/sdh" mountpoint="/var/opt/volume2">
+            <instance family="" device="/dev/xvdl"/>
+        </device>
+        <device name="/dev/sdi" mountpoint="/var/opt/volume3">
+            <instance family="" device="/dev/xvdm"/>
+        </device>
+        <device name="/dev/sdj" mountpoint="/var/opt/volume4">
+            <instance family="" device="/dev/xvdn"/>
+        </device>
+        <device name="/dev/sdk" mountpoint="/var/opt/volume5">
+            <instance family="" device="/dev/xvdo"/>
+        </device>
+        <device name="/dev/sdl" mountpoint="/var/opt/volume6">
+            <instance family="" device="/dev/xvdp"/>
+        </device>/
+        <device name="/dev/sdm" mountpoint="/var/opt/volume7">
+            <instance family="" device="/dev/xvdq"/>
+        </device>
+        <device name="/dev/sdn" mountpoint="/var/opt/volume8">
+            <instance family="" device="/dev/xvdr"/>
+        </device>
+        <device name="/dev/sdo" mountpoint="/var/opt/volume9">
+            <instance family="" device="/dev/xvds"/>
+        </device>
+        <device name="/dev/sdp" mountpoint="">
+            <instance family="" device="/dev/xvdt"/>
+        </device>
+        <device name="/dev/sdq" mountpoint="">
+            <instance family="" device="/dev/xvdu"/>
+        </device>
+        <device name="/dev/sdr" mountpoint="">
+            <instance family="" device="/dev/xvdv"/>
+        </device>
+        <device name="/dev/sds" mountpoint="">
+            <instance family="" device="/dev/xvdw"/>
+        </device>
+        <device name="/dev/sdt" mountpoint="">
+            <instance family="" device="/dev/xvdx"/>
+        </device>
+        <device name="/dev/sdu" mountpoint="">
+            <instance family="" device="/dev/xvdy"/>
+        </device>
+        <device name="/dev/sdv" mountpoint="">
+            <instance family="" device="/dev/xvdz"/>
+        </device>
+        <device name="/dev/sdw" mountpoint="">
+            <instance family="" device="/dev/xvdaa"/>
+        </device>
+        <device name="/dev/sdx" mountpoint="">
+            <instance family="" device="/dev/xvdab"/>
+        </device>
+        <device name="/dev/sdy" mountpoint="">
+            <instance family="" device="/dev/xvdac"/>
+        </device>
+        <device name="/dev/sdz" mountpoint="">
+            <instance family="" device="/dev/xvdad"/>
+        </device>
+    </platform>
+    <platform os="linux">
+        <device name="/dev/sdf" mountpoint="/var/opt/MarkLogic">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme1n1"/>
+            <instance family="i3.metal" device="/dev/nvme1n1"/>
+            <instance family="" device="/dev/xvdf"/>
+        </device>
+        <device name="/dev/sdg" mountpoint="/var/opt/volume1">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme2n1"/>
+            <instance family="i3.metal" device="/dev/nvme2n1"/>
+            <instance family="" device="/dev/xvdg"/>
+        </device>
+        <device name="/dev/sdh" mountpoint="/var/opt/volume2">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme3n1"/>
+            <instance family="i3.metal" device="/dev/nvme3n1"/>
+            <instance family="" device="/dev/xvdh"/>
+        </device>
+        <device name="/dev/sdi" mountpoint="/var/opt/volume3">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme4n1"/>
+            <instance family="i3.metal" device="/dev/nvme4n1"/>
+            <instance family="" device="/dev/xvdi"/>
+        </device>
+        <device name="/dev/sdj" mountpoint="/var/opt/volume4">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme5n1"/>
+            <instance family="i3.metal" device="/dev/nvme5n1"/>
+            <instance family="" device="/dev/xvdj"/>
+        </device>
+        <device name="/dev/sdk" mountpoint="/var/opt/volume5">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme6n1"/>
+            <instance family="i3.metal" device="/dev/nvme6n1"/>
+            <instance family="" device="/dev/xvdk"/>
+        </device>
+        <device name="/dev/sdl" mountpoint="/var/opt/volume6">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme7n1"/>
+            <instance family="i3.metal" device="/dev/nvme7n1"/>
+            <instance family="" device="/dev/xvdl"/>
+        </device>
+        <device name="/dev/sdm" mountpoint="/var/opt/volume7">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme8n1"/>
+            <instance family="i3.metal" device="/dev/nvme8n1"/>
+            <instance family="" device="/dev/xvdm"/>
+        </device>
+        <device name="/dev/sdn" mountpoint="/var/opt/volume8">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme9n1"/>
+            <instance family="i3.metal" device="/dev/nvme9n1"/>
+            <instance family="" device="/dev/xvdn"/>
+        </device>
+        <device name="/dev/sdo" mountpoint="/var/opt/volume9">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme10n1"/>
+            <instance family="i3.metal" device="/dev/nvme10n1"/>
+            <instance family="" device="/dev/xvdo"/>
+        </device>
+        <device name="/dev/sdp">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme11n1"/>
+            <instance family="i3.metal" device="/dev/nvme11n1"/>
+            <instance family="" device="/dev/xvdp"/>
+        </device>
+        <device name="/dev/sdq">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme12n1"/>
+            <instance family="i3.metal" device="/dev/nvme12n1"/>
+            <instance family="" device="/dev/xvdq"/>
+        </device>
+        <device name="/dev/sdr">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme13n1"/>
+            <instance family="i3.metal" device="/dev/nvme13n1"/>
+            <instance family="" device="/dev/xvdr"/>
+        </device>
+        <device name="/dev/sds">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme14n1"/>
+            <instance family="i3.metal" device="/dev/nvme14n1"/>
+            <instance family="" device="/dev/xvds"/>
+        </device>
+        <device name="/dev/sdt">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme15n1"/>
+            <instance family="i3.metal" device="/dev/nvme15n1"/>
+            <instance family="" device="/dev/xvdt"/>
+        </device>
+        <device name="/dev/sdu">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme16n1"/>
+            <instance family="i3.metal" device="/dev/nvme16n1"/>
+            <instance family="" device="/dev/xvdu"/>
+        </device>
+        <device name="/dev/sdv">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme17n1"/>
+            <instance family="i3.metal" device="/dev/nvme17n1"/>
+            <instance family="" device="/dev/xvdv"/>
+        </device>
+        <device name="/dev/sdw">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme18n1"/>
+            <instance family="i3.metal" device="/dev/nvme18n1"/>
+            <instance family="" device="/dev/xvdw"/>
+        </device>
+        <device name="/dev/sdx">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme19n1"/>
+            <instance family="i3.metal" device="/dev/nvme19n1"/>
+            <instance family="" device="/xvdx/xvdx"/>
+        </device>
+        <device name="/dev/sdy" mountpoint="">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme20n1"/>
+            <instance family="i3.metal" device="/dev/nvme20n1"/>
+            <instance family="" device="/xvdx/xvdy"/>
+        </device>
+        <device name="/dev/sdz" mountpoint="">
+            <instance family="(c5|c5a|c5ad|c5d|c5n|c6a|c6i|c6id|cc2|c7i|c7i-flex|c7a|m5|m5a|m5ad|m5d|m5zn|m5n|m5dn|m6a|m6i|m6id|m7i|m7i-flex|m7a|r5|r5a|r5ad|r5d|r5b|r5dn|r5n|r6a|r6i|r6id|r7i|r7iz|r7a|t3|t3a|z1d|i3en|d3|d3en|i4i|i7ie|x2idn|x2iedn|x2iezn|u-3tb1|u-6tb1|u-9tb1|u-12tb1|u-18tb1|u-24tb1|g4ad|g4dn|g5|dl1|inf1|trn1|vt1)\..*" device="/dev/nvme21n1"/>
+            <instance family="i3.metal" device="/dev/nvme21n1"/>
+            <instance family="" device="/xvdx/xvdz"/>
+        </device>
+    </platform>
+    <platform os="suse" fstype="ext3">
+        <device name="/dev/sdf" mountpoint="/var/opt/MarkLogic">
+            <instance family="" device="/dev/sdf"/>
+        </device>
+        <device name="/dev/sdg" mountpoint="/var/opt/volume1">
+            <instance family="" device="/dev/sdg"/>
+        </device>
+        <device name="/dev/sdh" mountpoint="/var/opt/volume2">
+            <instance family="" device="/dev/sdh"/>
+        </device>
+        <device name="/dev/sdi" mountpoint="/var/opt/volume3">
+            <instance family="" device="/dev/sdi"/>
+        </device>
+        <device name="/dev/sdj" mountpoint="/var/opt/volume4">
+            <instance family="" device="/dev/sdj"/>
+        </device>
+        <device name="/dev/sdk" mountpoint="/var/opt/volume5">
+            <instance family="" device="/dev/sdk"/>
+        </device>
+        <device name="/dev/sdl" mountpoint="/var/opt/volume6">
+            <instance family="" device="/dev/sdl"/>
+        </device>
+        <device name="/dev/sdm" mountpoint="/var/opt/volume7">
+            <instance family="" device="/dev/sdm"/>
+        </device>
+        <device name="/dev/sdn" mountpoint="/var/opt/volume8">
+            <instance family="" device="/dev/sdn"/>
+        </device>
+        <device name="/dev/sdo" mountpoint="/var/opt/volume9">
+            <instance family="" device="/dev/sdo"/>
+        </device>
+        <device name="/dev/sdp">
+            <instance family="" device="/dev/sdp"/>
+        </device>
+        <device name="/dev/sdq">
+            <instance family="" device="/dev/sdq"/>
+        </device>
+        <device name="/dev/sdr">
+            <instance family="" device="/dev/sdr"/>
+        </device>
+        <device name="/dev/sds">
+            <instance family="" device="/dev/sds"/>
+        </device>
+        <device name="/dev/sdt">
+            <instance family="" device="/dev/sdt"/>
+        </device>
+        <device name="/dev/sdu">
+            <instance family="" device="/dev/sdu"/>
+        </device>
+        <device name="/dev/sdv">
+            <instance family="" device="/dev/sdv"/>
+        </device>
+        <device name="/dev/sdw">
+            <instance family="" device="/dev/sdw"/>
+        </device>
+        <device name="/dev/sdx">
+            <instance family="" device="/dev/sdx"/>
+        </device>
+        <device name="/dev/sdy" mountpoint="">
+            <instance family="" device="/dev/sdy"/>
+        </device>
+        <device name="/dev/sdz" mountpoint="">
+            <instance family="" device="/dev/sdz"/>
+        </device>
+    </platform>
+</devices>

@@ -24,7 +24,7 @@ The CloudFormation templates provide options to launch clusters with different s
 | Option | Allowed Values |
 | -- | -- |
 | VPC | New or Existing |
-| License | Developer, BYOL, Essential Enterprise |
+| License | PAYG, BYOL |
 | Availablity Zone | 1 or 3 |
 | Nodes per Zone | 1 to many |
 

@@ -1,0 +1,22 @@
+<Configuration>
+<Appenders>
+    <RollingFile name="R" fileName="/var/log/mlcmd" filePattern="/var/log/mlcmd.%i">
+        <PatternLayout pattern="%d %-5r %-5p [%t] %c{2} - %m%n"/>
+        <Policies>
+            <SizeBasedTriggeringPolicy size="100KB" />
+        </Policies>
+        <DefaultRolloverStrategy max="1"/>
+    </RollingFile>
+    <File name="T" fileName="/var/trace/mlcmd">
+      <PatternLayout pattern="%d %-5r %-5p [%t] %c{2} - %m%n"/>
+    </File>
+</Appenders>
+<Loggers>
+    <Root level ="INFO">
+        <AppenderRef ref="R"/>
+    </Root>
+    <Logger name="mlcmd.trace" level ="ALL">
+        <AppenderRef ref="T"/>
+    </Logger>
+</Loggers>
+</Configuration>

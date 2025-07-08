@@ -15,7 +15,6 @@ Metadata:
           - VolumeThroughput
           - VolumeEncryption
           - VolumeEncryptionKey
-          - OSType
           - InstanceType
           - SpotPrice
           - KeyName
@@ -65,8 +64,6 @@ Metadata:
         default: Volume Encryption
       VolumeEncryptionKey:
         default: Volume Encryption Key ARN
-      OSType:
-        default: OS Type
       InstanceType:
         default: Instance Type
       SpotPrice:
@@ -135,19 +132,12 @@ Parameters:
     Description: The key ID of AWS KMS key to encrypt volumes - Optional
     Type: String
     Default: ""
-  OSType:
-    Description: OS of MarkLogic to create the cluster
-    Type: String
-    AllowedValues:
-      - AmazonLinux2023
-      - AmazonLinux2
-    Default: AmazonLinux2023
   InstanceType:
     Description: Type of EC2 instance to launch
     Type: String
     Default: r5.4xlarge
     AllowedValues:
-      - ---- Essential Enterprise and Bring-Your-Own-License ----
+      - ---- Pay-As-You-Go and Bring-Your-Own-License ----
       - c3.xlarge
       - c3.2xlarge
       - c3.4xlarge
@@ -214,6 +204,29 @@ Parameters:
       - c6id.16xlarge
       - c6id.24xlarge
       - c6id.32xlarge
+      - c7i.xlarge
+      - c7i.2xlarge
+      - c7i.4xlarge
+      - c7i.8xlarge
+      - c7i.12xlarge
+      - c7i.16xlarge
+      - c7i.24xlarge
+      - c7i.48xlarge
+      - c7i-flex.xlarge
+      - c7i-flex.2xlarge
+      - c7i-flex.4xlarge
+      - c7i-flex.8xlarge
+      - c7i-flex.12xlarge
+      - c7i-flex.16xlarge
+      - c7a.xlarge
+      - c7a.2xlarge
+      - c7a.4xlarge
+      - c7a.8xlarge
+      - c7a.12xlarge
+      - c7a.16xlarge
+      - c7a.24xlarge
+      - c7a.32xlarge
+      - c7a.48xlarge
       - cc2.8xlarge
       - i2.2xlarge
       - i2.4xlarge
@@ -236,6 +249,14 @@ Parameters:
       - i4i.8xlarge
       - i4i.16xlarge
       - i4i.32xlarge
+      - i7ie.xlarge
+      - i7ie.2xlarge
+      - i7ie.3xlarge
+      - i7ie.6xlarge
+      - i7ie.12xlarge
+      - i7ie.18xlarge
+      - i7ie.24xlarge
+      - i7ie.48xlarge
       - m3.xlarge
       - m3.2xlarge
       - m4.xlarge
@@ -315,14 +336,29 @@ Parameters:
       - m6id.16xlarge
       - m6id.24xlarge
       - m6id.32xlarge
-      - p2.xlarge
-      - p2.8xlarge
-      - p2.16xlarge
-      - p3.2xlarge
-      - p3.8xlarge
-      - p3.16xlarge
-      - p3dn.24xlarge
-      - p4d.24xlarge
+      - m7i.xlarge
+      - m7i.2xlarge
+      - m7i.4xlarge
+      - m7i.8xlarge
+      - m7i.12xlarge
+      - m7i.16xlarge
+      - m7i.24xlarge
+      - m7i.48xlarge
+      - m7i-flex.xlarge
+      - m7i-flex.2xlarge
+      - m7i-flex.4xlarge
+      - m7i-flex.8xlarge
+      - m7i-flex.12xlarge
+      - m7i-flex.16xlarge
+      - m7a.xlarge
+      - m7a.2xlarge
+      - m7a.4xlarge
+      - m7a.8xlarge
+      - m7a.12xlarge
+      - m7a.16xlarge
+      - m7a.24xlarge
+      - m7a.32xlarge
+      - m7a.48xlarge
       - r3.xlarge
       - r3.2xlarge
       - r3.4xlarge
@@ -406,6 +442,30 @@ Parameters:
       - r6id.16xlarge
       - r6id.24xlarge
       - r6id.32xlarge
+      - r7i.xlarge
+      - r7i.2xlarge
+      - r7i.4xlarge
+      - r7i.8xlarge
+      - r7i.12xlarge
+      - r7i.16xlarge
+      - r7i.24xlarge
+      - r7i.48xlarge
+      - r7iz.xlarge
+      - r7iz.2xlarge
+      - r7iz.4xlarge
+      - r7iz.8xlarge
+      - r7iz.12xlarge
+      - r7iz.16xlarge
+      - r7iz.32xlarge
+      - r7a.xlarge
+      - r7a.2xlarge
+      - r7a.4xlarge
+      - r7a.8xlarge
+      - r7a.12xlarge
+      - r7a.16xlarge
+      - r7a.24xlarge
+      - r7a.32xlarge
+      - r7a.48xlarge
       - x1.16xlarge
       - x1.32xlarge
       - x1e.xlarge
@@ -447,31 +507,6 @@ Parameters:
       - f1.2xlarge
       - f1.4xlarge
       - f1.16xlarge
-      - g2.2xlarge
-      - g2.8xlarge
-      - g3.4xlarge
-      - g3.8xlarge
-      - g3.16xlarge
-      - g3s.xlarge
-      - g4ad.xlarge
-      - g4ad.2xlarge
-      - g4ad.4xlarge
-      - g4ad.8xlarge
-      - g4ad.16xlarge
-      - g4dn.xlarge
-      - g4dn.2xlarge
-      - g4dn.4xlarge
-      - g4dn.8xlarge
-      - g4dn.12xlarge
-      - g4dn.16xlarge
-      - g5.xlarge
-      - g5.2xlarge
-      - g5.4xlarge
-      - g5.8xlarge
-      - g5.12xlarge
-      - g5.16xlarge
-      - g5.24xlarge
-      - g5.48xlarge
       - h1.2xlarge
       - h1.4xlarge
       - h1.8xlarge
@@ -513,12 +548,21 @@ Parameters:
       - c6i.metal
       - c6id.large
       - c6id.metal
-      - g4dn.metal
+      - c7i.large
+      - c7i.metal-24xl
+      - c7i.metal-48xl
+      - c7i-flex.large
+      - c7a.medium
+      - c7a.large
+      - c7a.metal-48xl
       - i3.large
       - i3en.large
       - i3en.metal
       - i4i.large
       - i4i.metal
+      - i7ie.large
+      - i7ie.metal-24xl
+      - i7ie.metal-48xl
       - m3.large
       - m3.medium
       - m4.large
@@ -540,6 +584,13 @@ Parameters:
       - m6i.metal
       - m6id.large
       - m6id.metal
+      - m7i.large
+      - m7i.metal-24xl
+      - m7i.metal-48xl
+      - m7i-flex.large
+      - m7a.medium
+      - m7a.large
+      - m7a.metal-48xl
       - r3.large
       - r4.large
       - r5.metal
@@ -560,6 +611,15 @@ Parameters:
       - r6i.metal
       - r6id.large
       - r6id.metal
+      - r7i.large
+      - r7i.metal-24xl
+      - r7i.metal-48xl
+      - r7iz.large
+      - r7iz.metal-16xl
+      - r7iz.metal-32xl
+      - r7a.medium
+      - r7a.large
+      - r7a.metal-48xl
       - t2.2xlarge
       - t2.large
       - t2.medium
@@ -677,11 +737,11 @@ Parameters:
       ^(?!.*[*]).*$
     ConstraintDescription: Admin password must contain any characters except asterisk (*).
   Licensee:
-    Description: The MarkLogic Licensee or 'none'. Provide none/none to choose "Pay as you Go"/Enterprise version. Provide valid Licensee/Licensekey to choose BYOL/developer version.
+    Description: The MarkLogic Licensee or 'none'. Provide none/none to choose PAYG version. Provide valid Licensee/Licensekey to choose BYOL version.
     Type: String
     Default: none
   LicenseKey:
-    Description: The MarkLogic License Key or 'none'. Provide none/none to choose "Pay as you Go"/Enterprise version. Provide valid Licensee/Licensekey to choose BYOL/developer version.
+    Description: The MarkLogic License Key or 'none'. Provide none/none to choose PAYG version. Provide valid Licensee/Licensekey to choose BYOL version.
     Type: String
     Default: none
 Conditions:
@@ -693,11 +753,10 @@ Conditions:
   #MultiZone (3 zones) and SingleZone conditions used for the conditional resource creation based on number of zones selected.
   MultiZone: !Not [!Equals [!Ref NumberOfZones, 1]]
   SingleZone: !Equals [!Ref NumberOfZones, 1]
-  EssentialEnterprise: !Or [ !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']], !And [!Equals [!Ref LicenseKey, 'none'], !Equals [!Ref Licensee, 'none']] ]
+  PAYG: !Or [ !And [!Equals [!Ref LicenseKey, ''], !Equals [!Ref Licensee, '']], !And [!Equals [!Ref LicenseKey, 'none'], !Equals [!Ref Licensee, 'none']] ]
   UseVolumeEncryption: !Equals [!Ref VolumeEncryption, 'enable']
   HasCustomEBSKey: !Not [!Equals [!Ref VolumeEncryptionKey, '']]
   GP3: !Equals [!Ref VolumeType, 'gp3']
-  AmazonLinux2: !Equals [!Ref OSType, "AmazonLinux2"]
 Mappings:
   Variable:
     LambdaPackageBucket:
@@ -708,79 +767,49 @@ Mappings:
       base: '11.3.1-combined'
   LicenseRegion2AMI:
     us-east-1:
-      EnterpriseAl2: ami-0df7ff86b55776f6b
-      BYOLAl2: ami-0385f8a3f1f7da45a
-      EnterpriseAl2023: ami-0a10d9a8bdfa018f5
+      PAYGAl2023: ami-0a10d9a8bdfa018f5
       BYOLAl2023: ami-0ae8c403b0a6bf4b9
     us-east-2:
-      EnterpriseAl2: ami-0ca1d6ebbe879e2a6
-      BYOLAl2: ami-056b31eb8948c5084
-      EnterpriseAl2023: ami-0b6da62b0b1d7f5ec
+      PAYGAl2023: ami-0b6da62b0b1d7f5ec
       BYOLAl2023: ami-048824a90d9443d5f
     us-west-1:
-      EnterpriseAl2: ami-0258e62c131199271
-      BYOLAl2: ami-0403657191fdee503
-      EnterpriseAl2023: ami-0befb62c09c765193
+      PAYGAl2023: ami-0befb62c09c765193
       BYOLAl2023: ami-01dff1bfbf8bb58ab
     us-west-2:
-      EnterpriseAl2: ami-042481be71ced4153
-      BYOLAl2: ami-0bf210db9ca1a52c6
-      EnterpriseAl2023: ami-09e897dd0b8c70d70
+      PAYGAl2023: ami-09e897dd0b8c70d70
       BYOLAl2023: ami-0220cfee1176e55e2
     eu-central-1:
-      EnterpriseAl2: ami-06868d5cca7184c5e
-      BYOLAl2: ami-085e297e64d28583e
-      EnterpriseAl2023: ami-0e8588cf713cee7af
+      PAYGAl2023: ami-0e8588cf713cee7af
       BYOLAl2023: ami-058b008297dd31410
     eu-west-1:
-      EnterpriseAl2: ami-05f6d9455e32bd510
-      BYOLAl2: ami-013c3558149a1bb42
-      EnterpriseAl2023: ami-0a78d1a88f8f58c34
+      PAYGAl2023: ami-0a78d1a88f8f58c34
       BYOLAl2023: ami-094727f9043bd1676
     ap-south-1:
-      EnterpriseAl2: ami-06c206430fb5dd1eb
-      BYOLAl2: ami-077643b76252e193e
-      EnterpriseAl2023: ami-0f7b10bcd6c9207b9
+      PAYGAl2023: ami-0f7b10bcd6c9207b9
       BYOLAl2023: ami-05cf19e77120c0d4c
     ap-southeast-1:
-      EnterpriseAl2: ami-044c8fe814fd3b8ab
-      BYOLAl2: ami-0cf9646a210b851e5
-      EnterpriseAl2023: ami-0289b499fe4014388
+      PAYGAl2023: ami-0289b499fe4014388
       BYOLAl2023: ami-099d6233af2013254
     ap-southeast-2:
-      EnterpriseAl2: ami-07123f042ae430d46
-      BYOLAl2: ami-022801189ab017a1f
-      EnterpriseAl2023: ami-0420f74681c7a0a40
+      PAYGAl2023: ami-0420f74681c7a0a40
       BYOLAl2023: ami-0ff0a24b81ca56a3f
     ap-northeast-1:
-      EnterpriseAl2: ami-0ae0110d77fbd9088
-      BYOLAl2: ami-0cb82de75ce087e5a
-      EnterpriseAl2023: ami-067e5f174f254a09f
+      PAYGAl2023: ami-067e5f174f254a09f
       BYOLAl2023: ami-09a30e6373bd1baa7
     ap-northeast-2:
-      EnterpriseAl2: ami-0dfb957b94964bdb6
-      BYOLAl2: ami-0ba6867b8dd45b6a5
-      EnterpriseAl2023: ami-06f6fee6efdd0f59b
+      PAYGAl2023: ami-06f6fee6efdd0f59b
       BYOLAl2023: ami-0f32f37a8f0718f3c
     sa-east-1:
-      EnterpriseAl2: ami-02964a37ee97df7b2
-      BYOLAl2: ami-060da7243ad314ee0
-      EnterpriseAl2023: ami-08d3e7531a1038991
+      PAYGAl2023: ami-08d3e7531a1038991
       BYOLAl2023: ami-0a6695eaafe0a4029
     eu-west-2:
-      EnterpriseAl2: ami-0f4a221b561d8649b
-      BYOLAl2: ami-0f9ee63141c5316a2
-      EnterpriseAl2023: ami-0b9a1ee74881a527b
+      PAYGAl2023: ami-0b9a1ee74881a527b
       BYOLAl2023: ami-0ca2d264b1d5ad0be
     ca-central-1:
-      EnterpriseAl2: ami-0ab8aff9f5ddce8c0
-      BYOLAl2: ami-0066adbfc71ac51dd
-      EnterpriseAl2023: ami-04e9f7e49c3d2af0a
+      PAYGAl2023: ami-04e9f7e49c3d2af0a
       BYOLAl2023: ami-008f11bcf9f4a9dbc
     eu-west-3:
-      EnterpriseAl2: ami-0db1fc9006870822d
-      BYOLAl2: ami-067ca272807f42165
-      EnterpriseAl2023: ami-0210652ca195eb1bc
+      PAYGAl2023: ami-0210652ca195eb1bc
       BYOLAl2023: ami-08131060236b8d043
 Resources:
   VpcStack:
@@ -1226,10 +1255,7 @@ Resources:
             NoDevice: true
             Ebs: {}
         KeyName: !Ref KeyName
-        ImageId: !If 
-          - AmazonLinux2
-          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2"]]
-          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
+        ImageId: !If [PAYG, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"PAYGAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
         UserData: !Base64
           'Fn::Join':
             - ''
@@ -1325,10 +1351,7 @@ Resources:
             NoDevice: true
             Ebs: {}
         KeyName: !Ref KeyName
-        ImageId: !If 
-          - AmazonLinux2
-          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2"]]
-          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
+        ImageId: !If [PAYG, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"PAYGAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
         UserData: !Base64
           'Fn::Join':
             - ''
@@ -1424,10 +1447,7 @@ Resources:
             NoDevice: true
             Ebs: {}
         KeyName: !Ref KeyName
-        ImageId: !If 
-          - AmazonLinux2
-          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2"]]
-          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
+        ImageId: !If [PAYG, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"PAYGAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
         UserData: !Base64
           'Fn::Join':
             - ''

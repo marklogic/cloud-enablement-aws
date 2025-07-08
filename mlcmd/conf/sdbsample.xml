@@ -1,0 +1,47 @@
+<sdb-query>
+   <item name="NodeC-us-east-1e1">
+      <attribute name="node">NodeC-us-east-1e1</attribute>
+      <attribute name="instance">i-1c3497ca</attribute>
+      <attribute name="create-date">2015-05-01T16:28:08.29Z</attribute>
+      <attribute name="zone">us-east-1e</attribute>
+      <attribute name="index">1</attribute>
+      <attribute name="device">/dev/sdf,/dev/xvdf,vol-bd1c71a7,/var/opt/MarkLogic</attribute>
+      <attribute name="host">ec2-54-159-184-5.compute-1.amazonaws.com</attribute>
+      <attribute name="master">0</attribute>
+      <attribute name="instance-time">2015-05-07T12:57:02.728Z</attribute>
+      <attribute name="instance-state">running</attribute>
+      <attribute name="state-instance">i-1c3497ca</attribute>
+      <attribute name="state">initialized</attribute>
+      <attribute name="hostid">11747058437643448461</attribute>
+   </item>
+   <item name="NodeB-us-east-1d1">
+      <attribute name="node">NodeB-us-east-1d1</attribute>
+      <attribute name="instance">i-466177ba</attribute>
+      <attribute name="create-date">2015-05-01T16:28:15.081Z</attribute>
+      <attribute name="zone">us-east-1d</attribute>
+      <attribute name="index">1</attribute>
+      <attribute name="device">/dev/sdf,/dev/xvdf,vol-95c5ecd2,/var/opt/MarkLogic</attribute>
+      <attribute name="host">ec2-54-162-38-119.compute-1.amazonaws.com</attribute>
+      <attribute name="master">0</attribute>
+      <attribute name="instance-time">2015-05-07T12:57:02.865Z</attribute>
+      <attribute name="instance-state">running</attribute>
+      <attribute name="state-instance">i-466177ba</attribute>
+      <attribute name="state">initialized</attribute>
+      <attribute name="hostid">18002516081344786161</attribute>
+   </item>
+   <item name="NodeA-us-east-1c1">
+      <attribute name="node">NodeA-us-east-1c1</attribute>
+      <attribute name="instance">i-bd9fd340</attribute>
+      <attribute name="create-date">2015-05-01T18:06:49.646Z</attribute>
+      <attribute name="zone">us-east-1c</attribute>
+      <attribute name="index">1</attribute>
+      <attribute name="device">/dev/sdf,/dev/xvdf,vol-5ad68e4c,/var/opt/MarkLogic</attribute>
+      <attribute name="host">ec2-54-83-83-30.compute-1.amazonaws.com</attribute>
+      <attribute name="master">1</attribute>
+      <attribute name="instance-time">2015-05-07T12:57:02.95Z</attribute>
+      <attribute name="instance-state">running</attribute>
+      <attribute name="state-instance">i-bd9fd340</attribute>
+      <attribute name="state">initialized</attribute>
+      <attribute name="hostid">15925946683615203455</attribute>
+   </item>
+</sdb-query>

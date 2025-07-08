@@ -1,4 +1,5 @@
 #!/bin/sh
+# Copyright (c) 2018-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 
 [ -e ../managed_eni.zip ] && rm ../managed_eni.zip
 [ -e ../version.txt ] && rm ../version.txt
