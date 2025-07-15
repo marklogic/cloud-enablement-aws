@@ -1,33 +1,31 @@
-Name: mlcmd
-Version: 1.0.0
+Name: marklogic-mlcmd
+Version: 12.0.0
 Release: 1
-Summary: MarkLogic Command Line Tools
-License: Proprietary
+Summary: MarkLogic AWS Command Line Tool
+License: Apache-2.0
 Group: Applications/System
 BuildArch: noarch
 
-%global debug_package %{nil}
-
 %description
-MarkLogic Command Line Tools for managing and interacting with MarkLogic.
+MarkLogic AWS Command Line Tool for managing MarkLogic Cluster on AWS.
 
 %install
-echo "Starting install section"
 mkdir -p %{buildroot}/opt/MarkLogic/bin/cloud
 mkdir -p %{buildroot}/opt/MarkLogic/mlcmd
+cp -r %{project_dir}/NOTICE.TXT %{buildroot}/opt/MarkLogic/mlcmd
 cp -r %{project_dir}/mlcmd/bin %{buildroot}/opt/MarkLogic/mlcmd/bin
 cp -r %{project_dir}/mlcmd/conf %{buildroot}/opt/MarkLogic/mlcmd/conf
 cp -r %{project_dir}/mlcmd/ext %{buildroot}/opt/MarkLogic/mlcmd/ext
 cp -r %{project_dir}/mlcmd/lib %{buildroot}/opt/MarkLogic/mlcmd/lib
 cp -r %{project_dir}/mlcmd/scripts %{buildroot}/opt/MarkLogic/mlcmd/scripts
 cp -fp %{project_dir}/mlcmd/mlcmd.sh %{buildroot}/opt/MarkLogic/bin/cloud/mlcmd
-chmod -R 755 %{buildroot}/opt/MarkLogic/mlcmd
-echo "Completed install section"
 
 %files
 %attr(0755, root, root) /opt/MarkLogic/mlcmd/
 %attr(0755, root, root) /opt/MarkLogic/bin/cloud/mlcmd
-
-%changelog
-* Mon Apr 28 2025 Your Name <your.email@example.com> - 1.0.0-1
-- Initial RPM package for mlcmd.
+%attr(0644, root, root) /opt/MarkLogic/mlcmd/lib/*
+%attr(0644, root, root) /opt/MarkLogic/mlcmd/conf/*
+%attr(0644, root, root) /opt/MarkLogic/mlcmd/ext/aws/*
+%attr(0644, root, root) /opt/MarkLogic/mlcmd/scripts/*
+%attr(0755, root, root) /opt/MarkLogic/mlcmd/scripts/ec2-startup.xsh
+%attr(0755, root, root) /opt/MarkLogic/mlcmd/scripts/update-hosts.xsh
