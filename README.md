@@ -60,6 +60,20 @@ Starting with MarkLogic 11.1.0, the MarkLogic CloudFormation Templates replaces 
 
 Additionally, MarkLogic 11.1.0 adds support for IMDSv2. The IMDSv2 option is set to "required" by default in the 11.1.0 and later CFTs. In order to use MarkLogic Server AMIs before 11.1.0 with the new templates, the templates need to be modified to set IMDSv2 to "optional" as IMDSv2 is not supported in earlier versions of the MarkLogic AMI.
 
+### Build MLCMD RPM for Custom AMIs
+
+Starting with MarkLogic 12.0.0, MLCMD is part of MarkLogic CloudFormation Templates repository. MLCMD is only supported when packaged and used in the MarkLogic AMIs published by Progress on the AWS Marketplace.  If using MLCMD in a custom AMI, Progress Software provides no warranties or support for the custom AMI or the MLCMD packaged and used in the custom AMI. The steps outlined below are provided for information only. We make no representations that the custom AMI will work. In order to build MLCMD rpm for custom AMIs follow the below steps:
+
+Checkout the cloud-enablement-aws repo and run the below make command and RPM will be located under (`build/rpmbuild/RPMS/noarch`):
+```
+$ make package
+```
+
+To clean the build run the below command:
+```
+$ make clean
+```
+
 ## Support
 
 The cloud-enablement-aws repository is maintained by MarkLogic Engineering and distributed under the [Apache 2.0 license](https://github.com/marklogic/cloud-enablement-aws/blob/master/LICENSE.TXT). Everyone is encouraged to file bug reports, feature requests, and pull requests through [GitHub](https://github.com/marklogic/cloud-enablement-aws/issues/new). Your input is important and will be carefully considered. However, we can’t promise a specific resolution or timeframe for any request. In addition, MarkLogic provides technical support for [releases](https://github.com/marklogic/cloud-enablement-aws/releases) of cloud-enablement-aws to licensed customers under the terms outlined in the [Support Handbook](http://www.marklogic.com/files/Mark_Logic_Support_Handbook.pdf). For more information or to sign up for support, visit [help.marklogic.com](http://help.marklogic.com).
