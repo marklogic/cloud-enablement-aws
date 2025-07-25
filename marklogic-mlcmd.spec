@@ -22,6 +22,7 @@ cp -fp %{project_dir}/mlcmd/mlcmd.sh %{buildroot}/opt/MarkLogic/bin/cloud/mlcmd
 
 %files
 %attr(0755, root, root) /opt/MarkLogic/mlcmd/
+%attr(0644, root, root) /opt/MarkLogic/mlcmd/NOTICE.TXT
 %attr(0755, root, root) /opt/MarkLogic/bin/cloud/mlcmd
 %attr(0644, root, root) /opt/MarkLogic/mlcmd/lib/*
 %attr(0644, root, root) /opt/MarkLogic/mlcmd/conf/*
