@@ -554,6 +554,7 @@ Parameters:
       - c7a.large
       - c7a.metal-48xl
       - i3.large
+      - i3.metal
       - i3en.large
       - i3en.metal
       - i4i.large
