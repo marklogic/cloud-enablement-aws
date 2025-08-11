@@ -227,7 +227,6 @@ Parameters:
       - c7a.24xlarge
       - c7a.32xlarge
       - c7a.48xlarge
-      - cc2.8xlarge
       - i2.2xlarge
       - i2.4xlarge
       - i2.8xlarge
@@ -247,7 +246,9 @@ Parameters:
       - i4i.2xlarge
       - i4i.4xlarge
       - i4i.8xlarge
+      - i4i.12xlarge
       - i4i.16xlarge
+      - i4i.24xlarge
       - i4i.32xlarge
       - i7ie.xlarge
       - i7ie.2xlarge
@@ -504,9 +505,6 @@ Parameters:
       - d3en.8xlarge
       - d3en.12xlarge
       - dl1.24xlarge
-      - f1.2xlarge
-      - f1.4xlarge
-      - f1.16xlarge
       - h1.2xlarge
       - h1.4xlarge
       - h1.8xlarge
