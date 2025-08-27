@@ -98,7 +98,6 @@ Resources:
                   - 'logs:CreateLogStream'
                   - 'logs:PutLogEvents'
                 Resource: 'arn:aws:logs:*:*:*'
-  # BUG-60314: Added RuntimeManagementConfig property to point python runtime version to 3.9.v18
   ManagedEniFunction:
     Type: 'AWS::Lambda::Function'
     DependsOn: ManagedEniExecRole
@@ -108,10 +107,7 @@ Resources:
         S3Key: !Join ['/', [!Ref S3Directory,'managed_eni.zip']]
       Handler: managedeni.handler
       Role: !GetAtt [ManagedEniExecRole, Arn]
-      Runtime: python3.9
-      RuntimeManagementConfig:
-        RuntimeVersionArn: !Join [ "", ['arn:aws:lambda:', !Ref 'AWS::Region', '::runtime:edb5a058bfa782cb9cedc6d534ac8b8c193bc28e9a9879d9f5ebaaf619cd0fc0']]
-        UpdateRuntimeOn: 'Manual'
+      Runtime: python3.10
       Timeout: '180'
   ManagedEni:
     Type: 'Custom::ManagedEni'
