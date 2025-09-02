@@ -1,4 +1,4 @@
-name: 🏷️ JIRA ID Validator
+name: PR Workflow
 
 on:
   # Using pull_request_target instead of pull_request to handle PRs from forks
