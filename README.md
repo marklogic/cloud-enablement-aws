@@ -52,7 +52,7 @@ Since AWS is retiring the Classic Load Balancer (CLB) as of August 15, 2022, the
 
 ### Python Upgrade for Lambda Functions in the MarkLogic CloudFormation Templates:
 
-The lambda functions in MarkLogic CloudFormation templates used on AWS are now configured to use Python 3.9. AWS has scheduled the end of support for Python 3.6 by July 2022.
+The lambda functions in MarkLogic CloudFormation templates used on AWS are now configured to use Python 3.13. AWS has scheduled the end of support for Python 3.9 by December 2025.
 
 ### Launch Templates and IMDSv2 support in the MarkLogic CloudFormation Templates:
 
