@@ -1,4 +1,6 @@
 #!/bin/sh
+# Copyright (c) 2018-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+
 [ -e ../node_manager.zip ] && rm ../node_manager.zip
 [ -e ../version.txt ] && rm ../version.txt
 
