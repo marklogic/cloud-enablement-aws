@@ -227,6 +227,46 @@ Parameters:
       - c7a.24xlarge
       - c7a.32xlarge
       - c7a.48xlarge
+      - c8g.xlarge
+      - c8g.2xlarge   
+      - c8g.4xlarge  
+      - c8g.8xlarge 
+      - c8g.12xlarge    
+      - c8g.16xlarge            
+      - c8g.24xlarge 
+      - c8g.48xlarge
+      - c8gd.xlarge
+      - c8gd.2xlarge   
+      - c8gd.4xlarge  
+      - c8gd.8xlarge 
+      - c8gd.12xlarge    
+      - c8gd.16xlarge            
+      - c8gd.24xlarge 
+      - c8gd.48xlarge
+      - c8gn.xlarge
+      - c8gn.2xlarge   
+      - c8gn.4xlarge  
+      - c8gn.8xlarge 
+      - c8gn.12xlarge    
+      - c8gn.16xlarge            
+      - c8gn.24xlarge 
+      - c8gn.48xlarge
+      - c8i.xlarge
+      - c8i.2xlarge
+      - c8i.4xlarge
+      - c8i.8xlarge
+      - c8i.12xlarge
+      - c8i.16xlarge
+      - c8i.24xlarge
+      - c8i.32xlarge
+      - c8i.48xlarge
+      - c8i.96xlarge
+      - c8i-flex.xlarge
+      - c8i-flex.2xlarge
+      - c8i-flex.4xlarge
+      - c8i-flex.8xlarge
+      - c8i-flex.12xlarge
+      - c8i-flex.16xlarge
       - i2.2xlarge
       - i2.4xlarge
       - i2.8xlarge
@@ -360,6 +400,46 @@ Parameters:
       - m7a.24xlarge
       - m7a.32xlarge
       - m7a.48xlarge
+      - m8a.xlarge
+      - m8a.2xlarge
+      - m8a.4xlarge
+      - m8a.8xlarge
+      - m8a.12xlarge
+      - m8a.16xlarge
+      - m8a.24xlarge
+      - m8a.48xlarge
+      - m8g.xlarge
+      - m8g.2xlarge   
+      - m8g.4xlarge  
+      - m8g.8xlarge 
+      - m8g.12xlarge    
+      - m8g.16xlarge            
+      - m8g.24xlarge 
+      - m8g.48xlarge
+      - m8gd.xlarge
+      - m8gd.2xlarge   
+      - m8gd.4xlarge  
+      - m8gd.8xlarge 
+      - m8gd.12xlarge    
+      - m8gd.16xlarge            
+      - m8gd.24xlarge 
+      - m8gd.48xlarge
+      - m8i.xlarge
+      - m8i.2xlarge
+      - m8i.4xlarge
+      - m8i.8xlarge
+      - m8i.12xlarge
+      - m8i.16xlarge
+      - m8i.24xlarge
+      - m8i.32xlarge
+      - m8i.48xlarge
+      - m8i.96xlarge
+      - m8i-flex.xlarge
+      - m8i-flex.2xlarge
+      - m8i-flex.4xlarge
+      - m8i-flex.8xlarge
+      - m8i-flex.12xlarge
+      - m8i-flex.16xlarge 
       - r3.xlarge
       - r3.2xlarge
       - r3.4xlarge
@@ -467,6 +547,61 @@ Parameters:
       - r7a.24xlarge
       - r7a.32xlarge
       - r7a.48xlarge
+      - r8a.xlarge
+      - r8a.2xlarge
+      - r8a.4xlarge
+      - r8a.8xlarge
+      - r8a.12xlarge
+      - r8a.16xlarge
+      - r8a.24xlarge
+      - r8a.48xlarge
+      - r8g.xlarge
+      - r8g.2xlarge   
+      - r8g.4xlarge  
+      - r8g.8xlarge 
+      - r8g.12xlarge    
+      - r8g.16xlarge            
+      - r8g.24xlarge 
+      - r8g.48xlarge
+      - r8gd.xlarge
+      - r8gd.2xlarge   
+      - r8gd.4xlarge  
+      - r8gd.8xlarge 
+      - r8gd.12xlarge    
+      - r8gd.16xlarge            
+      - r8gd.24xlarge 
+      - r8gd.48xlarge
+      - r8gb.xlarge
+      - r8gb.2xlarge   
+      - r8gb.4xlarge  
+      - r8gb.8xlarge 
+      - r8gb.12xlarge    
+      - r8gb.16xlarge            
+      - r8gb.24xlarge
+      - r8gn.xlarge
+      - r8gn.2xlarge   
+      - r8gn.4xlarge  
+      - r8gn.8xlarge 
+      - r8gn.12xlarge    
+      - r8gn.16xlarge            
+      - r8gn.24xlarge 
+      - r8gn.48xlarge
+      - r8i.xlarge
+      - r8i.2xlarge
+      - r8i.4xlarge
+      - r8i.8xlarge
+      - r8i.12xlarge
+      - r8i.16xlarge
+      - r8i.24xlarge
+      - r8i.32xlarge
+      - r8i.48xlarge
+      - r8i.96xlarge
+      - r8i-flex.xlarge
+      - r8i-flex.2xlarge
+      - r8i-flex.4xlarge
+      - r8i-flex.8xlarge
+      - r8i-flex.12xlarge
+      - r8i-flex.16xlarge
       - x1.16xlarge
       - x1.32xlarge
       - x1e.xlarge
@@ -553,6 +688,22 @@ Parameters:
       - c7a.medium
       - c7a.large
       - c7a.metal-48xl
+      - c8g.medium
+      - c8g.large
+      - c8g.metal-24xl
+      - c8g.metal-48xl
+      - c8gd.medium
+      - c8gd.large
+      - c8gd.metal-24xl
+      - c8gd.metal-48xl
+      - c8gn.medium
+      - c8gn.large
+      - c8gn.metal-24xl
+      - c8gn.metal-48xl
+      - c8i.large
+      - c8i.metal-48xl
+      - c8i.metal-96xl
+      - c8i-flex.large
       - i3.large
       - i3.metal
       - i3en.large
@@ -590,6 +741,22 @@ Parameters:
       - m7a.medium
       - m7a.large
       - m7a.metal-48xl
+      - m8a.medium
+      - m8a.large
+      - m8a.metal-24xl
+      - m8a.metal-48xl
+      - m8g.medium
+      - m8g.large
+      - m8g.metal-24xl
+      - m8g.metal-48xl
+      - m8gd.medium
+      - m8gd.large
+      - m8gd.metal-24xl
+      - m8gd.metal-48xl 
+      - m8i.large
+      - m8i.metal-48xl
+      - m8i.metal-96xl
+      - m8i-flex.large
       - r3.large
       - r4.large
       - r5.metal
@@ -619,6 +786,29 @@ Parameters:
       - r7a.medium
       - r7a.large
       - r7a.metal-48xl
+      - r8a.medium
+      - r8a.large
+      - r8a.metal-24xl
+      - r8a.metal-48xl
+      - r8g.medium
+      - r8g.large
+      - r8g.metal-24xl
+      - r8g.metal-48xl
+      - r8gd.medium
+      - r8gd.large
+      - r8gd.metal-24xl
+      - r8gd.metal-48xl 
+      - r8gb.medium
+      - r8gb.large
+      - r8gb.metal-24xl
+      - r8gn.medium
+      - r8gn.large
+      - r8gn.metal-24xl
+      - r8gn.metal-48xl
+      - r8i.large
+      - r8i.metal-48xl
+      - r8i.metal-96xl 
+      - r8i-flex.large
       - t2.2xlarge
       - t2.large
       - t2.medium
