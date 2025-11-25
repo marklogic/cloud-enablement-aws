@@ -52,7 +52,7 @@ esac
 
 # Adjust VM args below to your taste
 MLCMD_OPTS=${MLCMD_OPTS:-" -norc "}
-MLCMD_JAVAOPTS=${MLCMD_JAVAOPTS:-" -Xmx128m -Xms16m -XX:+UseConcMarkSweepGC"}
+MLCMD_JAVAOPTS=${MLCMD_JAVAOPTS:-" -Xmx256m -Xms256m -XX:+UseG1GC"}
 MLCMD_LOGOPTS=${MLCMD_LOGOPTS:-" -Dmlcmd.logfile=$XLOGFILE -Dmlcmd.tracefile=/var/tmp/mlcmd.trace -Dlog4j.configurationFile=$MARKLOGIC_INSTALL_DIR/mlcmd/conf/log4j2.xml"}
 MLCMD_LD_LIB_PATH=$LD_LIBRARY_PATH
 [ -z ${ORIGINAL_LD_LIBRARY_PATH+x} ] && MLCMD_LD_LIB_PATH=$ORIGINAL_LD_LIBRARY_PATH
