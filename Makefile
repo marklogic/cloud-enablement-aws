@@ -1,5 +1,5 @@
 PACKAGE_NAME = marklogic-mlcmd
-VERSION = 12.0.0
+VERSION = 12.0.1
 RELEASE = 1
 BUILD_DIR = $(shell pwd)/build
 RPMBUILD_DIR = $(BUILD_DIR)/rpmbuild
