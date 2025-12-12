@@ -59,5 +59,5 @@ If json-smart is required for any future Java-based components in this repositor
 - Gradle: `implementation 'net.minidev:json-smart:1.3.3'`
 
 ---
-**Investigation Date**: 2025-12-12  
+**Investigation Date**: 2024-12-12  
 **Investigator**: GitHub Copilot SWE Agent
