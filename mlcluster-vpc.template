@@ -16,6 +16,7 @@ Metadata:
           - VolumeEncryption
           - VolumeEncryptionKey
           - OSType
+          - EnableInstanceFamily
           - InstanceType
           - InstanceTypeArm
           - SpotPrice
@@ -68,6 +69,8 @@ Metadata:
         default: Volume Encryption Key ARN
       OSType:
         default: OS Type
+      EnableInstanceFamily:
+        default: Enable Instance Family
       InstanceType:
         default: Instance Type
       InstanceTypeArm:
@@ -146,6 +149,12 @@ Parameters:
       - AmazonLinux2
       - Arm
     Default: AmazonLinux2023
+  EnableInstanceFamily:
+    Description: Pipe-separated list of instance families (e.g., r8i-flex|r8i)
+    Type: String
+    AllowedPattern: ^([a-zA-Z0-9-]+(\|[a-zA-Z0-9-]+)*)?$
+    ConstraintDescription: Value must be empty or a pipe-separated list like 'r8i-flex|r8i'
+    Default: ""
   InstanceTypeArm:
     Description: Type of ARM EC2 instance to launch 
     Type: String
@@ -843,7 +852,7 @@ Conditions:
   GP3: !Equals [!Ref VolumeType, 'gp3']
   AmazonLinux2: !Equals [!Ref OSType, "AmazonLinux2"]
   AmazonLinux2023: !Equals [!Ref OSType, "AmazonLinux2023"]
-  ArmOS: !Equals [!Ref OSType, "Arm"]
+  Arm: !Equals [!Ref OSType, "Arm"]
 Mappings:
   Variable:
     LambdaPackageBucket:
@@ -1416,6 +1425,10 @@ Resources:
               - !Ref MarkLogicDDBTable
               - |+
 
+              - MARKLOGIC_ENABLE_INSTANCE_FAMILY=
+              - !Ref EnableInstanceFamily
+              - |+
+
               - MARKLOGIC_EBS_VOLUME=
               - !Ref MarklogicVolume1
               - ',:'
@@ -1476,7 +1489,7 @@ Resources:
         SecurityGroupIds:
           - !Ref InstanceSecurityGroup
         InstanceType: !If
-          - ArmOS
+          - Arm
           - !Ref InstanceTypeArm
           - !Ref InstanceType
         IamInstanceProfile: 
@@ -1519,6 +1532,10 @@ Resources:
             - ''
             - - MARKLOGIC_CLUSTER_NAME=
               - !Ref MarkLogicDDBTable
+              - |+
+
+              - MARKLOGIC_ENABLE_INSTANCE_FAMILY=
+              - !Ref EnableInstanceFamily
               - |+
 
               - MARKLOGIC_EBS_VOLUME=
@@ -1581,7 +1598,7 @@ Resources:
         SecurityGroupIds:
           - !Ref InstanceSecurityGroup
         InstanceType: !If
-          - ArmOS
+          - Arm
           - !Ref InstanceTypeArm
           - !Ref InstanceType
         IamInstanceProfile: 
@@ -1624,6 +1641,10 @@ Resources:
             - ''
             - - MARKLOGIC_CLUSTER_NAME=
               - !Ref MarkLogicDDBTable
+              - |+
+
+              - MARKLOGIC_ENABLE_INSTANCE_FAMILY=
+              - !Ref EnableInstanceFamily
               - |+
 
               - MARKLOGIC_EBS_VOLUME=
@@ -1686,7 +1707,7 @@ Resources:
         SecurityGroupIds:
           - !Ref InstanceSecurityGroup
         InstanceType: !If
-          - ArmOS
+          - Arm
           - !Ref InstanceTypeArm
           - !Ref InstanceType
         IamInstanceProfile: 
