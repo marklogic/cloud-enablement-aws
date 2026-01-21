@@ -18,7 +18,7 @@ Metadata:
           - OSType
           - EnableInstanceFamily
           - InstanceType
-          - InstanceTypeArm
+          - InstanceTypeGraviton
           - SpotPrice
           - KeyName
           - NumberOfZones
@@ -73,8 +73,8 @@ Metadata:
         default: Enable Instance Family
       InstanceType:
         default: Instance Type
-      InstanceTypeArm:
-        default: ARM Instance Type
+      InstanceTypeGraviton:
+        default: Graviton Instance Type
       SpotPrice:
         default: Spot Price
       KeyName:
@@ -147,7 +147,7 @@ Parameters:
     AllowedValues:
       - AmazonLinux2023
       - AmazonLinux2
-      - Arm
+      - AmazonLinux2023-Graviton
     Default: AmazonLinux2023
   EnableInstanceFamily:
     Description: Pipe-separated list of instance families (e.g., r8i-flex|r8i)
@@ -155,8 +155,8 @@ Parameters:
     AllowedPattern: ^([a-zA-Z0-9-]+(\|[a-zA-Z0-9-]+)*)?$
     ConstraintDescription: Value must be empty or a pipe-separated list like 'r8i-flex|r8i'
     Default: ""
-  InstanceTypeArm:
-    Description: Type of ARM EC2 instance to launch 
+  InstanceTypeGraviton:
+    Description: Type of Graviton EC2 instance to launch 
     Type: String
     Default: t4g.xlarge
     AllowedValues:
@@ -852,7 +852,7 @@ Conditions:
   GP3: !Equals [!Ref VolumeType, 'gp3']
   AmazonLinux2: !Equals [!Ref OSType, "AmazonLinux2"]
   AmazonLinux2023: !Equals [!Ref OSType, "AmazonLinux2023"]
-  Arm: !Equals [!Ref OSType, "Arm"]
+  AmazonLinux2023-Graviton: !Equals [!Ref OSType, "AmazonLinux2023-Graviton"]
 Mappings:
   Variable:
     LambdaPackageBucket:
@@ -867,106 +867,106 @@ Mappings:
       BYOLAl2: ami-036e48cc75566830d
       EnterpriseAl2023: ami-0b807057866281033
       BYOLAl2023: ami-0d1ff270881c9fbf7
-      EnterpriseArm: ami-12345
-      BYOLArm: ami-54321
+      EnterpriseGraviton: ami-12345
+      BYOLGraviton: ami-54321
     us-east-2:
       EnterpriseAl2: ami-0dde631cfba607e01
       BYOLAl2: ami-0f777ccdb83d96471
       EnterpriseAl2023: ami-045619472f89a71b7
       BYOLAl2023: ami-0c6a674466dab1b40
-      EnterpriseArm: ami-12345
-      BYOLArm: ami-54321
+      EnterpriseGraviton: ami-12345
+      BYOLGraviton: ami-54321
     us-west-1:
       EnterpriseAl2: ami-0b7efda4547c8952f
       BYOLAl2: ami-08802e47b5038b5c5
       EnterpriseAl2023: ami-04b1062871d82f6f8
       BYOLAl2023: ami-00f0ff4db47d0041d
-      EnterpriseArm: ami-12345
-      BYOLArm: ami-54321
+      EnterpriseGraviton: ami-12345
+      BYOLGraviton: ami-54321
     us-west-2:
       EnterpriseAl2: ami-0427b267c2f6dcc8b
       BYOLAl2: ami-0fa9da658298923de
       EnterpriseAl2023: ami-002a0817b1c56af17
       BYOLAl2023: ami-02cc76e7022f49b64
-      EnterpriseArm: ami-12345
-      BYOLArm: ami-54321
+      EnterpriseGraviton: ami-12345
+      BYOLGraviton: ami-54321
     eu-central-1:
       EnterpriseAl2: ami-00dcb398f2db370d3
       BYOLAl2: ami-0bb498c2acc31e954
       EnterpriseAl2023: ami-029b56d1cde30d984
       BYOLAl2023: ami-012bb07fe926c0c0f
-      EnterpriseArm: ami-12345
-      BYOLArm: ami-54321
+      EnterpriseGraviton: ami-12345
+      BYOLGraviton: ami-54321
     eu-west-1:
       EnterpriseAl2: ami-0200ce0d1cdd9ac89
       BYOLAl2: ami-068fad05a69c8360d
       EnterpriseAl2023: ami-0d2f666afa4d6c73f
       BYOLAl2023: ami-01907b01c5d597358
-      EnterpriseArm: ami-12345
-      BYOLArm: ami-54321
+      EnterpriseGraviton: ami-12345
+      BYOLGraviton: ami-54321
     ap-south-1:
       EnterpriseAl2: ami-0dffce5465aaed754
       BYOLAl2: ami-03ccf4db8f0f8c65e
       EnterpriseAl2023: ami-0004683d1897692a7
       BYOLAl2023: ami-065fcc2586151d2b3
-      EnterpriseArm: ami-12345
-      BYOLArm: ami-54321
+      EnterpriseGraviton: ami-12345
+      BYOLGraviton: ami-54321
     ap-southeast-1:
       EnterpriseAl2: ami-0171f4a513f4c00bd
       BYOLAl2: ami-0c2c9f9cb9ae46f0d
       EnterpriseAl2023: ami-0a65d67b6aaedd912
       BYOLAl2023: ami-0185548f0b1552287
-      EnterpriseArm: ami-12345
-      BYOLArm: ami-54321
+      EnterpriseGraviton: ami-12345
+      BYOLGraviton: ami-54321
     ap-southeast-2:
       EnterpriseAl2: ami-0bbffabf9f901aafc
       BYOLAl2: ami-07f7a372cacc9b0db
       EnterpriseAl2023: ami-0fb5b5a66d5313de2
       BYOLAl2023: ami-05761f5855aa45bc5
-      EnterpriseArm: ami-12345
-      BYOLArm: ami-54321
+      EnterpriseGraviton: ami-12345
+      BYOLGraviton: ami-54321
     ap-northeast-1:
       EnterpriseAl2: ami-06633f0de0f56ab7f
       BYOLAl2: ami-09bd9d0573c3f25fa
       EnterpriseAl2023: ami-0578d9d624fac7e57
       BYOLAl2023: ami-0a81c888c147595e5
-      EnterpriseArm: ami-12345
-      BYOLArm: ami-54321
+      EnterpriseGraviton: ami-12345
+      BYOLGraviton: ami-54321
     ap-northeast-2:
       EnterpriseAl2: ami-0a9e58b8182979603
       BYOLAl2: ami-08bdaf5b4926cd5cd
       EnterpriseAl2023: ami-093a296adcdccd5c6
       BYOLAl2023: ami-0bb19c6af24ee49bb
-      EnterpriseArm: ami-12345
-      BYOLArm: ami-54321
+      EnterpriseGraviton: ami-12345
+      BYOLGraviton: ami-54321
     sa-east-1:
       EnterpriseAl2: ami-0482019dfbd3a0c72
       BYOLAl2: ami-093c9cb469583c7e3
       EnterpriseAl2023: ami-04c52b8ed3754e5fa
       BYOLAl2023: ami-0b8fe1349a19154e5
-      EnterpriseArm: ami-12345
-      BYOLArm: ami-54321
+      EnterpriseGraviton: ami-12345
+      BYOLGraviton: ami-54321
     eu-west-2:
       EnterpriseAl2: ami-032d398576fd63323
       BYOLAl2: ami-0ca06c7f250cb5a6e
       EnterpriseAl2023: ami-034590be9b3f7e35c
       BYOLAl2023: ami-044773c5a63c0e389
-      EnterpriseArm: ami-12345
-      BYOLArm: ami-54321
+      EnterpriseGraviton: ami-12345
+      BYOLGraviton: ami-54321
     ca-central-1:
       EnterpriseAl2: ami-01ea6787a7804bf13
       BYOLAl2: ami-0fc22a3d27c6314b0
       EnterpriseAl2023: ami-006441d89bc75c8c8
       BYOLAl2023: ami-0a9837cdedee38886
-      EnterpriseArm: ami-12345
-      BYOLArm: ami-54321
+      EnterpriseGraviton: ami-12345
+      BYOLGraviton: ami-54321
     eu-west-3:
       EnterpriseAl2: ami-0f0f6b931dd79ae8e
       BYOLAl2: ami-0ddec50543a6c5a10
       EnterpriseAl2023: ami-095828788e744a0f3
       BYOLAl2023: ami-0ed8d7208c3ca3924
-      EnterpriseArm: ami-12345
-      BYOLArm: ami-54321
+      EnterpriseGraviton: ami-12345
+      BYOLGraviton: ami-54321
 Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
@@ -1417,7 +1417,7 @@ Resources:
           - !If
             - AmazonLinux2023
             - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
-            - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseArm"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLArm"]]
+            - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseGraviton"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLGraviton"]]
         UserData: !Base64
           'Fn::Join':
             - ''
@@ -1489,8 +1489,8 @@ Resources:
         SecurityGroupIds:
           - !Ref InstanceSecurityGroup
         InstanceType: !If
-          - Arm
-          - !Ref InstanceTypeArm
+          - AmazonLinux2023-Graviton
+          - !Ref InstanceTypeGraviton
           - !Ref InstanceType
         IamInstanceProfile: 
           Name: !Ref IAMRole
@@ -1526,7 +1526,7 @@ Resources:
           - !If
             - AmazonLinux2023
             - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
-            - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseArm"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLArm"]]
+            - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseGraviton"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLGraviton"]]
         UserData: !Base64
           'Fn::Join':
             - ''
@@ -1598,8 +1598,8 @@ Resources:
         SecurityGroupIds:
           - !Ref InstanceSecurityGroup
         InstanceType: !If
-          - Arm
-          - !Ref InstanceTypeArm
+          - AmazonLinux2023-Graviton
+          - !Ref InstanceTypeGraviton
           - !Ref InstanceType
         IamInstanceProfile: 
           Name: !Ref IAMRole
@@ -1635,7 +1635,7 @@ Resources:
           - !If
             - AmazonLinux2023
             - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
-            - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseArm"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLArm"]]
+            - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseGraviton"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLGraviton"]]
         UserData: !Base64
           'Fn::Join':
             - ''
@@ -1707,8 +1707,8 @@ Resources:
         SecurityGroupIds:
           - !Ref InstanceSecurityGroup
         InstanceType: !If
-          - Arm
-          - !Ref InstanceTypeArm
+          - AmazonLinux2023-Graviton
+          - !Ref InstanceTypeGraviton
           - !Ref InstanceType
         IamInstanceProfile: 
           Name: !Ref IAMRole
