@@ -158,9 +158,27 @@ Parameters:
   InstanceTypeGraviton:
     Description: Type of Graviton EC2 instance to launch 
     Type: String
-    Default: t4g.xlarge
+    Default: r6g.4xlarge
     AllowedValues:
       - ---- Essential Enterprise and Bring-Your-Own-License ----
+      - c6g.xlarge
+      - c6g.2xlarge
+      - c6g.4xlarge
+      - c6g.8xlarge
+      - c6g.12xlarge
+      - c6g.16xlarge
+      - c6gd.xlarge
+      - c6gd.2xlarge
+      - c6gd.4xlarge
+      - c6gd.8xlarge
+      - c6gd.12xlarge
+      - c6gd.16xlarge
+      - c6gn.xlarge
+      - c6gn.2xlarge
+      - c6gn.4xlarge
+      - c6gn.8xlarge
+      - c6gn.12xlarge
+      - c6gn.16xlarge
       - c7g.xlarge
       - c7g.2xlarge
       - c7g.4xlarge
@@ -211,6 +229,18 @@ Parameters:
       - c8gb.16xlarge
       - c8gb.24xlarge
       - c8gb.48xlarge
+      - m6g.xlarge
+      - m6g.2xlarge
+      - m6g.4xlarge
+      - m6g.8xlarge
+      - m6g.12xlarge
+      - m6g.16xlarge
+      - m6gd.xlarge
+      - m6gd.2xlarge
+      - m6gd.4xlarge
+      - m6gd.8xlarge
+      - m6gd.12xlarge
+      - m6gd.16xlarge
       - m7g.xlarge
       - m7g.2xlarge
       - m7g.4xlarge
@@ -255,6 +285,18 @@ Parameters:
       - m8gb.16xlarge
       - m8gb.24xlarge
       - m8gb.48xlarge
+      - r6g.xlarge
+      - r6g.2xlarge
+      - r6g.4xlarge
+      - r6g.8xlarge
+      - r6g.12xlarge
+      - r6g.16xlarge
+      - r6gd.xlarge
+      - r6gd.2xlarge
+      - r6gd.4xlarge
+      - r6gd.8xlarge
+      - r6gd.12xlarge
+      - r6gd.16xlarge
       - r7g.xlarge
       - r7g.2xlarge
       - r7g.4xlarge
@@ -324,6 +366,14 @@ Parameters:
       - i8ge.24xlarge
       - i8ge.48xlarge
       - -------------- Bring-Your-Own-License Only --------------
+      - c6g.medium
+      - c6g.large
+      - c6g.metal
+      - c6gd.medium
+      - c6gd.large
+      - c6gd.metal
+      - c6gn.medium
+      - c6gn.large
       - c7g.medium
       - c7g.large
       - c7g.metal
@@ -349,6 +399,18 @@ Parameters:
       - c8gb.large
       - c8gb.metal-24xl
       - c8gb.metal-48xl
+      - m6g.medium
+      - m6g.large
+      - m6g.metal
+      - m6gd.medium
+      - m6gd.large
+      - m6gd.metal
+      - m7g.medium
+      - m7g.large
+      - m7g.metal
+      - m7gd.medium
+      - m7gd.large
+      - m7gd.metal
       - m8g.medium
       - m8g.large
       - m8g.metal-24xl
@@ -361,12 +423,12 @@ Parameters:
       - m8gn.large
       - m8gb.medium
       - m8gb.large
-      - m7g.medium
-      - m7g.large
-      - m7g.metal
-      - m7gd.medium
-      - m7gd.large
-      - m7gd.metal
+      - r6g.medium
+      - r6g.large
+      - r6g.metal
+      - r6gd.medium
+      - r6gd.large
+      - r6gd.metal
       - r7g.medium
       - r7g.large
       - r7g.metal
@@ -398,6 +460,10 @@ Parameters:
       - i8ge.large
       - i8ge.metal-24xl
       - i8ge.metal-48xl
+      - t4g.medium
+      - t4g.large
+      - t4g.xlarge
+      - t4g.2xlarge
   InstanceType:
     Description: Type of EC2 instance to launch
     Type: String
