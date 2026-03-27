@@ -40,6 +40,10 @@ This directory contains master templates, sub-templates and other resources that
 - [MarkLogic on AWS](https://developer.marklogic.com/products/cloud/aws)  
 
 ## Additional Notes
+### AWS Graviton support in the MarkLogic CloudFormation Templates:
+
+Starting with MarkLogic 11.3.4, the MarkLogic CloudFormation Template supports Amazon Linux 2023 for AWS Graviton. Select the "AmazonLinux2023-Graviton" value from "OSType" parameter and use "InstanceTypeGraviton" parameter to select the graviton instance types to create MarkLogic cluster using the AL2023 AWS Graviton AMI. The default value for the "OSType" parameter is "AmazonLinux2023".
+
 ### AmazonLinux2023 support in the MarkLogic CloudFormation Templates:
 
 Starting with MarkLogic 11.3.1 (combined), the MarkLogic CloudFormation Template supports both Amazon Linux 2023 and Amazon Linux 2. Select the "AmazonLinux2023" value from "OSType" parameter to create MarkLogic cluster using the AL2023 AMI. The default value for the "OSType" parameter is "AmazonLinux2023".
