@@ -1,5 +1,5 @@
 Name: marklogic-mlcmd
-Version: 12.0.1
+Version: 12.0.2
 Release: 1
 Summary: MarkLogic AWS Command Line Tool
 License: Apache-2.0
