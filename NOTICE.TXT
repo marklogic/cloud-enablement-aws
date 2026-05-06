@@ -1,6 +1,6 @@
 MarkLogic® Managed Cluster for AWS 12.0
 
-Copyright © 2013-2025 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
+Copyright © 2013-2026 Progress Software Corporation and/or its subsidiaries or affiliates. All Rights Reserved.
 
 To the extent required by the applicable open-source license, a complete machine-readable copy of the source code corresponding to such code is available upon request. This offer is valid to anyone in receipt of this information and shall expire three years following the date of the final distribution of this product version by MarkLogic Corporation. To obtain such source code, send an email to Legal-thirdpartyreview@progress.com. Please specify the product and version for which you are requesting source code.
 
