@@ -6,6 +6,8 @@ This repository contains master templates, sub-templates and other resources tha
 
 For deploying MarkLogic on Azure, please visit [cloud-enablement-azure](https://github.com/marklogic/cloud-enablement-azure).
 
+:warning: **A backward incompatibility of significant impact was discovered in 12.0.2. We are working on a patch release to deliver a fix as soon as possible. In the meantime, we recommend that you do not upgrade and wait for the upcoming patch release.**
+
 ## Getting Started
 
 | Template Type | Launch in US West 2 (Oregon) |
