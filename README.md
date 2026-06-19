@@ -6,7 +6,7 @@ This repository contains master templates, sub-templates and other resources tha
 
 For deploying MarkLogic on Azure, please visit [cloud-enablement-azure](https://github.com/marklogic/cloud-enablement-azure).
 
-:warning: **A backward incompatibility of significant impact was discovered in 11.3.5. We are working on a patch release to deliver a fix as soon as possible. In the meantime, we recommend that you do not upgrade and wait for the upcoming patch release.**
+:warning: **We have discovered and confirmed an unintended backward compatibility issue in MarkLogic Server version 11.3.5, which affects how MarkLogic REST API executes REST extensions with specific user privileges. As a result, any use of MarkLogic [REST API extensions](https://docs.progress.com/bundle/marklogic-server-develop-rest-api-12/page/topics/extensions.html#understanding-resource-service-extensions) may cause unexpected errors. We are working with highest priority to provide a product update with a fix as soon as possible. If you believe this issue may affect or has affected your implementation please contact Support for recommendations.**
 
 ## Getting Started
 
