@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS with a new VPC
 Metadata:
-  version: 11.3.5
-  binary: MarkLogic-11.3.5
+  version: 11.3.6
+  binary: MarkLogic-11.3.6
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -1220,113 +1220,113 @@ Mappings:
     TemplateUrl:
       base: 'https://s3.amazonaws.com/marklogic-db-template-releases'
     S3Directory:
-      base: '11.3.5'
+      base: '11.3.6'
   LicenseRegion2AMI:
     us-east-1:
-      EnterpriseAl2: ami-0d5212b5b902c7503
-      BYOLAl2: ami-00e638003e726ff56
-      EnterpriseAl2023: ami-02d44a8461b32e22a
-      BYOLAl2023: ami-0ae77cf33d9aaf054
-      EnterpriseGraviton: ami-08dfd1bcc38ce4c69
-      BYOLGraviton: ami-0c388a1eb3d9095ac
+      EnterpriseAl2: ami-02664a12792fd9886
+      BYOLAl2: ami-0b6bf21be9bf2fa76
+      EnterpriseAl2023: ami-040bd064074c500ac
+      BYOLAl2023: ami-09ecec8aa12d9edc8
+      EnterpriseGraviton: ami-078f7b8ec5a5261fe
+      BYOLGraviton: ami-03a6174b734de1eb9
     us-east-2:
-      EnterpriseAl2: ami-0dad563abcb58b4f5
-      BYOLAl2: ami-0b908d9614faf5f34
-      EnterpriseAl2023: ami-0b5c5b5b0c5177734
-      BYOLAl2023: ami-020dae5865dd78bfd
-      EnterpriseGraviton: ami-0bbd80681fc045683
-      BYOLGraviton: ami-0c31215978bf7267f
+      EnterpriseAl2: ami-03e5344af0c41bb4d
+      BYOLAl2: ami-011cffe8cf29e21f8
+      EnterpriseAl2023: ami-0d529d28337d2a87a
+      BYOLAl2023: ami-0d25fce3056fab827
+      EnterpriseGraviton: ami-0e11057fd516d0475
+      BYOLGraviton: ami-0bfb241d364c7315d
     us-west-1:
-      EnterpriseAl2: ami-0accc4819ead88ccb
-      BYOLAl2: ami-0786a59e651391522
-      EnterpriseAl2023: ami-0cd3553178da84035
-      BYOLAl2023: ami-0618649200b2342cb
-      EnterpriseGraviton: ami-05010909cdb3b78d7
-      BYOLGraviton: ami-079d56199257e1539
+      EnterpriseAl2: ami-05e149c32df19afa7
+      BYOLAl2: ami-00e9899760b650a28
+      EnterpriseAl2023: ami-0abf5dd6d2d1d9b3f
+      BYOLAl2023: ami-0f8c571b08472e8ef
+      EnterpriseGraviton: ami-0f085c0d3abf0b922
+      BYOLGraviton: ami-06cafe61d18cab2a3
     us-west-2:
-      EnterpriseAl2: ami-0dc6115f31a1d89c3
-      BYOLAl2: ami-000a5cbe15eecfbd5
-      EnterpriseAl2023: ami-0b0172ed63201af7d
-      BYOLAl2023: ami-0c4154a86c2242183
-      EnterpriseGraviton: ami-0d7b68ce999fd839d
-      BYOLGraviton: ami-091fa41ece8983448
+      EnterpriseAl2: ami-09a4a1e8092b6f75f
+      BYOLAl2: ami-06b97ac267d0a9485
+      EnterpriseAl2023: ami-0aa6e9ad8c6faa712
+      BYOLAl2023: ami-01b4b23d8585b0c85
+      EnterpriseGraviton: ami-06a7db5536bfa66f2
+      BYOLGraviton: ami-03b1b3cfdc239ad80
     eu-central-1:
-      EnterpriseAl2: ami-0592d585d2e9fccba
-      BYOLAl2: ami-0f6d4625807f88104
-      EnterpriseAl2023: ami-0d7af2b4b683020b6
-      BYOLAl2023: ami-097ab61e4d87c07dc
-      EnterpriseGraviton: ami-0aa8a3db19e6eeefe
-      BYOLGraviton: ami-016f062e698a5dbef
+      EnterpriseAl2: ami-0eef901a1a412d9bc
+      BYOLAl2: ami-024fa54b27e2fb44d
+      EnterpriseAl2023: ami-056cd2d82ed74e381
+      BYOLAl2023: ami-0b458f381fbcc8022
+      EnterpriseGraviton: ami-02111ec3f4f33b1ba
+      BYOLGraviton: ami-0eb4e84e1cca74d40
     eu-west-1:
-      EnterpriseAl2: ami-07b1cac3675b77f29
-      BYOLAl2: ami-01c4f8b0a0ac6a4dc
-      EnterpriseAl2023: ami-0dffce67cd5df0f4f
-      BYOLAl2023: ami-0f5c60ff0aa80e25f
-      EnterpriseGraviton: ami-0ed9da0632f4168a0
-      BYOLGraviton: ami-03ebfefee951ab736
+      EnterpriseAl2: ami-024872e724222f66f
+      BYOLAl2: ami-0e7aa9b644377ae23
+      EnterpriseAl2023: ami-0fb1f3e38ccf0dedb
+      BYOLAl2023: ami-00c039f39abdf422b
+      EnterpriseGraviton: ami-0b64a742a4d9ee7fd
+      BYOLGraviton: ami-0f14a9bb2be552f3c
     ap-south-1:
-      EnterpriseAl2: ami-0ebe7fcca99a3e84c
-      BYOLAl2: ami-0751ce726305f6993
-      EnterpriseAl2023: ami-0f8d8c97a6d470d54
-      BYOLAl2023: ami-034193ca67e3d64f3
-      EnterpriseGraviton: ami-07a6e3e042a2470b8
-      BYOLGraviton: ami-075c5a552292ebf6f
+      EnterpriseAl2: ami-03e21b0c0be4ac6cd
+      BYOLAl2: ami-0046840ca7682f22a
+      EnterpriseAl2023: ami-0658983d7a17d0062
+      BYOLAl2023: ami-0b952b711ec8862c7
+      EnterpriseGraviton: ami-0da80483facf6d1f8
+      BYOLGraviton: ami-0e8fe3b33dcd6d00e
     ap-southeast-1:
-      EnterpriseAl2: ami-0e1dd3c9963c1f5a9
-      BYOLAl2: ami-0dcc49246197861ad
-      EnterpriseAl2023: ami-06339127729171416
-      BYOLAl2023: ami-0c1c64e90aa534ab0
-      EnterpriseGraviton: ami-0ca0922fb05f3eb5d
-      BYOLGraviton: ami-03198dab3a62ffd1e
+      EnterpriseAl2: ami-05329c620f8d56075
+      BYOLAl2: ami-055b7d1ba4b6a2f46
+      EnterpriseAl2023: ami-0d3db950f0687f26b
+      BYOLAl2023: ami-0282112c41fdf8cf2
+      EnterpriseGraviton: ami-0c107352695c4e83a
+      BYOLGraviton: ami-03872902ef2866a8c
     ap-southeast-2:
-      EnterpriseAl2: ami-02c96f1b95f0aad9d
-      BYOLAl2: ami-07e4149a99aec6fb9
-      EnterpriseAl2023: ami-04057b345251a9729
-      BYOLAl2023: ami-0827d4006f98c0d9f
-      EnterpriseGraviton: ami-043218c08109fe5f6
-      BYOLGraviton: ami-0d032ae10b36a534a
+      EnterpriseAl2: ami-065e21a6eb8827d02
+      BYOLAl2: ami-0fbc320a967718de9
+      EnterpriseAl2023: ami-02b13b60e439564c6
+      BYOLAl2023: ami-09fec049aa8311967
+      EnterpriseGraviton: ami-0d3cf523850be72bd
+      BYOLGraviton: ami-02662b1cdb34b2718
     ap-northeast-1:
-      EnterpriseAl2: ami-0840a2318d9ef534c
-      BYOLAl2: ami-0bb4899d4b3e1e883
-      EnterpriseAl2023: ami-02b835236c6e32752
-      BYOLAl2023: ami-0d8e8afd2132e6f0d
-      EnterpriseGraviton: ami-0cf909650cc523713
-      BYOLGraviton: ami-0a5f8b2c2cb66077b
+      EnterpriseAl2: ami-05522b2ee0e130c26
+      BYOLAl2: ami-04e23f5063314412e
+      EnterpriseAl2023: ami-03ca26e375ea342cf
+      BYOLAl2023: ami-0ac184e70fd0a05a1
+      EnterpriseGraviton: ami-04b571f90ae094f36
+      BYOLGraviton: ami-0f2d64bfa56127d6e
     ap-northeast-2:
-      EnterpriseAl2: ami-04cef895a7e3e0f0d
-      BYOLAl2: ami-01d236b3244b9a377
-      EnterpriseAl2023: ami-00461efd40b1baa6d
-      BYOLAl2023: ami-0998e9708fd515cb9
-      EnterpriseGraviton: ami-0110ba8079c0c8efc
-      BYOLGraviton: ami-0af60753a9457fe46
+      EnterpriseAl2: ami-0a29b34f9b1ad243a
+      BYOLAl2: ami-0baf79f4f6b31619f
+      EnterpriseAl2023: ami-09cb77ffa30ca3abc
+      BYOLAl2023: ami-088fbf7dd2ade7ae6
+      EnterpriseGraviton: ami-02d9b5f32e6a362a7
+      BYOLGraviton: ami-04b203a3464a67e32
     sa-east-1:
-      EnterpriseAl2: ami-018fdc28db5bf7549
-      BYOLAl2: ami-0655ddcf8071349fa
-      EnterpriseAl2023: ami-086b06b301cbb84f8
-      BYOLAl2023: ami-07cc6257c9d276909
-      EnterpriseGraviton: ami-09a3c47f3d1d30147
-      BYOLGraviton: ami-0a3b13bcdb1ae9065
+      EnterpriseAl2: ami-0373e7ed976b47bd2
+      BYOLAl2: ami-0f966cca4783ef6ac
+      EnterpriseAl2023: ami-0ab7d554bb474c729
+      BYOLAl2023: ami-05dbf7cbe8ea7c6ba
+      EnterpriseGraviton: ami-092fb37ed0bb79c09
+      BYOLGraviton: ami-030f507a02b68d4c2
     eu-west-2:
-      EnterpriseAl2: ami-0ddaece695ffd06b5
-      BYOLAl2: ami-00893ce33bd4d4f59
-      EnterpriseAl2023: ami-0f86041811e435d71
-      BYOLAl2023: ami-0d0925deeb98150c0
-      EnterpriseGraviton: ami-05aa6f27d221e06a6
-      BYOLGraviton: ami-0440a934eb9b3e52a
+      EnterpriseAl2: ami-024948674b74b8b27
+      BYOLAl2: ami-09b1f69ddf2daa143
+      EnterpriseAl2023: ami-0aadff0187d7768f1
+      BYOLAl2023: ami-04bc7cedaf56118a7
+      EnterpriseGraviton: ami-06085c14a08dbd6df
+      BYOLGraviton: ami-098b8eaf7c53ed7f5
     ca-central-1:
-      EnterpriseAl2: ami-06330ce9c68657cd2
-      BYOLAl2: ami-0482403551c1a0515
-      EnterpriseAl2023: ami-0efdc8a7bd3a71827
-      BYOLAl2023: ami-0180eca5c34316feb
-      EnterpriseGraviton: ami-0476fc849ffe46678
-      BYOLGraviton: ami-0e72880f8d50c0a0d
+      EnterpriseAl2: ami-0b10c56d9faa2c6ef
+      BYOLAl2: ami-0fbccbfdba89947f0
+      EnterpriseAl2023: ami-08962d9f6addf969f
+      BYOLAl2023: ami-0894c2d53d9757416
+      EnterpriseGraviton: ami-0094c31514d163218
+      BYOLGraviton: ami-0ba1cffa00b730a46
     eu-west-3:
-      EnterpriseAl2: ami-0ace9925b1fa6f62b
-      BYOLAl2: ami-0a7ef60ae87168a6d
-      EnterpriseAl2023: ami-01131d3c3f128dcc1
-      BYOLAl2023: ami-0b71448bd9e50baec
-      EnterpriseGraviton: ami-0dc643cc61668ed21
-      BYOLGraviton: ami-0f938b428824bef25
+      EnterpriseAl2: ami-0f566df03a06d4a07
+      BYOLAl2: ami-0d8a739e7154709ad
+      EnterpriseAl2023: ami-04458f35cdad3df96
+      BYOLAl2023: ami-08b5240319bf0c695
+      EnterpriseGraviton: ami-0d5ddafbf8f2cdc24
+      BYOLGraviton: ami-0fc8f2432884b521c
 Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
