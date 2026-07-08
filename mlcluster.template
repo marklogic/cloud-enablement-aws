@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS in existing VPC (Virtual Private Cloud).
 Metadata:
-  version: 12.0.2
-  binary: MarkLogic-12.0.2-rhel.x86_64.rpm
+  version: 12.0.3
+  binary: MarkLogic-12.0.3-rhel.x86_64.rpm
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -821,53 +821,53 @@ Mappings:
     TemplateUrl:
       base: 'https://s3.amazonaws.com/marklogic-db-template-releases'
     S3Directory:
-      base: '12.0.2'
+      base: '12.0.3'
   LicenseRegion2AMI:
     us-east-1:
-      PAYGAl2023: ami-05246611c90899836
-      BYOLAl2023: ami-0352a2f974ed56def
+      PAYGAl2023: ami-06d3c8c62a9619275
+      BYOLAl2023: ami-0f04fb3695fb947fa
     us-east-2:
-      PAYGAl2023: ami-08e24093a72d0b00c
-      BYOLAl2023: ami-0d0db2790ae7321be
+      PAYGAl2023: ami-0c1fd6063d2943870
+      BYOLAl2023: ami-0b7c07892dd26dbdb
     us-west-1:
-      PAYGAl2023: ami-0322210a14ff8ebf0
-      BYOLAl2023: ami-0bfe50ee52d9d158f
+      PAYGAl2023: ami-07f73582626549469
+      BYOLAl2023: ami-0b43dee56a3e55bfa
     us-west-2:
-      PAYGAl2023: ami-09beeb6c33214e312
-      BYOLAl2023: ami-082b8dbcdf74984f2
+      PAYGAl2023: ami-058021fc7e08bc35d
+      BYOLAl2023: ami-063b2fa62eab363e6
     eu-central-1:
-      PAYGAl2023: ami-03cf04aef431d2cbd
-      BYOLAl2023: ami-0a5dee9e461c5b833
+      PAYGAl2023: ami-08ea90f5f6c3db411
+      BYOLAl2023: ami-0776597a2f25ac804
     eu-west-1:
-      PAYGAl2023: ami-063a16632dbe2806b
-      BYOLAl2023: ami-0049454737121f8f6
+      PAYGAl2023: ami-0c0e71b1df10cc0de
+      BYOLAl2023: ami-0e90b8ff9ad09bbb0
     ap-south-1:
-      PAYGAl2023: ami-0302ff52afd640ef8
-      BYOLAl2023: ami-0db20bba531577708
+      PAYGAl2023: ami-02c244170e85c95a8
+      BYOLAl2023: ami-00495a615fed13216
     ap-southeast-1:
-      PAYGAl2023: ami-033069b2fc0da3805
-      BYOLAl2023: ami-0f68bc951db40ddb1
+      PAYGAl2023: ami-0e3ef782940ea4938
+      BYOLAl2023: ami-08b31641928105cc4
     ap-southeast-2:
-      PAYGAl2023: ami-03247af11fe7f43c6
-      BYOLAl2023: ami-06cdfc6663c5f948f
+      PAYGAl2023: ami-074614a27a9a106ca
+      BYOLAl2023: ami-0684906d5c01312db
     ap-northeast-1:
-      PAYGAl2023: ami-02ce3bb7b810eda16
-      BYOLAl2023: ami-05341020c04eb3649
+      PAYGAl2023: ami-0a63d65454622d56d
+      BYOLAl2023: ami-0c836ec1d0e2f0d60
     ap-northeast-2:
-      PAYGAl2023: ami-009dc9e107ac66c98
-      BYOLAl2023: ami-092f8030064b02722
+      PAYGAl2023: ami-011b2f54bac8aad1c
+      BYOLAl2023: ami-04e5e840e47e98f58
     sa-east-1:
-      PAYGAl2023: ami-0f6ae88eca5226338
-      BYOLAl2023: ami-0bf675495f7c268b1
+      PAYGAl2023: ami-028eb607d06c5588b
+      BYOLAl2023: ami-043338afad2774497
     eu-west-2:
-      PAYGAl2023: ami-07693f14925cb0bec
-      BYOLAl2023: ami-011964b271944002f
+      PAYGAl2023: ami-04b664cf8ba7fbe31
+      BYOLAl2023: ami-05d608b7113c53a09
     ca-central-1:
-      PAYGAl2023: ami-0417b9c79013cdd31
-      BYOLAl2023: ami-007ea4cc6cbf5ef63
+      PAYGAl2023: ami-071dcca331d6b6882
+      BYOLAl2023: ami-04c0bc70650409d4e
     eu-west-3:
-      PAYGAl2023: ami-048b4b70eb154e19f
-      BYOLAl2023: ami-0d61f8d71ae7568fc
+      PAYGAl2023: ami-0d27399d058de8938
+      BYOLAl2023: ami-038a642bfcecf2f17
 Resources:
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
