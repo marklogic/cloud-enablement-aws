@@ -146,7 +146,6 @@ Parameters:
     Type: String
     AllowedValues:
       - AmazonLinux2023
-      - AmazonLinux2
       - AmazonLinux2023-Graviton
     Default: AmazonLinux2023
   EnableInstanceFamily:
@@ -1184,7 +1183,6 @@ Conditions:
   UseVolumeEncryption: !Equals [!Ref VolumeEncryption, 'enable']
   HasCustomEBSKey: !Not [!Equals [!Ref VolumeEncryptionKey, '']]
   GP3: !Equals [!Ref VolumeType, 'gp3']
-  AmazonLinux2: !Equals [!Ref OSType, "AmazonLinux2"]
   AmazonLinux2023: !Equals [!Ref OSType, "AmazonLinux2023"]
   AmazonLinux2023-Graviton: !Equals [!Ref OSType, "AmazonLinux2023-Graviton"]
 Mappings:
@@ -1197,106 +1195,76 @@ Mappings:
       base: '11.3.6'
   LicenseRegion2AMI:
     us-east-1:
-      EnterpriseAl2: ami-02664a12792fd9886
-      BYOLAl2: ami-0b6bf21be9bf2fa76
       EnterpriseAl2023: ami-040bd064074c500ac
       BYOLAl2023: ami-09ecec8aa12d9edc8
       EnterpriseGraviton: ami-078f7b8ec5a5261fe
       BYOLGraviton: ami-03a6174b734de1eb9
     us-east-2:
-      EnterpriseAl2: ami-03e5344af0c41bb4d
-      BYOLAl2: ami-011cffe8cf29e21f8
       EnterpriseAl2023: ami-0d529d28337d2a87a
       BYOLAl2023: ami-0d25fce3056fab827
       EnterpriseGraviton: ami-0e11057fd516d0475
       BYOLGraviton: ami-0bfb241d364c7315d
     us-west-1:
-      EnterpriseAl2: ami-05e149c32df19afa7
-      BYOLAl2: ami-00e9899760b650a28
       EnterpriseAl2023: ami-0abf5dd6d2d1d9b3f
       BYOLAl2023: ami-0f8c571b08472e8ef
       EnterpriseGraviton: ami-0f085c0d3abf0b922
       BYOLGraviton: ami-06cafe61d18cab2a3
     us-west-2:
-      EnterpriseAl2: ami-09a4a1e8092b6f75f
-      BYOLAl2: ami-06b97ac267d0a9485
       EnterpriseAl2023: ami-0aa6e9ad8c6faa712
       BYOLAl2023: ami-01b4b23d8585b0c85
       EnterpriseGraviton: ami-06a7db5536bfa66f2
       BYOLGraviton: ami-03b1b3cfdc239ad80
     eu-central-1:
-      EnterpriseAl2: ami-0eef901a1a412d9bc
-      BYOLAl2: ami-024fa54b27e2fb44d
       EnterpriseAl2023: ami-056cd2d82ed74e381
       BYOLAl2023: ami-0b458f381fbcc8022
       EnterpriseGraviton: ami-02111ec3f4f33b1ba
       BYOLGraviton: ami-0eb4e84e1cca74d40
     eu-west-1:
-      EnterpriseAl2: ami-024872e724222f66f
-      BYOLAl2: ami-0e7aa9b644377ae23
       EnterpriseAl2023: ami-0fb1f3e38ccf0dedb
       BYOLAl2023: ami-00c039f39abdf422b
       EnterpriseGraviton: ami-0b64a742a4d9ee7fd
       BYOLGraviton: ami-0f14a9bb2be552f3c
     ap-south-1:
-      EnterpriseAl2: ami-03e21b0c0be4ac6cd
-      BYOLAl2: ami-0046840ca7682f22a
       EnterpriseAl2023: ami-0658983d7a17d0062
       BYOLAl2023: ami-0b952b711ec8862c7
       EnterpriseGraviton: ami-0da80483facf6d1f8
       BYOLGraviton: ami-0e8fe3b33dcd6d00e
     ap-southeast-1:
-      EnterpriseAl2: ami-05329c620f8d56075
-      BYOLAl2: ami-055b7d1ba4b6a2f46
       EnterpriseAl2023: ami-0d3db950f0687f26b
       BYOLAl2023: ami-0282112c41fdf8cf2
       EnterpriseGraviton: ami-0c107352695c4e83a
       BYOLGraviton: ami-03872902ef2866a8c
     ap-southeast-2:
-      EnterpriseAl2: ami-065e21a6eb8827d02
-      BYOLAl2: ami-0fbc320a967718de9
       EnterpriseAl2023: ami-02b13b60e439564c6
       BYOLAl2023: ami-09fec049aa8311967
       EnterpriseGraviton: ami-0d3cf523850be72bd
       BYOLGraviton: ami-02662b1cdb34b2718
     ap-northeast-1:
-      EnterpriseAl2: ami-05522b2ee0e130c26
-      BYOLAl2: ami-04e23f5063314412e
       EnterpriseAl2023: ami-03ca26e375ea342cf
       BYOLAl2023: ami-0ac184e70fd0a05a1
       EnterpriseGraviton: ami-04b571f90ae094f36
       BYOLGraviton: ami-0f2d64bfa56127d6e
     ap-northeast-2:
-      EnterpriseAl2: ami-0a29b34f9b1ad243a
-      BYOLAl2: ami-0baf79f4f6b31619f
       EnterpriseAl2023: ami-09cb77ffa30ca3abc
       BYOLAl2023: ami-088fbf7dd2ade7ae6
       EnterpriseGraviton: ami-02d9b5f32e6a362a7
       BYOLGraviton: ami-04b203a3464a67e32
     sa-east-1:
-      EnterpriseAl2: ami-0373e7ed976b47bd2
-      BYOLAl2: ami-0f966cca4783ef6ac
       EnterpriseAl2023: ami-0ab7d554bb474c729
       BYOLAl2023: ami-05dbf7cbe8ea7c6ba
       EnterpriseGraviton: ami-092fb37ed0bb79c09
       BYOLGraviton: ami-030f507a02b68d4c2
     eu-west-2:
-      EnterpriseAl2: ami-024948674b74b8b27
-      BYOLAl2: ami-09b1f69ddf2daa143
       EnterpriseAl2023: ami-0aadff0187d7768f1
       BYOLAl2023: ami-04bc7cedaf56118a7
       EnterpriseGraviton: ami-06085c14a08dbd6df
       BYOLGraviton: ami-098b8eaf7c53ed7f5
     ca-central-1:
-      EnterpriseAl2: ami-0b10c56d9faa2c6ef
-      BYOLAl2: ami-0fbccbfdba89947f0
       EnterpriseAl2023: ami-08962d9f6addf969f
       BYOLAl2023: ami-0894c2d53d9757416
       EnterpriseGraviton: ami-0094c31514d163218
       BYOLGraviton: ami-0ba1cffa00b730a46
     eu-west-3:
-      EnterpriseAl2: ami-0f566df03a06d4a07
-      BYOLAl2: ami-0d8a739e7154709ad
       EnterpriseAl2023: ami-04458f35cdad3df96
       BYOLAl2023: ami-08b5240319bf0c695
       EnterpriseGraviton: ami-0d5ddafbf8f2cdc24
@@ -1710,13 +1678,10 @@ Resources:
             NoDevice: true
             Ebs: {}
         KeyName: !Ref KeyName
-        ImageId: !If 
-          - AmazonLinux2
-          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2"]]
-          - !If
-            - AmazonLinux2023
-            - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
-            - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseGraviton"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLGraviton"]]
+        ImageId:  !If
+          - AmazonLinux2023
+          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
+          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseGraviton"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLGraviton"]]
         UserData: !Base64
           'Fn::Join':
             - ''
@@ -1819,13 +1784,10 @@ Resources:
             NoDevice: true
             Ebs: {}
         KeyName: !Ref KeyName
-        ImageId: !If 
-          - AmazonLinux2
-          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2"]]
-          - !If
-            - AmazonLinux2023
-            - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
-            - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseGraviton"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLGraviton"]]
+        ImageId: !If
+          - AmazonLinux2023
+          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
+          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseGraviton"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLGraviton"]]
         UserData: !Base64
           'Fn::Join':
             - ''
@@ -1928,13 +1890,10 @@ Resources:
             NoDevice: true
             Ebs: {}
         KeyName: !Ref KeyName
-        ImageId: !If 
-          - AmazonLinux2
-          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2"]]
-          - !If
-            - AmazonLinux2023
-            - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
-            - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseGraviton"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLGraviton"]]
+        ImageId: !If
+          - AmazonLinux2023
+          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
+          - !If [EssentialEnterprise, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"EnterpriseGraviton"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLGraviton"]]
         UserData: !Base64
           'Fn::Join':
             - ''
