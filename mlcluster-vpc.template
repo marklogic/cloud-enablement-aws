@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS with a new VPC
 Metadata:
-  version: 12.0.3
-  binary: MarkLogic-12.0.3-rhel.x86_64.rpm
+  version: 12.1.0
+  binary: MarkLogic-12.1.0
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -15,7 +15,10 @@ Metadata:
           - VolumeThroughput
           - VolumeEncryption
           - VolumeEncryptionKey
+          - OSType
+          - EnableInstanceFamily
           - InstanceType
+          - InstanceTypeGraviton
           - SpotPrice
           - KeyName
           - NumberOfZones
@@ -64,8 +67,14 @@ Metadata:
         default: Volume Encryption
       VolumeEncryptionKey:
         default: Volume Encryption Key ARN
+      OSType:
+        default: OS Type
+      EnableInstanceFamily:
+        default: Enable Instance Family
       InstanceType:
         default: Instance Type
+      InstanceTypeGraviton:
+        default: Graviton Instance Type
       SpotPrice:
         default: Spot Price
       KeyName:
@@ -132,6 +141,318 @@ Parameters:
     Description: The key ID of AWS KMS key to encrypt volumes - Optional
     Type: String
     Default: ""
+  OSType:
+    Description: OS of MarkLogic to create the cluster
+    Type: String
+    AllowedValues:
+      - AmazonLinux2023
+      - AmazonLinux2023-Graviton
+    Default: AmazonLinux2023
+  EnableInstanceFamily:
+    Description: Pipe-separated list of instance families (e.g., r8i-flex|r8i)
+    Type: String
+    AllowedPattern: ^([a-zA-Z0-9-]+(\|[a-zA-Z0-9-]+)*)?$
+    ConstraintDescription: Value must be empty or a pipe-separated list like 'r8i-flex|r8i'
+    Default: ""
+  InstanceTypeGraviton:
+    Description: Type of Graviton EC2 instance to launch 
+    Type: String
+    Default: r6g.4xlarge
+    AllowedValues:
+      - ---- Pay-As-You-Go and Bring-Your-Own-License ----
+      - c6g.xlarge
+      - c6g.2xlarge
+      - c6g.4xlarge
+      - c6g.8xlarge
+      - c6g.12xlarge
+      - c6g.16xlarge
+      - c6gd.xlarge
+      - c6gd.2xlarge
+      - c6gd.4xlarge
+      - c6gd.8xlarge
+      - c6gd.12xlarge
+      - c6gd.16xlarge
+      - c6gn.xlarge
+      - c6gn.2xlarge
+      - c6gn.4xlarge
+      - c6gn.8xlarge
+      - c6gn.12xlarge
+      - c6gn.16xlarge
+      - c7g.xlarge
+      - c7g.2xlarge
+      - c7g.4xlarge
+      - c7g.8xlarge
+      - c7g.12xlarge
+      - c7g.16xlarge
+      - c7gd.xlarge
+      - c7gd.2xlarge
+      - c7gd.4xlarge
+      - c7gd.8xlarge
+      - c7gd.12xlarge
+      - c7gd.16xlarge
+      - c7gn.xlarge
+      - c7gn.2xlarge
+      - c7gn.4xlarge
+      - c7gn.8xlarge
+      - c7gn.12xlarge
+      - c7gn.16xlarge
+      - c8g.xlarge
+      - c8g.2xlarge
+      - c8g.4xlarge
+      - c8g.8xlarge
+      - c8g.12xlarge
+      - c8g.16xlarge
+      - c8g.24xlarge
+      - c8g.48xlarge
+      - c8gd.xlarge
+      - c8gd.2xlarge
+      - c8gd.4xlarge
+      - c8gd.8xlarge
+      - c8gd.12xlarge
+      - c8gd.16xlarge
+      - c8gd.24xlarge
+      - c8gd.48xlarge
+      - c8gn.xlarge
+      - c8gn.2xlarge
+      - c8gn.4xlarge
+      - c8gn.8xlarge
+      - c8gn.12xlarge
+      - c8gn.16xlarge
+      - c8gn.24xlarge
+      - c8gn.48xlarge
+      - c8gb.xlarge
+      - c8gb.2xlarge
+      - c8gb.4xlarge
+      - c8gb.8xlarge
+      - c8gb.12xlarge
+      - c8gb.16xlarge
+      - c8gb.24xlarge
+      - c8gb.48xlarge
+      - m6g.xlarge
+      - m6g.2xlarge
+      - m6g.4xlarge
+      - m6g.8xlarge
+      - m6g.12xlarge
+      - m6g.16xlarge
+      - m6gd.xlarge
+      - m6gd.2xlarge
+      - m6gd.4xlarge
+      - m6gd.8xlarge
+      - m6gd.12xlarge
+      - m6gd.16xlarge
+      - m7g.xlarge
+      - m7g.2xlarge
+      - m7g.4xlarge
+      - m7g.8xlarge
+      - m7g.12xlarge
+      - m7g.16xlarge
+      - m7gd.xlarge
+      - m7gd.2xlarge
+      - m7gd.4xlarge
+      - m7gd.8xlarge
+      - m7gd.12xlarge
+      - m7gd.16xlarge
+      - m8g.xlarge
+      - m8g.2xlarge
+      - m8g.4xlarge
+      - m8g.8xlarge
+      - m8g.12xlarge
+      - m8g.16xlarge
+      - m8g.24xlarge
+      - m8g.48xlarge
+      - m8gd.xlarge
+      - m8gd.2xlarge
+      - m8gd.4xlarge
+      - m8gd.8xlarge
+      - m8gd.12xlarge
+      - m8gd.16xlarge
+      - m8gd.24xlarge
+      - m8gd.48xlarge
+      - m8gn.xlarge
+      - m8gn.2xlarge
+      - m8gn.4xlarge
+      - m8gn.8xlarge
+      - m8gn.12xlarge
+      - m8gn.16xlarge
+      - m8gn.24xlarge
+      - m8gn.48xlarge
+      - m8gb.xlarge
+      - m8gb.2xlarge
+      - m8gb.4xlarge
+      - m8gb.8xlarge
+      - m8gb.12xlarge
+      - m8gb.16xlarge
+      - m8gb.24xlarge
+      - m8gb.48xlarge
+      - r6g.xlarge
+      - r6g.2xlarge
+      - r6g.4xlarge
+      - r6g.8xlarge
+      - r6g.12xlarge
+      - r6g.16xlarge
+      - r6gd.xlarge
+      - r6gd.2xlarge
+      - r6gd.4xlarge
+      - r6gd.8xlarge
+      - r6gd.12xlarge
+      - r6gd.16xlarge
+      - r7g.xlarge
+      - r7g.2xlarge
+      - r7g.4xlarge
+      - r7g.8xlarge
+      - r7g.12xlarge
+      - r7g.16xlarge
+      - r7gd.xlarge
+      - r7gd.2xlarge
+      - r7gd.4xlarge
+      - r7gd.8xlarge
+      - r7gd.12xlarge
+      - r7gd.16xlarge
+      - r8g.xlarge
+      - r8g.2xlarge
+      - r8g.4xlarge
+      - r8g.8xlarge
+      - r8g.12xlarge
+      - r8g.16xlarge
+      - r8g.24xlarge
+      - r8g.48xlarge
+      - r8gd.xlarge
+      - r8gd.2xlarge
+      - r8gd.4xlarge
+      - r8gd.8xlarge
+      - r8gd.12xlarge
+      - r8gd.16xlarge
+      - r8gd.24xlarge
+      - r8gd.48xlarge
+      - r8gn.xlarge
+      - r8gn.2xlarge
+      - r8gn.4xlarge
+      - r8gn.8xlarge
+      - r8gn.12xlarge
+      - r8gn.16xlarge
+      - r8gn.24xlarge
+      - r8gn.48xlarge
+      - r8gb.xlarge
+      - r8gb.2xlarge
+      - r8gb.4xlarge
+      - r8gb.8xlarge
+      - r8gb.12xlarge
+      - r8gb.16xlarge
+      - r8gb.24xlarge
+      - r8gb.48xlarge
+      - x8g.xlarge
+      - x8g.2xlarge
+      - x8g.4xlarge
+      - x8g.8xlarge
+      - x8g.12xlarge
+      - x8g.16xlarge
+      - x8g.24xlarge
+      - x8g.48xlarge
+      - i8g.xlarge
+      - i8g.2xlarge
+      - i8g.4xlarge
+      - i8g.8xlarge
+      - i8g.12xlarge
+      - i8g.16xlarge
+      - i8g.24xlarge
+      - i8g.48xlarge
+      - i8ge.xlarge
+      - i8ge.2xlarge
+      - i8ge.3xlarge
+      - i8ge.6xlarge
+      - i8ge.12xlarge
+      - i8ge.18xlarge
+      - i8ge.24xlarge
+      - i8ge.48xlarge
+      - -------------- Bring-Your-Own-License Only --------------
+      - c6g.large
+      - c6g.metal
+      - c6gd.large
+      - c6gd.metal
+      - c6gn.large
+      - c7g.large
+      - c7g.metal
+      - c7gd.large
+      - c7gd.metal
+      - c7gn.large
+      - c7gn.metal
+      - c8g.large
+      - c8g.metal-24xl
+      - c8g.metal-48xl
+      - c8gd.large
+      - c8gd.metal-24xl
+      - c8gd.metal-48xl
+      - c8gn.large
+      - c8gn.metal-24xl
+      - c8gn.metal-48xl
+      - c8gb.large
+      - c8gb.metal-24xl
+      - c8gb.metal-48xl
+      - m6g.medium
+      - m6g.large
+      - m6g.metal
+      - m6gd.medium
+      - m6gd.large
+      - m6gd.metal
+      - m7g.medium
+      - m7g.large
+      - m7g.metal
+      - m7gd.medium
+      - m7gd.large
+      - m7gd.metal
+      - m8g.medium
+      - m8g.large
+      - m8g.metal-24xl
+      - m8g.metal-48xl
+      - m8gd.medium
+      - m8gd.large
+      - m8gd.metal-24xl
+      - m8gd.metal-48xl
+      - m8gn.medium
+      - m8gn.large
+      - m8gb.medium
+      - m8gb.large
+      - r6g.medium
+      - r6g.large
+      - r6g.metal
+      - r6gd.medium
+      - r6gd.large
+      - r6gd.metal
+      - r7g.medium
+      - r7g.large
+      - r7g.metal
+      - r7gd.medium
+      - r7gd.large
+      - r7gd.metal
+      - r8g.medium
+      - r8g.large
+      - r8g.metal-24xl
+      - r8g.metal-48xl
+      - r8gd.medium
+      - r8gd.large
+      - r8gd.metal-24xl
+      - r8gd.metal-48xl
+      - r8gn.medium
+      - r8gn.large
+      - r8gn.metal-24xl
+      - r8gn.metal-48xl
+      - r8gb.medium
+      - r8gb.large
+      - r8gb.metal-24xl
+      - r8gb.metal-48xl
+      - x8g.medium
+      - x8g.large
+      - x8g.metal-24xl
+      - x8g.metal-48xl
+      - i8g.large
+      - i8g.metal-24xl
+      - i8ge.large
+      - i8ge.metal-24xl
+      - i8ge.metal-48xl
+      - t4g.medium
+      - t4g.large
+      - t4g.xlarge
+      - t4g.2xlarge
   InstanceType:
     Description: Type of EC2 instance to launch
     Type: String
@@ -227,6 +548,15 @@ Parameters:
       - c7a.24xlarge
       - c7a.32xlarge
       - c7a.48xlarge
+      - c8a.xlarge
+      - c8a.2xlarge
+      - c8a.4xlarge
+      - c8a.8xlarge
+      - c8a.12xlarge
+      - c8a.16xlarge
+      - c8a.24xlarge
+      - c8a.32xlarge
+      - c8a.48xlarge
       - c8i.xlarge
       - c8i.2xlarge
       - c8i.4xlarge
@@ -617,6 +947,9 @@ Parameters:
       - c7a.medium
       - c7a.large
       - c7a.metal-48xl
+      - c8a.large
+      - c8a.metal-24xl
+      - c8a.metal-48xl
       - c8i.large
       - c8i.metal-48xl
       - c8i.metal-96xl
@@ -840,6 +1173,8 @@ Conditions:
   UseVolumeEncryption: !Equals [!Ref VolumeEncryption, 'enable']
   HasCustomEBSKey: !Not [!Equals [!Ref VolumeEncryptionKey, '']]
   GP3: !Equals [!Ref VolumeType, 'gp3']
+  AmazonLinux2023: !Equals [!Ref OSType, "AmazonLinux2023"]
+  AmazonLinux2023-Graviton: !Equals [!Ref OSType, "AmazonLinux2023-Graviton"]
 Mappings:
   Variable:
     LambdaPackageBucket:
@@ -847,53 +1182,83 @@ Mappings:
     TemplateUrl:
       base: 'https://s3.amazonaws.com/marklogic-db-template-releases'
     S3Directory:
-      base: '12.0.3'
+      base: '12.1.0'
   LicenseRegion2AMI:
     us-east-1:
-      PAYGAl2023: ami-06d3c8c62a9619275
-      BYOLAl2023: ami-0f04fb3695fb947fa
+      PAYGAl2023: ami-013e70e8bcf9591a8
+      BYOLAl2023: ami-077a0fb5c0e97fa85
+      PAYGGraviton: ami-03e0456f00aa2a8d0
+      BYOLGraviton: ami-01f7fe5cae7c5d945
     us-east-2:
-      PAYGAl2023: ami-0c1fd6063d2943870
-      BYOLAl2023: ami-0b7c07892dd26dbdb
+      PAYGAl2023: ami-0b4bb02d72b2d4ddd
+      BYOLAl2023: ami-0bc04b67452c59804
+      PAYGGraviton: ami-06065446508456c27
+      BYOLGraviton: ami-02500af8096289f66
     us-west-1:
-      PAYGAl2023: ami-07f73582626549469
-      BYOLAl2023: ami-0b43dee56a3e55bfa
+      PAYGAl2023: ami-02af6efb459ed2c50
+      BYOLAl2023: ami-0c06cf466c26717ca
+      PAYGGraviton: ami-099d5a6ee1176e31b
+      BYOLGraviton: ami-08185c743ea0135fe
     us-west-2:
-      PAYGAl2023: ami-058021fc7e08bc35d
-      BYOLAl2023: ami-063b2fa62eab363e6
+      PAYGAl2023: ami-02deb1d973c196ac4
+      BYOLAl2023: ami-0cc85c9622baa9ef0
+      PAYGGraviton: ami-07706a592d3f5558e
+      BYOLGraviton: ami-031b60ddba0316e7d
     eu-central-1:
-      PAYGAl2023: ami-08ea90f5f6c3db411
-      BYOLAl2023: ami-0776597a2f25ac804
+      PAYGAl2023: ami-0d05ef99afcaaae1a
+      BYOLAl2023: ami-091da2479b928e9f6
+      PAYGGraviton: ami-09ffe3c78489fc52e
+      BYOLGraviton: ami-0d3184671dfbcd923
     eu-west-1:
-      PAYGAl2023: ami-0c0e71b1df10cc0de
-      BYOLAl2023: ami-0e90b8ff9ad09bbb0
+      PAYGAl2023: ami-0873bce09c2025efb
+      BYOLAl2023: ami-01a650b3538579502
+      PAYGGraviton: ami-0e6d1a38a2f0f7c54
+      BYOLGraviton: ami-05cc187574187c2b4
     ap-south-1:
-      PAYGAl2023: ami-02c244170e85c95a8
-      BYOLAl2023: ami-00495a615fed13216
+      PAYGAl2023: ami-0d37385ae2694682e
+      BYOLAl2023: ami-062801829111cd326
+      PAYGGraviton: ami-09b44badfc5c02850
+      BYOLGraviton: ami-0a1a7629dfe6ff318
     ap-southeast-1:
-      PAYGAl2023: ami-0e3ef782940ea4938
-      BYOLAl2023: ami-08b31641928105cc4
+      PAYGAl2023: ami-0b2f597ef9f969657
+      BYOLAl2023: ami-076df6e6711074d11
+      PAYGGraviton: ami-088ef145ab48586f8
+      BYOLGraviton: ami-08a694161ac55833b
     ap-southeast-2:
-      PAYGAl2023: ami-074614a27a9a106ca
-      BYOLAl2023: ami-0684906d5c01312db
+      PAYGAl2023: ami-09b178f7b4404a532
+      BYOLAl2023: ami-0ae0da8850d6ff4a1
+      PAYGGraviton: ami-04f287a541797e4ae
+      BYOLGraviton: ami-00967015c2086c424
     ap-northeast-1:
-      PAYGAl2023: ami-0a63d65454622d56d
-      BYOLAl2023: ami-0c836ec1d0e2f0d60
+      PAYGAl2023: ami-0eaf5fc5193eb604f
+      BYOLAl2023: ami-002351621c240b3b9
+      PAYGGraviton: ami-01045a7345499054c
+      BYOLGraviton: ami-002acecefc7d64627
     ap-northeast-2:
-      PAYGAl2023: ami-011b2f54bac8aad1c
-      BYOLAl2023: ami-04e5e840e47e98f58
+      PAYGAl2023: ami-0c7f307cb7e0bbfc5
+      BYOLAl2023: ami-0e9bf11c9fcf8713c
+      PAYGGraviton: ami-00a00e28b1edc086e
+      BYOLGraviton: ami-0175530cb595858af
     sa-east-1:
-      PAYGAl2023: ami-028eb607d06c5588b
-      BYOLAl2023: ami-043338afad2774497
+      PAYGAl2023: ami-0956f2496850d876f
+      BYOLAl2023: ami-044b9ac6d5a83476f
+      PAYGGraviton: ami-0e090666945e58a23
+      BYOLGraviton: ami-0fef466924f37a120
     eu-west-2:
-      PAYGAl2023: ami-04b664cf8ba7fbe31
-      BYOLAl2023: ami-05d608b7113c53a09
+      PAYGAl2023: ami-092b0c770e0f16b59
+      BYOLAl2023: ami-0a4364eabec92427d
+      PAYGGraviton: ami-0b76e591c91a9ed5b
+      BYOLGraviton: ami-08aaa45b9dd8a4f8b
     ca-central-1:
-      PAYGAl2023: ami-071dcca331d6b6882
-      BYOLAl2023: ami-04c0bc70650409d4e
+      PAYGAl2023: ami-065376db63ab2f15a
+      BYOLAl2023: ami-0972d59f95bfc89c1
+      PAYGGraviton: ami-001267eaf02f9c821
+      BYOLGraviton: ami-0bc1af7538d43306b
     eu-west-3:
-      PAYGAl2023: ami-0d27399d058de8938
-      BYOLAl2023: ami-038a642bfcecf2f17
+      PAYGAl2023: ami-0477248f9e0410ed5
+      BYOLAl2023: ami-01bf78a3155fed7e9
+      PAYGGraviton: ami-08af4fbc1436e4855
+      BYOLGraviton: ami-0f677f833fbf563a3
 Resources:
   VpcStack:
     Type: AWS::CloudFormation::Stack
@@ -1338,12 +1703,19 @@ Resources:
             NoDevice: true
             Ebs: {}
         KeyName: !Ref KeyName
-        ImageId: !If [PAYG, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"PAYGAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
+        ImageId: !If 
+          - AmazonLinux2023
+          - !If [PAYG, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"PAYGAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
+          - !If [PAYG, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"PAYGGraviton"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLGraviton"]]
         UserData: !Base64
           'Fn::Join':
             - ''
             - - MARKLOGIC_CLUSTER_NAME=
               - !Ref MarkLogicDDBTable
+              - |+
+
+              - MARKLOGIC_ENABLE_INSTANCE_FAMILY=
+              - !Ref EnableInstanceFamily
               - |+
 
               - MARKLOGIC_EBS_VOLUME=
@@ -1405,7 +1777,10 @@ Resources:
 
         SecurityGroupIds:
           - !Ref InstanceSecurityGroup
-        InstanceType: !Ref InstanceType
+        InstanceType: !If
+          - AmazonLinux2023-Graviton
+          - !Ref InstanceTypeGraviton
+          - !Ref InstanceType
         IamInstanceProfile: 
           Name: !Ref IAMRole
         MetadataOptions:
@@ -1434,12 +1809,19 @@ Resources:
             NoDevice: true
             Ebs: {}
         KeyName: !Ref KeyName
-        ImageId: !If [PAYG, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"PAYGAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
+        ImageId: !If 
+          - AmazonLinux2023
+          - !If [PAYG, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"PAYGAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
+          - !If [PAYG, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"PAYGGraviton"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLGraviton"]]
         UserData: !Base64
           'Fn::Join':
             - ''
             - - MARKLOGIC_CLUSTER_NAME=
               - !Ref MarkLogicDDBTable
+              - |+
+
+              - MARKLOGIC_ENABLE_INSTANCE_FAMILY=
+              - !Ref EnableInstanceFamily
               - |+
 
               - MARKLOGIC_EBS_VOLUME=
@@ -1501,7 +1883,10 @@ Resources:
 
         SecurityGroupIds:
           - !Ref InstanceSecurityGroup
-        InstanceType: !Ref InstanceType
+        InstanceType: !If
+          - AmazonLinux2023-Graviton
+          - !Ref InstanceTypeGraviton
+          - !Ref InstanceType
         IamInstanceProfile: 
           Name: !Ref IAMRole
         MetadataOptions:
@@ -1530,12 +1915,19 @@ Resources:
             NoDevice: true
             Ebs: {}
         KeyName: !Ref KeyName
-        ImageId: !If [PAYG, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"PAYGAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
+        ImageId: !If 
+          - AmazonLinux2023
+          - !If [PAYG, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"PAYGAl2023"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLAl2023"]]
+          - !If [PAYG, !FindInMap [LicenseRegion2AMI,!Ref 'AWS::Region',"PAYGGraviton"], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', "BYOLGraviton"]]
         UserData: !Base64
           'Fn::Join':
             - ''
             - - MARKLOGIC_CLUSTER_NAME=
               - !Ref MarkLogicDDBTable
+              - |+
+
+              - MARKLOGIC_ENABLE_INSTANCE_FAMILY=
+              - !Ref EnableInstanceFamily
               - |+
 
               - MARKLOGIC_EBS_VOLUME=
@@ -1597,7 +1989,10 @@ Resources:
 
         SecurityGroupIds:
           - !Ref InstanceSecurityGroup
-        InstanceType: !Ref InstanceType
+        InstanceType: !If
+          - AmazonLinux2023-Graviton
+          - !Ref InstanceTypeGraviton
+          - !Ref InstanceType
         IamInstanceProfile: 
           Name: !Ref IAMRole
         MetadataOptions:
