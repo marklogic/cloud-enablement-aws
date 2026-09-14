@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Deploy a MarkLogic Cluster on AWS in existing VPC (Virtual Private Cloud).
 Metadata:
-  version: 12.0.1
-  binary: MarkLogic-12.0.1-rhel.x86_64.rpm
+  version: 12.1.0
+  binary: MarkLogic-12.1.0
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -1154,83 +1154,83 @@ Mappings:
     TemplateUrl:
       base: 'https://s3.amazonaws.com/marklogic-db-template-releases'
     S3Directory:
-      base: '12.0.1'
+      base: '12.1.0'
   LicenseRegion2AMI:
     us-east-1:
-      PAYGAl2023: ami-0198b8931e9597271
-      BYOLAl2023: ami-0a8536507241f95b0
-      PAYGGraviton: ami-1234
-      BYOLGraviton: ami-4321
+      PAYGAl2023: ami-013e70e8bcf9591a8
+      BYOLAl2023: ami-077a0fb5c0e97fa85
+      PAYGGraviton: ami-03e0456f00aa2a8d0
+      BYOLGraviton: ami-01f7fe5cae7c5d945
     us-east-2:
-      PAYGAl2023: ami-0877b64dae8264415
-      BYOLAl2023: ami-082cc98b2c01e486a
-      PAYGGraviton: ami-1234
-      BYOLGraviton: ami-4321
+      PAYGAl2023: ami-0b4bb02d72b2d4ddd
+      BYOLAl2023: ami-0bc04b67452c59804
+      PAYGGraviton: ami-06065446508456c27
+      BYOLGraviton: ami-02500af8096289f66
     us-west-1:
-      PAYGAl2023: ami-07890fc78f4ddfa20
-      BYOLAl2023: ami-05c9a962410c2821b
-      PAYGGraviton: ami-1234
-      BYOLGraviton: ami-4321
+      PAYGAl2023: ami-02af6efb459ed2c50
+      BYOLAl2023: ami-0c06cf466c26717ca
+      PAYGGraviton: ami-099d5a6ee1176e31b
+      BYOLGraviton: ami-08185c743ea0135fe
     us-west-2:
-      PAYGAl2023: ami-0577eb149c9e0f53f
-      BYOLAl2023: ami-0262dd8d014bf71ba
-      PAYGGraviton: ami-1234
-      BYOLGraviton: ami-4321
+      PAYGAl2023: ami-02deb1d973c196ac4
+      BYOLAl2023: ami-0cc85c9622baa9ef0
+      PAYGGraviton: ami-07706a592d3f5558e
+      BYOLGraviton: ami-031b60ddba0316e7d
     eu-central-1:
-      PAYGAl2023: ami-06348556399c8ab69
-      BYOLAl2023: ami-00cb5a3527e7c0d11
-      PAYGGraviton: ami-1234
-      BYOLGraviton: ami-4321
+      PAYGAl2023: ami-0d05ef99afcaaae1a
+      BYOLAl2023: ami-091da2479b928e9f6
+      PAYGGraviton: ami-09ffe3c78489fc52e
+      BYOLGraviton: ami-0d3184671dfbcd923
     eu-west-1:
-      PAYGAl2023: ami-0fa7bc44cd9ab1f85
-      BYOLAl2023: ami-0bc2b4d46367806b0
-      PAYGGraviton: ami-1234
-      BYOLGraviton: ami-4321
+      PAYGAl2023: ami-0873bce09c2025efb
+      BYOLAl2023: ami-01a650b3538579502
+      PAYGGraviton: ami-0e6d1a38a2f0f7c54
+      BYOLGraviton: ami-05cc187574187c2b4
     ap-south-1:
-      PAYGAl2023: ami-0f481ba0a6819ced6
-      BYOLAl2023: ami-00b59374107e5efb6
-      PAYGGraviton: ami-1234
-      BYOLGraviton: ami-4321
+      PAYGAl2023: ami-0d37385ae2694682e
+      BYOLAl2023: ami-062801829111cd326
+      PAYGGraviton: ami-09b44badfc5c02850
+      BYOLGraviton: ami-0a1a7629dfe6ff318
     ap-southeast-1:
-      PAYGAl2023: ami-0c373c6c8a2316c80
-      BYOLAl2023: ami-0b9bd265ef165a07b
-      PAYGGraviton: ami-1234
-      BYOLGraviton: ami-4321
+      PAYGAl2023: ami-0b2f597ef9f969657
+      BYOLAl2023: ami-076df6e6711074d11
+      PAYGGraviton: ami-088ef145ab48586f8
+      BYOLGraviton: ami-08a694161ac55833b
     ap-southeast-2:
-      PAYGAl2023: ami-0c65a907408226a3e
-      BYOLAl2023: ami-02bad1ef2c6d4a91a
-      PAYGGraviton: ami-1234
-      BYOLGraviton: ami-4321
+      PAYGAl2023: ami-09b178f7b4404a532
+      BYOLAl2023: ami-0ae0da8850d6ff4a1
+      PAYGGraviton: ami-04f287a541797e4ae
+      BYOLGraviton: ami-00967015c2086c424
     ap-northeast-1:
-      PAYGAl2023: ami-0254bc4adaf13e3b9
-      BYOLAl2023: ami-07e8b312b1016bf67
-      PAYGGraviton: ami-1234
-      BYOLGraviton: ami-4321
+      PAYGAl2023: ami-0eaf5fc5193eb604f
+      BYOLAl2023: ami-002351621c240b3b9
+      PAYGGraviton: ami-01045a7345499054c
+      BYOLGraviton: ami-002acecefc7d64627
     ap-northeast-2:
-      PAYGAl2023: ami-05995b5f5807873d7
-      BYOLAl2023: ami-0afd77ba0d7a0c129
-      PAYGGraviton: ami-1234
-      BYOLGraviton: ami-4321
+      PAYGAl2023: ami-0c7f307cb7e0bbfc5
+      BYOLAl2023: ami-0e9bf11c9fcf8713c
+      PAYGGraviton: ami-00a00e28b1edc086e
+      BYOLGraviton: ami-0175530cb595858af
     sa-east-1:
-      PAYGAl2023: ami-05ec8fee12de236a5
-      BYOLAl2023: ami-09d883ea308449555
-      PAYGGraviton: ami-1234
-      BYOLGraviton: ami-4321
+      PAYGAl2023: ami-0956f2496850d876f
+      BYOLAl2023: ami-044b9ac6d5a83476f
+      PAYGGraviton: ami-0e090666945e58a23
+      BYOLGraviton: ami-0fef466924f37a120
     eu-west-2:
-      PAYGAl2023: ami-0f5cff9d243f31521
-      BYOLAl2023: ami-0588d104a52fbc326
-      PAYGGraviton: ami-1234
-      BYOLGraviton: ami-4321
+      PAYGAl2023: ami-092b0c770e0f16b59
+      BYOLAl2023: ami-0a4364eabec92427d
+      PAYGGraviton: ami-0b76e591c91a9ed5b
+      BYOLGraviton: ami-08aaa45b9dd8a4f8b
     ca-central-1:
-      PAYGAl2023: ami-0f34d118b23b51bf5
-      BYOLAl2023: ami-0c78eccd03e957005
-      PAYGGraviton: ami-1234
-      BYOLGraviton: ami-4321
+      PAYGAl2023: ami-065376db63ab2f15a
+      BYOLAl2023: ami-0972d59f95bfc89c1
+      PAYGGraviton: ami-001267eaf02f9c821
+      BYOLGraviton: ami-0bc1af7538d43306b
     eu-west-3:
-      PAYGAl2023: ami-01fa9155eb17992c5
-      BYOLAl2023: ami-0637199acc5327534
-      PAYGGraviton: ami-1234
-      BYOLGraviton: ami-4321
+      PAYGAl2023: ami-0477248f9e0410ed5
+      BYOLAl2023: ami-01bf78a3155fed7e9
+      PAYGGraviton: ami-08af4fbc1436e4855
+      BYOLGraviton: ami-0f677f833fbf563a3
 Resources:
   ManagedEniStack:
     Type: AWS::CloudFormation::Stack
