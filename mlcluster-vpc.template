@@ -1689,6 +1689,19 @@ Resources:
           FromPort: '7997'
           ToPort: '7997'
           CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '9000'
+          ToPort: '9008'
+          CidrIp: 0.0.0.0/0
+  DynamicAlbTargetPortsIngress:
+    Condition: MultiZone
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !Ref InstanceSecurityGroup
+      IpProtocol: tcp
+      FromPort: '9000'
+      ToPort: '9008'
+      SourceSecurityGroupId: !Ref ElbSecurityGroup
   LaunchTemp1:
     Type: 'AWS::EC2::LaunchTemplate'
     DependsOn:
@@ -2364,3 +2377,72 @@ Outputs:
   InstanceSecurityGroupID:
     Description: Instance Security Group ID
     Value: !Ref InstanceSecurityGroup
+  VpcId:
+    Description: VPC ID for resources created by dependent stacks
+    Value: !GetAtt [VpcStack, Outputs.VpcId]
+    Export:
+      Name: !Sub ${AWS::StackName}-VpcId
+  AlbArn:
+    Condition: MultiZone
+    Description: ARN of the multi-zone Application Load Balancer
+    Value: !Ref Alb
+    Export:
+      Name: !Sub ${AWS::StackName}-AlbArn
+  ClusterEndpoint:
+    Description: The endpoint URL for the MarkLogic Cluster (DNS name or IP) - Primary endpoint only
+    Value: !If 
+      - MultiZone
+      - !GetAtt [Alb, DNSName]
+      - !Select 
+        - 0
+        - !Split 
+          - ','
+          - !GetAtt [ManagedEniStack, Outputs.ENI]
+    Export:
+      Name: !Sub ${AWS::StackName}-ClusterEndpoint
+  SecurityGroupId:
+    Description: Security Group ID for Lambda VPC access
+    Value: !Ref InstanceSecurityGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-SecurityGroup
+  PrivateSubnet1Id:
+    Description: Private Subnet 1 ID for Lambda VPC access
+    Value: !GetAtt [VpcStack, Outputs.PrivateSubnet1Id]
+    Export:
+      Name: !Sub ${AWS::StackName}-PrivateSubnet1
+  IsMultiZone:
+    Description: Whether the cluster is deployed in MultiZone (true/false)
+    Value: !If [MultiZone, 'true', 'false']
+    Export:
+      Name: !Sub ${AWS::StackName}-IsMultiZone
+  PrivateSubnet2Id:
+    Description: >-
+      Private Subnet 2 ID. In MultiZone deployments this is the real AZ2 subnet.
+      In single-zone deployments it falls back to PrivateSubnet1 so the export
+      always exists and can be unconditionally imported by dependent stacks.
+    Value: !If [MultiZone, !GetAtt [VpcStack, Outputs.PrivateSubnet2Id], !GetAtt [VpcStack, Outputs.PrivateSubnet1Id]]
+    Export:
+      Name: !Sub ${AWS::StackName}-PrivateSubnet2
+  PrivateSubnet3Id:
+    Description: >-
+      Private Subnet 3 ID. In MultiZone deployments this is the real AZ3 subnet.
+      In single-zone deployments it falls back to PrivateSubnet1 so the export
+      always exists and can be unconditionally imported by dependent stacks.
+    Value: !If [MultiZone, !GetAtt [VpcStack, Outputs.PrivateSubnet3Id], !GetAtt [VpcStack, Outputs.PrivateSubnet1Id]]
+    Export:
+      Name: !Sub ${AWS::StackName}-PrivateSubnet3
+  NodeAMIId:
+    Description: AMI ID used for MarkLogic nodes (PAYG or BYOL, resolved for the deployed region)
+    Value: !If [PAYG, !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', PAYGAl2023], !FindInMap [LicenseRegion2AMI, !Ref 'AWS::Region', BYOLAl2023]]
+    Export:
+      Name: !Sub ${AWS::StackName}-NodeAMIId
+  KeyName:
+    Description: EC2 KeyPair name used for SSH access to MarkLogic nodes
+    Value: !Ref KeyName
+    Export:
+      Name: !Sub ${AWS::StackName}-KeyName
+  IAMRole:
+    Description: IAM instance profile name attached to MarkLogic nodes
+    Value: !Ref IAMRole
+    Export:
+      Name: !Sub ${AWS::StackName}-IAMRole
