@@ -1,0 +1,1608 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: MarkLogic Group Manager
+Metadata:
+  version: 12.1.0
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: 'Group Manager Configuration'
+        Parameters:
+          - ParentStackName
+          - AdminUser
+          - AdminPass
+      - Label:
+          default: 'Dynamic Nodes Configuration'
+        Parameters:
+          - DynamicHostGroupName
+          - IsMultiZone
+          - DynamicNodesCount
+          - DynamicNodeInstanceType
+          - DynamicNodeVolumeSize
+          - DynamicNodeDataVolumeSize
+
+    ParameterLabels:
+      ParentStackName:
+        default: MarkLogic Cluster Parent Stack Name
+      AdminUser:
+        default: MarkLogic Admin Username
+      AdminPass:
+        default: Admin Password
+      DynamicHostGroupName:
+        default: Dynamic Host Group Name
+      IsMultiZone:
+        default: Parent Cluster Is Multi-Zone
+      DynamicNodesCount:
+        default: Dynamic Nodes Count
+      DynamicNodeInstanceType:
+        default: Dynamic Node Instance Type
+      DynamicNodeVolumeSize:
+        default: Dynamic Node Volume Size (GB)
+      DynamicNodeDataVolumeSize:
+        default: Dynamic Node Data Volume Size (GB)
+
+Parameters:
+  ParentStackName:
+    Description: Name of the MarkLogic cluster parent stack
+    Type: String
+  AdminUser:
+    Description: MarkLogic administrator username for the cluster
+    Type: String
+  AdminPass:
+    Description: The MarkLogic administrator password
+    Type: String
+    NoEcho: 'true'
+    AllowedPattern: >-
+      ^(?!.*[*]).*$
+    ConstraintDescription: Admin password must contain any characters except asterisk (*).
+  DynamicHostGroupName:
+    Description: >-
+      Name of the MarkLogic group to create and configure as the dynamic host group.
+      Must be a non-empty alphanumeric name (hyphens allowed) and cannot be "Default",
+      the built-in group that holds the cluster's static hosts. This stack requires
+      a dynamic host group — do not deploy this stack if dynamic hosts are not needed.
+    Type: String
+    AllowedPattern: '^(?![Dd][Ee][Ff][Aa][Uu][Ll][Tt]$)[a-zA-Z][a-zA-Z0-9\-]*$'
+    ConstraintDescription: >-
+      DynamicHostGroupName is required and must start with a letter, followed by
+      letters, numbers, or hyphens (e.g. "dynamicHost"). It cannot be "Default"
+      (in any capitalization), which is the main cluster's built-in group.
+  IsMultiZone:
+    Description: >-
+      Set to the value exported by the parent stack's IsMultiZone output.
+    Type: String
+    AllowedValues:
+      - 'true'
+      - 'false'
+  DynamicNodesCount:
+    Description: Number of dynamic MarkLogic nodes to launch via ASG
+    Type: Number
+    MinValue: '0'
+    MaxValue: '50'
+    Default: '0'
+  DynamicNodeInstanceType:
+    Description: EC2 instance type for dynamic MarkLogic nodes.
+    Type: String
+    Default: r5.4xlarge
+  DynamicNodeVolumeSize:
+    Description: Root EBS volume size (GB) for dynamic nodes.
+    Type: Number
+    MinValue: '40'
+    MaxValue: '65536'
+    Default: '40'
+  DynamicNodeDataVolumeSize:
+    Description: >-
+      Data EBS volume size (GB) for dynamic nodes, mounted at /dev/sdf (/var/opt/MarkLogic).
+    Type: Number
+    MinValue: '10'
+    MaxValue: '65536'
+    Default: '10'
+Conditions:
+  IsDynamicEnabled: !Not [!Equals [!Ref DynamicHostGroupName, '']]
+  ParentIsMultiZone: !Equals [!Ref IsMultiZone, 'true']
+  CreateDynamicAlbResources: !And [!Condition IsDynamicEnabled, !Condition ParentIsMultiZone]
+
+Resources:
+  GroupManagerRole:
+    Type: AWS::IAM::Role
+    Condition: IsDynamicEnabled
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+
+  GroupManagerFunction:
+    Type: AWS::Lambda::Function
+    Condition: IsDynamicEnabled
+    DependsOn: GroupManagerRole
+    Properties:
+      Runtime: python3.13
+      Handler: index.handler
+      Role: !GetAtt GroupManagerRole.Arn
+      Timeout: 360
+      VpcConfig:
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub ${ParentStackName}-SecurityGroup
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet1
+      Environment:
+        Variables:
+          CLUSTER_ENDPOINT:
+            Fn::ImportValue: !Sub ${ParentStackName}-ClusterEndpoint
+      Code:
+        ZipFile: |
+          import json
+          import os
+          import urllib3
+          import base64
+          import time
+          import hashlib
+          import re
+          from typing import Set, Optional
+          
+          http = urllib3.PoolManager()
+          
+          def redact_event(event):
+              # OldResourceProperties carries the previous password on Update.
+              safe = dict(event)
+              for key in ('ResourceProperties', 'OldResourceProperties'):
+                  if key in safe:
+                      safe[key] = {k: '***' if k == 'AdminPass' else v for k, v in safe[key].items()}
+              return safe
+
+          # Wait loops stop before this so a response always reaches CloudFormation.
+          DEADLINE = 0.0
+
+          def out_of_time(reserve: float = 0.0) -> bool:
+              return time.time() + reserve >= DEADLINE
+
+          def handler(event, context):
+              global DEADLINE
+              DEADLINE = time.time() + context.get_remaining_time_in_millis() / 1000.0 - 30
+              print(f"Event: {json.dumps(redact_event(event), default=str)}")
+              request_type = event['RequestType']
+              properties = event['ResourceProperties']
+              old_properties = event.get('OldResourceProperties', {})
+              try:
+                  if properties.get('CleanupOnly') == 'true':
+                      handle_cleanup(request_type, properties, old_properties)
+                  elif request_type == 'Create':
+                      handle_create(properties)
+                  elif request_type == 'Update':
+                      handle_update(properties)
+                  elif request_type == 'Delete':
+                      handle_delete(properties)
+                  return send_response(event, context, 'SUCCESS',
+                      f'DynamicHostGroup managed: {request_type}')
+              except Exception as e:
+                  print(f"ERROR: {str(e)}")
+                  import traceback
+                  traceback.print_exc()
+                  return send_response(event, context, 'FAILED', str(e))
+          
+          def digest_auth_request(method: str, url: str, username: str, password: str, 
+                                  payload: Optional[dict] = None):
+              """Make request with HTTP Digest Authentication"""
+              body = json.dumps(payload) if payload else None
+              
+              response = http.request(method, url, body=body, timeout=30.0)
+              
+              if response.status != 401:
+                  return response
+              
+              www_auth = response.headers.get('WWW-Authenticate', '')
+              
+              if 'Digest' in www_auth:
+                  realm = re.search(r'realm="([^"]+)"', www_auth)
+                  nonce = re.search(r'nonce="([^"]+)"', www_auth)
+                  
+                  if realm and nonce:
+                      realm_val = realm.group(1)
+                      nonce_val = nonce.group(1)
+                      
+                      uri = '/' + url.split('/', 3)[-1]
+                      ha1 = hashlib.md5(f"{username}:{realm_val}:{password}".encode()).hexdigest()
+                      ha2 = hashlib.md5(f"{method}:{uri}".encode()).hexdigest()
+                      digest_resp = hashlib.md5(f"{ha1}:{nonce_val}:{ha2}".encode()).hexdigest()
+                      
+                      auth_header = (
+                          f'Digest username="{username}", realm="{realm_val}", '
+                          f'nonce="{nonce_val}", uri="{uri}", response="{digest_resp}"'
+                      )
+                      
+                      headers = {
+                          'Authorization': auth_header,
+                          'Content-Type': 'application/json',
+                          'Accept': 'application/json'
+                      }
+                      
+                      return http.request(method, url, body=body, headers=headers, timeout=30.0)
+              
+              auth_string = base64.b64encode(f"{username}:{password}".encode()).decode()
+              headers = {
+                  'Authorization': f'Basic {auth_string}',
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+              }
+              
+              return http.request(method, url, body=body, headers=headers, timeout=30.0)
+          
+          def wait_for_ready(endpoint: str, username: str, password: str):
+              """Wait for MarkLogic to be ready"""
+              url = f"http://{endpoint}:8002/manage/v2"
+              
+              for attempt in range(1, 21):
+                  try:
+                      response = http.request('GET', url, timeout=10.0, retries=False)
+                      if response.status in [200, 401]:
+                          print(f"✓ Ready (attempt {attempt})")
+                          time.sleep(5)
+                          return
+                  except Exception as e:
+                      print(f"Attempt {attempt}: {str(e)[:80]}")
+                  
+                  if out_of_time(15):
+                      raise Exception(f"MarkLogic at {endpoint} did not respond before the Lambda time limit; check the cluster is running and reachable from this Lambda (NAT route, security groups)")
+                  time.sleep(15)
+              
+              raise Exception("Not ready after 5 minutes")
+          
+          def get_groups(endpoint: str, username: str, password: str) -> Set[str]:
+              """Get existing groups from MarkLogic"""
+              url = f"http://{endpoint}:8002/manage/v2/groups?format=json"
+              response = digest_auth_request('GET', url, username, password)
+              
+              if response.status != 200:
+                  print(f"Failed to get groups: {response.status}")
+                  return set()
+              
+              data = json.loads(response.data.decode('utf-8'))
+              groups = data.get('group-default-list', {}).get('list-items', {}).get('list-item', [])
+              
+              if isinstance(groups, dict):
+                  groups = [groups]
+              
+              group_names = {g['nameref'] for g in groups if 'nameref' in g}
+              print(f"Existing groups in MarkLogic: {group_names}")
+              return group_names
+          
+          def create_group(endpoint: str, username: str, password: str, name: str):
+              """Create a group"""
+              url = f"http://{endpoint}:8002/manage/v2/groups"
+              payload = {"group-name": name}
+              
+              response = digest_auth_request('POST', url, username, password, payload)
+              
+              if response.status not in [200, 201]:
+                  raise Exception(f"Failed to create '{name}': {response.status}")
+              
+              print(f"✓ Created: {name}")
+          
+          def delete_group(endpoint: str, username: str, password: str, name: str):
+              """Delete a group with better error handling"""
+              if name == 'Default':
+                  print(f"⚠ Skipping protected group: {name}")
+                  return
+              
+              url = f"http://{endpoint}:8002/manage/v2/groups/{name}"
+              response = digest_auth_request('DELETE', url, username, password)
+              
+              if response.status in [200, 204]:
+                  print(f"✓ Deleted: {name}")
+              elif response.status == 404:
+                  print(f"⚠ Not found: {name}")
+              elif response.status == 400:
+                  # Group may have assigned hosts
+                  print(f"⚠ Cannot delete '{name}' - may have assigned hosts or other dependencies")
+              else:
+                  print(f"⚠ Delete failed for {name}: {response.status}")
+          
+          def enable_dynamic_hosts(endpoint: str, username: str, password: str, group_name: str):
+              """Enable allow-dynamic-hosts on a group via PUT /manage/v2/groups/{name}/properties"""
+              url = f"http://{endpoint}:8002/manage/v2/groups/{group_name}/properties"
+              payload = {"allow-dynamic-hosts": True}
+              response = digest_auth_request('PUT', url, username, password, payload)
+              if response.status not in [200, 204]:
+                  raise Exception(f"Failed to enable dynamic hosts on '{group_name}': {response.status} {response.data.decode('utf-8')[:200]}")
+              print(f"✓ allow-dynamic-hosts enabled on group: {group_name}")
+          
+          def enable_join_host_admin_server(endpoint: str, username: str, password: str, group_name: str):
+              """Enable API-token-authentication on the Admin App Server so dynamic nodes can authenticate with JWT tokens.
+              The Admin app server always lives in the Default group, regardless of the dynamic host group."""
+              url = f"http://{endpoint}:8002/manage/v2/servers/Admin/properties?group-id=Default"
+              payload = {"API-token-authentication": True}
+              response = digest_auth_request('PUT', url, username, password, payload)
+              if response.status not in [200, 204]:
+                  raise Exception(f"Failed to enable API-token-authentication on Admin server in '{group_name}': {response.status} {response.data.decode('utf-8')[:200]}")
+              print(f"✓ API-token-authentication enabled on Admin server in group: {group_name}")
+          
+          def get_cluster_name(endpoint: str, username: str, password: str) -> str:
+              """Return the local cluster name via GET /manage/v2?view=status."""
+              url = f"http://{endpoint}:8002/manage/v2?view=status&format=json"
+              response = digest_auth_request('GET', url, username, password)
+              if response.status != 200:
+                  raise Exception(f"Failed to get cluster name: {response.status} {response.data.decode('utf-8')[:200]}")
+              data = json.loads(response.data.decode('utf-8'))
+              name = data.get('local-cluster-status', {}).get('name', '')
+              if not name:
+                  raise Exception(f"Cluster name not found in status response")
+              print(f"Cluster name: {name}")
+              return name
+          
+          def get_dynamic_host_ids(endpoint: str, username: str, password: str, cluster_name: str) -> list:
+              """Return all dynamic host IDs currently registered in the cluster."""
+              url = f"http://{endpoint}:8002/manage/v2/clusters/{cluster_name}/dynamic-hosts?format=json"
+              response = digest_auth_request('GET', url, username, password)
+              if response.status not in [200, 204]:
+                  print(f"GET dynamic-hosts: unexpected status={response.status}")
+                  return []
+              raw = response.data.decode('utf-8').strip()
+              print(f"GET dynamic-hosts raw response: {raw[:500]}")
+              if not raw:
+                  return []
+              data = json.loads(raw)
+              dynamic_hosts_val = data.get('dynamic-hosts', [])
+              # ML returns "dynamic-hosts" as either:
+              #   a list of IDs directly: ["id1", "id2"]
+              #   or a dict with "dynamic-host" key: {"dynamic-host": "id1"} or {"dynamic-host": ["id1","id2"]}
+              if isinstance(dynamic_hosts_val, list):
+                  hosts = dynamic_hosts_val
+              elif isinstance(dynamic_hosts_val, dict):
+                  hosts = dynamic_hosts_val.get('dynamic-host', [])
+                  if isinstance(hosts, str):
+                      hosts = [hosts]
+              else:
+                  hosts = []
+              print(f"Dynamic host IDs registered in cluster: {hosts}")
+              return hosts
+          
+          def remove_cluster_dynamic_hosts(endpoint: str, username: str, password: str):
+              """Forcefully remove all dynamic hosts from the cluster registry
+              using DELETE /manage/v2/clusters/{name}/dynamic-hosts.
+              Called on stack delete, after the ASG and its instances are gone."""
+              try:
+                  cluster_name = get_cluster_name(endpoint, username, password)
+                  host_ids = get_dynamic_host_ids(endpoint, username, password, cluster_name)
+                  if not host_ids:
+                      print("No dynamic hosts registered in cluster — nothing to remove")
+                      return
+                  print(f"Removing {len(host_ids)} dynamic host(s) from cluster registry")
+                  # ML JSON: single value is a plain string, multiple values is a list
+                  hosts_val = host_ids[0] if len(host_ids) == 1 else host_ids
+                  payload = {"dynamic-hosts": {"dynamic-host": hosts_val}}
+                  url = f"http://{endpoint}:8002/manage/v2/clusters/{cluster_name}/dynamic-hosts"
+                  response = digest_auth_request('DELETE', url, username, password, payload)
+                  if response.status in [200, 204]:
+                      print("✓ Dynamic hosts removed from cluster registry")
+                  else:
+                      print(f"⚠ remove dynamic-hosts: {response.status} {response.data.decode('utf-8')[:200]}")
+              except Exception as e:
+                  print(f"⚠ Error removing dynamic hosts from cluster: {e}")
+          
+          def handle_create(properties):
+              """Handle CREATE — create and configure the dynamic host group."""
+              endpoint = os.environ['CLUSTER_ENDPOINT']
+              username = properties['AdminUser']
+              password = properties['AdminPass']
+              group_name = properties.get('DynamicHostGroupName', '').strip()
+              if not group_name:
+                  print("No DynamicHostGroupName set — nothing to do")
+                  return
+              print(f"CREATE: Setting up dynamic host group '{group_name}'")
+              wait_for_ready(endpoint, username, password)
+              existing = get_groups(endpoint, username, password)
+              if group_name not in existing:
+                  create_group(endpoint, username, password, group_name)
+              else:
+                  print(f"Group '{group_name}' already exists, skipping create")
+              time.sleep(5)
+              enable_dynamic_hosts(endpoint, username, password, group_name)
+              enable_join_host_admin_server(endpoint, username, password, group_name)
+              print(f"✓ CREATE complete: dynamic host group '{group_name}' ready")
+          
+          def handle_update(properties):
+              """Handle UPDATE — make sure the (possibly renamed) dynamic host group exists and is configured.
+              The old group is deleted later by handle_cleanup, once the ASG has replaced its nodes.
+              Scale-in cleanup is left to the termination lifecycle hook so each node drains first."""
+              endpoint = os.environ['CLUSTER_ENDPOINT']
+              username = properties['AdminUser']
+              password = properties['AdminPass']
+              new_group = properties.get('DynamicHostGroupName', '').strip()
+              wait_for_ready(endpoint, username, password)
+              if new_group:
+                  existing = get_groups(endpoint, username, password)
+                  if new_group not in existing:
+                      create_group(endpoint, username, password, new_group)
+                  else:
+                      print(f"Group '{new_group}' already exists")
+                  time.sleep(5)
+                  enable_dynamic_hosts(endpoint, username, password, new_group)
+                  enable_join_host_admin_server(endpoint, username, password, new_group)
+                  print(f"\u2713 UPDATE complete: dynamic host group '{new_group}' configured")
+              else:
+                  print("\u2713 UPDATE complete: no dynamic host group configured")
+          
+          def handle_cleanup(request_type, properties, old_properties):
+              """Runs after the ASG update. On a rename, delete the old group once its nodes are gone."""
+              if request_type != 'Update':
+                  return
+              new_group = properties.get('DynamicHostGroupName', '').strip()
+              old_group = old_properties.get('DynamicHostGroupName', '').strip()
+              if not old_group or old_group == new_group:
+                  print("No group rename — nothing to clean up")
+                  return
+              endpoint = os.environ['CLUSTER_ENDPOINT']
+              username = properties['AdminUser']
+              password = properties['AdminPass']
+              print(f"Group renamed: '{old_group}' \u2192 '{new_group}' — deleting old group")
+              wait_for_ready(endpoint, username, password)
+              wait_for_group_drain(endpoint, username, password, old_group)
+              delete_group(endpoint, username, password, old_group)
+          
+          def get_group_host_count(endpoint: str, username: str, password: str, group_name: str) -> int:
+              """Return the number of hosts currently assigned to a group."""
+              url = f"http://{endpoint}:8002/manage/v2/hosts?group-id={group_name}&format=json"
+              try:
+                  response = digest_auth_request('GET', url, username, password)
+                  if response.status != 200:
+                      return 0
+                  data = json.loads(response.data.decode('utf-8'))
+                  items = data.get('host-default-list', {}).get('list-items', {}).get('list-item', [])
+                  if isinstance(items, dict):
+                      items = [items]
+                  return len(items)
+              except Exception as e:
+                  print(f"⚠ Could not check hosts for group '{group_name}': {e}")
+                  return 0
+          
+          def wait_for_group_drain(endpoint: str, username: str, password: str, group_name: str,
+                                   max_attempts: int = 15, interval: int = 15):
+              """Wait until no hosts remain in the group (dynamic hosts auto-deregister on EC2 termination)."""
+              for attempt in range(1, max_attempts + 1):
+                  count = get_group_host_count(endpoint, username, password, group_name)
+                  if count == 0:
+                      print(f"✓ Group '{group_name}' has no remaining hosts")
+                      return
+                  print(f"Group '{group_name}' still has {count} host(s), waiting... ({attempt}/{max_attempts})")
+                  if out_of_time(interval):
+                      break
+                  time.sleep(interval)
+              print(f"⚠ Group '{group_name}' still has hosts after waiting — attempting delete anyway")
+          
+          def handle_delete(properties):
+              """Handle DELETE — remove cluster dynamic hosts, drain, and delete the group.
+              By the time this runs, CFN has already deleted the ASG (reverse DependsOn order),
+              so instances are terminated and most dynamic hosts will have auto-deregistered.
+              remove_cluster_dynamic_hosts cleans up any that did not self-deregister."""
+              try:
+                  endpoint = os.environ['CLUSTER_ENDPOINT']
+                  username = properties['AdminUser']
+                  password = properties['AdminPass']
+                  group_name = properties.get('DynamicHostGroupName', '').strip()
+                  if not group_name:
+                      print("No DynamicHostGroupName — nothing to delete")
+                      return
+                  print(f"DELETE: Removing dynamic host group '{group_name}'")
+                  wait_for_ready(endpoint, username, password)
+                  remove_cluster_dynamic_hosts(endpoint, username, password)
+                  wait_for_group_drain(endpoint, username, password, group_name)
+                  delete_group(endpoint, username, password, group_name)
+                  print("\u2713 DELETE complete")
+              except Exception as e:
+                  print(f"Error during DELETE: {e}")
+                  # Don't fail stack deletion if cleanup fails
+          
+          def send_response(event, context, status, reason):
+              """Send CloudFormation response"""
+              # CRITICAL FIX: Use stable PhysicalResourceId
+              # Use the StackId + LogicalResourceId so it stays the same across updates
+              physical_id = event.get('PhysicalResourceId')
+              if not physical_id:
+                  # First time (Create): Generate stable ID
+                  physical_id = f"{event['StackId']}/{event['LogicalResourceId']}"
+              
+              response_body = {
+                  'Status': status,
+                  'Reason': reason,
+                  'PhysicalResourceId': physical_id,  # ← Use stable ID
+                  'StackId': event['StackId'],
+                  'RequestId': event['RequestId'],
+                  'LogicalResourceId': event['LogicalResourceId'],
+                  'Data': {}
+              }
+              
+              print(f"CF Response: {status} - {reason}")
+              print(f"Physical Resource ID: {physical_id}")
+              print(f"Response URL: {event['ResponseURL'][:60]}...")
+              
+              try:
+                  start = time.time()
+                  http.request('PUT', event['ResponseURL'], 
+                              body=json.dumps(response_body),
+                              headers={'Content-Type': ''},
+                              timeout=5.0)
+                  elapsed = time.time() - start
+                  print(f"✓ Response sent in {elapsed:.2f}s")
+              except Exception as e:
+                  print(f"⚠ FAILED to send response: {e}")
+                  raise
+              
+              return response_body
+
+  GroupManagerResource:
+    Type: Custom::GroupManager
+    Condition: IsDynamicEnabled
+    DependsOn: GroupManagerFunction
+    Properties:
+      ServiceToken: !GetAtt GroupManagerFunction.Arn
+      # Above the Lambda's 360 s timeout, far below CloudFormation's 1 h default.
+      ServiceTimeout: 420
+      AdminUser: !Ref AdminUser
+      AdminPass: !Ref AdminPass
+      DynamicHostGroupName: !Ref DynamicHostGroupName
+      DynamicNodesCount: !Ref DynamicNodesCount
+
+  # IAM Role for the TokenIssuer Lambda (needs EC2 + ASG describe, VPC networking)
+  TokenIssuerRole:
+    Type: AWS::IAM::Role
+    Condition: IsDynamicEnabled
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+        - PolicyName: TokenIssuerPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - autoscaling:CompleteLifecycleAction
+                  - ec2:DescribeInstances
+                  - ec2:GetConsoleOutput
+                Resource: '*'
+
+  # Lambda: invoked by the ASG Lifecycle Hook when a new dynamic node launches.
+  # Waits for MarkLogic on the node to be ready, generates a fresh JWT token
+  # (max 15-min TTL), then calls admin/v1/init to join the cluster.
+  TokenIssuerFunction:
+    Type: AWS::Lambda::Function
+    Condition: IsDynamicEnabled
+    DependsOn:
+      - TokenIssuerRole
+      - GroupManagerResource
+    Properties:
+      Runtime: python3.13
+      Handler: index.handler
+      Role: !GetAtt TokenIssuerRole.Arn
+      Timeout: 900
+      VpcConfig:
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub ${ParentStackName}-SecurityGroup
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet1
+      Environment:
+        Variables:
+          CLUSTER_ENDPOINT:
+            Fn::ImportValue: !Sub ${ParentStackName}-ClusterEndpoint
+          ADMIN_USERNAME: !Ref AdminUser
+          ADMIN_PASSWORD: !Ref AdminPass
+          DYNAMIC_HOST_GROUP: !Ref DynamicHostGroupName
+      Code:
+        ZipFile: |
+          import json
+          import os
+          import urllib3
+          import base64
+          import hashlib
+          import re
+          import time
+          import boto3
+
+          http = urllib3.PoolManager()
+
+          # Wait loops stop before this so the lifecycle action is always completed explicitly.
+          DEADLINE = 0.0
+
+          def out_of_time(reserve: float = 0.0) -> bool:
+              return time.time() + reserve >= DEADLINE
+
+          def handler(event, context):
+              global DEADLINE
+              DEADLINE = time.time() + context.get_remaining_time_in_millis() / 1000.0 - 30
+              print(f"Event: {json.dumps(event, default=str)}")
+
+              # SNS wraps the ASG lifecycle message
+              message = json.loads(event['Records'][0]['Sns']['Message'])
+
+              # ASG sends a TEST_NOTIFICATION when first created — ignore it
+              if message.get('Event') == 'autoscaling:TEST_NOTIFICATION':
+                  print("Received TEST_NOTIFICATION — ignoring")
+                  return
+
+              instance_id          = message['EC2InstanceId']
+              lifecycle_hook       = message['LifecycleHookName']
+              asg_name             = message['AutoScalingGroupName']
+              lifecycle_token      = message['LifecycleActionToken']
+              lifecycle_transition = message.get('LifecycleTransition', '')
+
+              cluster_endpoint = os.environ['CLUSTER_ENDPOINT']
+              username         = os.environ['ADMIN_USERNAME']
+              password         = os.environ['ADMIN_PASSWORD']
+              group_name       = os.environ['DYNAMIC_HOST_GROUP']
+
+              ec2 = boto3.client('ec2')
+              asg = boto3.client('autoscaling')
+
+              if lifecycle_transition == 'autoscaling:EC2_INSTANCE_TERMINATING':
+                  # Scale-down: remove the terminating node from the ML cluster before termination.
+                  # This fires for every instance the ASG terminates (partial or full scale-down),
+                  # ensuring the node is removed from the Admin UI immediately.
+                  try:
+                      node_ip, node_hostname = get_instance_info(ec2, instance_id)
+                      print(f"Terminating dynamic node: {instance_id} → {node_ip} ({node_hostname})")
+                      remove_host_from_cluster(cluster_endpoint, username, password, node_hostname)
+                      asg.complete_lifecycle_action(
+                          LifecycleHookName=lifecycle_hook,
+                          AutoScalingGroupName=asg_name,
+                          LifecycleActionToken=lifecycle_token,
+                          LifecycleActionResult='CONTINUE'
+                      )
+                      print(f"✓ Dynamic node {instance_id} removed from cluster")
+                      remove_stale_dynamic_hosts(ec2, asg_name, cluster_endpoint, username, password,
+                                                 group_name, node_hostname)
+                  except Exception as e:
+                      print(f"ERROR during termination cleanup: {e}")
+                      import traceback
+                      traceback.print_exc()
+                      # Always CONTINUE on termination — never block instance termination
+                      try:
+                          asg.complete_lifecycle_action(
+                              LifecycleHookName=lifecycle_hook,
+                              AutoScalingGroupName=asg_name,
+                              LifecycleActionToken=lifecycle_token,
+                              LifecycleActionResult='CONTINUE'
+                          )
+                      except Exception as e2:
+                          print(f"Failed to send CONTINUE: {e2}")
+              else:
+                  # Scale-up: join the new node to the cluster
+                  node_hostname = None
+                  try:
+                      node_ip, node_hostname = get_instance_info(ec2, instance_id)
+                      print(f"New dynamic node: {instance_id} → {node_ip} ({node_hostname})")
+
+                      # Wait for MarkLogic admin port to be ready on the new node
+                      wait_for_ml_ready(node_ip, ec2, instance_id)
+
+                      # Join the node to the cluster. Token is generated fresh per attempt
+                      # inside init_dynamic_host to prevent expiry on 503 retries.
+                      init_dynamic_host(node_ip, cluster_endpoint, username, password, group_name)
+
+                      # Verify the node joined the cluster and its Admin endpoint responds.
+                      wait_for_node_in_cluster(cluster_endpoint, username, password, node_hostname)
+                      wait_for_ml_ready_after_join(node_ip)
+
+                      # Signal ASG to continue bringing the instance into service
+                      asg.complete_lifecycle_action(
+                          LifecycleHookName=lifecycle_hook,
+                          AutoScalingGroupName=asg_name,
+                          LifecycleActionToken=lifecycle_token,
+                          LifecycleActionResult='CONTINUE'
+                      )
+                      print(f"✓ Dynamic node {instance_id} joined cluster in group '{group_name}'")
+
+                  except Exception as e:
+                      print(f"ERROR: {e}")
+                      import traceback
+                      traceback.print_exc()
+                      log_console_tail(ec2, instance_id)
+                      if node_hostname:
+                          # A partial join can still register the host; don't leave it behind.
+                          remove_host_from_cluster(cluster_endpoint, username, password, node_hostname)
+                      # ABANDON causes ASG to terminate the instance and try again
+                      try:
+                          asg.complete_lifecycle_action(
+                              LifecycleHookName=lifecycle_hook,
+                              AutoScalingGroupName=asg_name,
+                              LifecycleActionToken=lifecycle_token,
+                              LifecycleActionResult='ABANDON'
+                          )
+                      except Exception as e2:
+                          print(f"Failed to send ABANDON: {e2}")
+
+          def log_console_tail(ec2, instance_id: str, lines: int = 80):
+              """Boot failures are only visible on the node, which is terminated right after ABANDON."""
+              try:
+                  out = ec2.get_console_output(InstanceId=instance_id, Latest=True).get('Output', '')
+                  secret = os.environ.get('ADMIN_PASSWORD', '')
+                  if secret:
+                      out = out.replace(secret, '***')
+                  print(f"Console output (last {lines} lines) for {instance_id}:\n" + '\n'.join(out.splitlines()[-lines:]))
+              except Exception as e:
+                  print(f"Could not read console output for {instance_id}: {e}")
+
+          def get_instance_info(ec2, instance_id: str):
+              """Return (private_ip, private_dns_name) for an EC2 instance.
+              PrivateDnsName matches the hostname MarkLogic registers itself with
+              (e.g. ip-10-0-1-23.us-east-1.compute.internal)."""
+              resp = ec2.describe_instances(InstanceIds=[instance_id])
+              instance = resp['Reservations'][0]['Instances'][0]
+              return instance['PrivateIpAddress'], instance['PrivateDnsName']
+
+          def remove_host_from_cluster(endpoint: str, username: str, password: str, hostname: str):
+              """Remove a specific dynamic node from the MarkLogic cluster registry.
+              Called from the termination lifecycle hook so the node is removed from
+              the Admin UI immediately rather than showing as disconnected.
+
+              ML stores dynamic host registry entries as numeric xdmp:host() IDs, not
+              hostnames. We resolve hostname → numeric ID via GET /manage/v2/hosts
+              (which returns both nameref and idref per host), then match that ID
+              against the dynamic-hosts registry and delete it."""
+              try:
+                  # Step 1: resolve hostname to numeric xdmp:host() ID via hosts list
+                  hosts_url = f"http://{endpoint}:8002/manage/v2/hosts?format=json"
+                  r = digest_auth('GET', hosts_url, username, password)
+                  if r.status != 200:
+                      print(f"⚠ Could not list hosts: {r.status}")
+                      return
+                  data = json.loads(r.data.decode('utf-8'))
+                  items = data.get('host-default-list', {}).get('list-items', {}).get('list-item', [])
+                  if isinstance(items, dict):
+                      items = [items]
+                  print(f"All hosts: {[(h.get('nameref'), h.get('idref')) for h in items]}")
+
+                  short_hostname = hostname.split('.')[0]
+                  host_id = None
+                  for h in items:
+                      nameref = h.get('nameref', '')
+                      if nameref == hostname or nameref.split('.')[0] == short_hostname:
+                          host_id = str(h.get('idref', ''))
+                          print(f"Resolved '{hostname}' → host ID '{host_id}'")
+                          break
+
+                  if not host_id:
+                      print(f"⚠ Hostname '{hostname}' not found in ML hosts list — instance may have already left the cluster")
+                      return
+
+                  # Step 2: get cluster name
+                  status_url = f"http://{endpoint}:8002/manage/v2?view=status&format=json"
+                  r = digest_auth('GET', status_url, username, password)
+                  if r.status != 200:
+                      print(f"⚠ Could not get cluster name: {r.status}")
+                      return
+                  cluster_name = json.loads(r.data.decode('utf-8')).get('local-cluster-status', {}).get('name', '')
+                  if not cluster_name:
+                      print("⚠ Could not determine cluster name")
+                      return
+
+                  # Step 3: check host ID is in the dynamic-hosts registry
+                  dh_url = f"http://{endpoint}:8002/manage/v2/clusters/{cluster_name}/dynamic-hosts?format=json"
+                  r = digest_auth('GET', dh_url, username, password)
+                  print(f"Dynamic hosts registry: status={r.status}, body={r.data.decode('utf-8', errors='replace')[:300]}")
+                  if r.status not in [200, 204]:
+                      print(f"⚠ Could not get dynamic hosts registry: {r.status}")
+                      return
+                  raw = r.data.decode('utf-8').strip()
+                  if not raw:
+                      print("Dynamic host registry is empty")
+                      return
+                  reg_data = json.loads(raw)
+                  dynamic_hosts_val = reg_data.get('dynamic-hosts', [])
+                  if isinstance(dynamic_hosts_val, list):
+                      all_ids = [str(i) for i in dynamic_hosts_val]
+                  elif isinstance(dynamic_hosts_val, dict):
+                      ids = dynamic_hosts_val.get('dynamic-host', [])
+                      all_ids = [str(ids)] if isinstance(ids, str) else [str(i) for i in ids]
+                  else:
+                      all_ids = []
+                  print(f"Dynamic host IDs in registry: {all_ids}")
+
+                  if host_id not in all_ids:
+                      print(f"⚠ Host ID '{host_id}' not in dynamic-hosts registry — already removed")
+                      return
+
+                  # Step 4: delete just this host's entry from the registry
+                  payload = {"dynamic-hosts": {"dynamic-host": host_id}}
+                  del_url = f"http://{endpoint}:8002/manage/v2/clusters/{cluster_name}/dynamic-hosts"
+                  r = digest_auth('DELETE', del_url, username, password,
+                                  body=json.dumps(payload).encode('utf-8'))
+                  if r.status in [200, 204]:
+                      print(f"✓ Dynamic host '{hostname}' (ID: {host_id}) removed from cluster registry")
+                  else:
+                      print(f"⚠ Failed to remove dynamic host '{host_id}': {r.status} {r.data.decode('utf-8')[:200]}")
+              except Exception as e:
+                  print(f"⚠ Error in remove_host_from_cluster: {e}")
+
+          def remove_stale_dynamic_hosts(ec2, asg_name: str, endpoint: str, username: str, password: str,
+                                         group_name: str, self_hostname: str):
+              """Remove hosts in the dynamic group whose EC2 instance is no longer in this ASG,
+              e.g. left behind when an earlier termination cleanup failed or timed out."""
+              try:
+                  live = set()
+                  pages = ec2.get_paginator('describe_instances').paginate(Filters=[
+                      {'Name': 'tag:aws:autoscaling:groupName', 'Values': [asg_name]},
+                      {'Name': 'instance-state-name', 'Values': ['pending', 'running', 'stopping', 'stopped']}])
+                  for page in pages:
+                      for res in page['Reservations']:
+                          for inst in res['Instances']:
+                              if inst.get('PrivateDnsName'):
+                                  live.add(inst['PrivateDnsName'].split('.')[0])
+                  # The terminating instance is still running; if it's missing, the lookup is wrong.
+                  if self_hostname.split('.')[0] not in live:
+                      print(f"⚠ Stale sweep skipped: {self_hostname} not found among ASG instances")
+                      return
+                  url = f"http://{endpoint}:8002/manage/v2/hosts?group-id={group_name}&format=json"
+                  r = digest_auth('GET', url, username, password)
+                  if r.status != 200:
+                      print(f"⚠ Stale sweep: could not list hosts in '{group_name}': {r.status}")
+                      return
+                  items = json.loads(r.data.decode('utf-8')).get('host-default-list', {}).get('list-items', {}).get('list-item', [])
+                  if isinstance(items, dict):
+                      items = [items]
+                  for h in items:
+                      nameref = h.get('nameref', '')
+                      if nameref and nameref.split('.')[0] not in live:
+                          print(f"Removing stale dynamic host '{nameref}' (no live instance in {asg_name})")
+                          remove_host_from_cluster(endpoint, username, password, nameref)
+              except Exception as e:
+                  print(f"⚠ Error in remove_stale_dynamic_hosts: {e}")
+
+          def wait_for_ml_ready_after_join(node_ip: str, max_attempts: int = 30, interval: int = 15):
+              """Wait for the node's Admin endpoint to respond after cluster membership is confirmed."""
+              url = f"http://{node_ip}:8001/admin/v1/timestamp"
+              print(f"Waiting for MarkLogic to respond after join on {node_ip}...")
+              for attempt in range(1, max_attempts + 1):
+                  try:
+                      r = http.request('GET', url, timeout=5.0, retries=False)
+                      if r.status in [200, 401]:
+                          print(f"✓ MarkLogic responding after join on {node_ip} (attempt {attempt})")
+                          return
+                      detail = f"HTTP {r.status}"
+                  except Exception as e:
+                      detail = type(e).__name__
+                  print(f"MarkLogic not yet responding after join on {node_ip} ({attempt}/{max_attempts}): {detail}")
+                  if out_of_time(interval):
+                      break
+                  time.sleep(interval)
+              raise Exception(f"MarkLogic on {node_ip} did not respond after cluster membership was confirmed")
+
+          def wait_for_node_in_cluster(endpoint: str, username: str, password: str, hostname: str,
+                                       max_attempts: int = 20, interval: int = 15):
+              """Poll the cluster hosts list until the new node's hostname appears.
+              admin/v1/init returning 202 only means ML accepted the token.
+              This confirms the node is registered in the cluster hosts list.
+              Raises if the node does not appear within max_attempts."""
+              short_hostname = hostname.split('.')[0]
+              print(f"Waiting for '{hostname}' to appear in cluster hosts list...")
+              for attempt in range(1, max_attempts + 1):
+                  try:
+                      url = f"http://{endpoint}:8002/manage/v2/hosts?format=json"
+                      r = digest_auth('GET', url, username, password)
+                      if r.status == 200:
+                          data = json.loads(r.data.decode('utf-8'))
+                          items = data.get('host-default-list', {}).get('list-items', {}).get('list-item', [])
+                          if isinstance(items, dict):
+                              items = [items]
+                          namerefs = [h.get('nameref', '') for h in items]
+                          print(f"Cluster hosts ({attempt}/{max_attempts}): {namerefs}")
+                          for nameref in namerefs:
+                              if nameref == hostname or nameref.split('.')[0] == short_hostname:
+                                  print(f"\u2713 Node '{hostname}' confirmed in cluster hosts list")
+                                  return
+                  except Exception as e:
+                      print(f"Error polling cluster hosts: {e}")
+                  if out_of_time(interval):
+                      break
+                  time.sleep(interval)
+              raise Exception(f"Node '{hostname}' did not appear in cluster hosts list after {max_attempts} attempts — join failed")
+
+          def instance_gone(ec2, instance_id: str) -> bool:
+              try:
+                  state = ec2.describe_instances(InstanceIds=[instance_id])['Reservations'][0]['Instances'][0]['State']['Name']
+              except Exception:
+                  return False
+              return state in ('shutting-down', 'terminated', 'stopping', 'stopped')
+
+          def wait_for_ml_ready(node_ip: str, ec2, instance_id: str, interval: int = 15, join_reserve: int = 300):
+              """Poll port 8001 until MarkLogic responds. Gives up early if the instance is gone, or if
+              less than join_reserve seconds remain for the join, so the ASG can retry with a fresh budget."""
+              url = f"http://{node_ip}:8001/admin/v1/timestamp"
+              attempt = 0
+              while True:
+                  attempt += 1
+                  try:
+                      r = http.request('GET', url, timeout=5.0, retries=False)
+                      if r.status in [200, 401]:
+                          print(f"✓ MarkLogic ready on {node_ip} (attempt {attempt})")
+                          return
+                  except Exception:
+                      pass
+                  print(f"Waiting for ML on {node_ip} (attempt {attempt})...")
+                  if attempt % 4 == 0 and instance_gone(ec2, instance_id):
+                      raise Exception(f"Instance {instance_id} is no longer running")
+                  if out_of_time(interval + join_reserve):
+                      raise Exception(f"MarkLogic on {node_ip} was not ready with enough time left to complete the join")
+                  time.sleep(interval)
+
+          def digest_auth(method: str, url: str, username: str, password: str,
+                          body=None, content_type='application/json'):
+              headers = {'Content-Type': content_type, 'Accept': 'application/json'}
+              r = http.request(method, url, body=body, headers=headers, timeout=30.0)
+              if r.status != 401:
+                  return r
+              www_auth = r.headers.get('WWW-Authenticate', '')
+              if 'Digest' not in www_auth:
+                  return r
+              realm = re.search(r'realm="([^"]+)"', www_auth)
+              nonce = re.search(r'nonce="([^"]+)"', www_auth)
+              if not (realm and nonce):
+                  return r
+              realm_val = realm.group(1)
+              nonce_val = nonce.group(1)
+              uri = '/' + url.split('/', 3)[-1]
+              ha1 = hashlib.md5(f"{username}:{realm_val}:{password}".encode()).hexdigest()
+              ha2 = hashlib.md5(f"{method}:{uri}".encode()).hexdigest()
+              dr  = hashlib.md5(f"{ha1}:{nonce_val}:{ha2}".encode()).hexdigest()
+              auth = (f'Digest username="{username}", realm="{realm_val}", '
+                      f'nonce="{nonce_val}", uri="{uri}", response="{dr}"')
+              return http.request(method, url, body=body,
+                                  headers={'Authorization': auth, 'Content-Type': content_type,
+                                           'Accept': 'application/json'},
+                                  timeout=30.0)
+
+          def get_cluster_name(endpoint: str, username: str, password: str) -> str:
+              # GET /manage/v2?view=status&format=json returns local-cluster-status.name
+              # which is always the current cluster's name (e.g. "ip-10-0-x-x.region.compute.internal-cluster")
+              url = f"http://{endpoint}:8002/manage/v2?view=status&format=json"
+              r = digest_auth('GET', url, username, password)
+              if r.status != 200:
+                  raise Exception(f"Failed to get cluster name: {r.status} {r.data.decode('utf-8')[:200]}")
+              data = json.loads(r.data.decode('utf-8'))
+              name = data.get('local-cluster-status', {}).get('name', '')
+              if not name:
+                  raise Exception(f"Cluster name not found in: {r.data.decode('utf-8')[:200]}")
+              print(f"Cluster name: {name}")
+              return name
+
+          def get_cluster_host(endpoint: str, username: str, password: str) -> str:
+              """
+              Return a stable Default-group host name (e.g. ip-10-0-0-93.us-west-2.compute.internal).
+              The $host param in dynamic-host-token must be an actual cluster node, NOT the ALB/endpoint.
+              MarkLogic validates it with xdmp:host() — passing the ALB causes XDMP-NOSUCHHOST.
+              Dynamic nodes are skipped: a freshly joined one may be unknown to some backends.
+              """
+              base = f"http://{endpoint}:8002/manage/v2/hosts?format=json"
+              items = []
+              for url in (base + "&group-id=Default", base):
+                  r = digest_auth('GET', url, username, password)
+                  if r.status != 200:
+                      raise Exception(f"Failed to list hosts: {r.status} {r.data.decode('utf-8')[:200]}")
+                  data = json.loads(r.data.decode('utf-8'))
+                  items = data.get('host-default-list', {}).get('list-items', {}).get('list-item', [])
+                  if isinstance(items, dict):
+                      items = [items]
+                  if items:
+                      break
+              if not items:
+                  raise Exception("No hosts found in cluster")
+              host = sorted(h['nameref'] for h in items)[0]
+              print(f"Using cluster host for token: {host}")
+              return host
+
+          def generate_token(endpoint: str, username: str, password: str, group_name: str) -> str:
+              """
+              POST /manage/v2/clusters/{cluster-name}/dynamic-host-token
+              Returns a JWT token valid for 10 minutes (within the 15-min max).
+              Per ML12 spec §4.2.1.
+              $host must be an existing cluster node hostname (not the ALB) — MarkLogic
+              uses it to identify which node accepts the dynamic host join request.
+              """
+              cluster_name = get_cluster_name(endpoint, username, password)
+              cluster_host = get_cluster_host(endpoint, username, password)
+              url = f"http://{endpoint}:8002/manage/v2/clusters/{cluster_name}/dynamic-host-token"
+              payload = json.dumps({
+                  "dynamic-host-token": {
+                      "group": group_name,
+                      "host": cluster_host,
+                      "port": 8001,
+                      "duration": "PT10M",
+                      "comment": f"Auto-issued by TokenIssuerFunction for group {group_name}"
+                  }
+              }).encode('utf-8')
+              r = digest_auth('POST', url, username, password, body=payload)
+              print(f"Token API response: status={r.status}, body={r.data.decode('utf-8', errors='replace')[:500]}")
+              if r.status not in [200, 201]:
+                  raise Exception(f"Token generation failed: {r.status} {r.data.decode('utf-8')[:200]}")
+              # This endpoint always returns XML regardless of Accept header:
+              # <dynamic-host-token xmlns="...">eyJ...</dynamic-host-token>
+              raw = r.data.decode('utf-8').strip()
+              if raw.startswith('<'):
+                  import xml.etree.ElementTree as ET
+                  root = ET.fromstring(raw)
+                  token = root.text or ''
+              else:
+                  data = json.loads(raw)
+                  token = data.get('dynamic-host-token', {}).get('token', '')
+              if not token:
+                  raise Exception(f"No token in response: {raw[:200]}")
+              print(f"✓ JWT token generated for group '{group_name}'")
+              return token
+
+          def init_dynamic_host(node_ip: str, cluster_endpoint: str, username: str, password: str,
+                               group_name: str, max_attempts: int = 20, interval: int = 15):
+              """
+              POST /admin/v1/init with dynamic-host-token to join the node to the cluster.
+              MarkLogic handles the join internally; cluster membership is verified separately.
+              Token is generated fresh per attempt to prevent expiry when retrying.
+              Retries on:
+              - 503: ML's HTTP server is up but not yet ready to handle requests
+              - 500 XDMP-NODB: ML is up but internal databases haven't initialized yet
+              Both are transient startup states that resolve within a few minutes.
+              """
+              url = f"http://{node_ip}:8001/admin/v1/init"
+              token_failures = 0
+              for attempt in range(1, max_attempts + 1):
+                  if out_of_time(interval):
+                      raise Exception(f"Out of time before admin/v1/init succeeded on {node_ip}")
+                  try:
+                      token = generate_token(cluster_endpoint, username, password, group_name)
+                  except Exception as e:
+                      # Requests through the ALB can reach a backend whose config has not synced yet
+                      token_failures += 1
+                      print(f"Token generation failed ({token_failures}/5): {e}")
+                      if token_failures >= 5 or out_of_time(interval):
+                          raise
+                      time.sleep(interval)
+                      continue
+                  body = f'<init xmlns="http://marklogic.com/manage"><dynamic-host-token>{token}</dynamic-host-token></init>'
+                  r = http.request('POST', url,
+                                   body=body.encode('utf-8'),
+                                   headers={'Content-Type': 'application/xml'},
+                                   timeout=60.0)
+                  if r.status in [200, 202]:
+                      print(f"✓ admin/v1/init accepted on {node_ip} (status={r.status})")
+                      return
+                  response_body = r.data.decode('utf-8', errors='replace')
+                  if r.status == 503:
+                      print(f"admin/v1/init 503 on {node_ip} — ML not ready, retrying ({attempt}/{max_attempts})...")
+                      time.sleep(interval)
+                      continue
+                  if r.status == 500 and 'XDMP-NODB' in response_body:
+                      print(f"admin/v1/init 500 XDMP-NODB on {node_ip} — ML databases initializing, retrying ({attempt}/{max_attempts})...")
+                      time.sleep(interval)
+                      continue
+                  raise Exception(f"admin/v1/init failed on {node_ip}: {r.status} {response_body[:200]}")
+              raise Exception(f"admin/v1/init still failing on {node_ip} after {max_attempts} attempts")
+
+  # SNS Topic — ASG publishes lifecycle events here, Lambda subscribes
+  DynamicNodeLifecycleTopic:
+    Type: AWS::SNS::Topic
+    Condition: IsDynamicEnabled
+    Properties:
+      Subscription:
+        - Protocol: lambda
+          Endpoint: !GetAtt TokenIssuerFunction.Arn
+
+  # Allow SNS to invoke the TokenIssuerFunction
+  TokenIssuerSNSPermission:
+    Type: AWS::Lambda::Permission
+    Condition: IsDynamicEnabled
+    Properties:
+      FunctionName: !GetAtt TokenIssuerFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref DynamicNodeLifecycleTopic
+
+  # LaunchTemplate for dynamic MarkLogic nodes.
+  # No token in UserData — the TokenIssuerFunction handles token issuance
+  # after the node is running and MarkLogic is ready.
+  DynamicNodesLaunchTemplate:
+    Type: 'AWS::EC2::LaunchTemplate'
+    Condition: IsDynamicEnabled
+    DependsOn: GroupManagerResource
+    Properties:
+      LaunchTemplateData:
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              VolumeSize: !Ref DynamicNodeVolumeSize
+              VolumeType: gp3
+          - DeviceName: /dev/sdf
+            Ebs:
+              VolumeSize: !Ref DynamicNodeDataVolumeSize
+              VolumeType: gp3
+              DeleteOnTermination: true
+        KeyName:
+          Fn::ImportValue: !Sub ${ParentStackName}-KeyName
+        ImageId:
+          Fn::ImportValue: !Sub ${ParentStackName}-NodeAMIId
+        UserData: !Base64
+          'Fn::Join':
+            - ''
+            - - MARKLOGIC_ADMIN_USERNAME=
+              - !Ref AdminUser
+              - |+
+
+              - MARKLOGIC_ADMIN_PASSWORD=
+              - !Ref AdminPass
+              - |+
+
+              - 'MARKLOGIC_AWS_SWAP_SIZE=32'
+              - |+
+
+              # Clears the AMI's auto-create so only the Lambda's token join initializes the node.
+              - 'MARKLOGIC_ADMIN_AUTOCREATE='
+              - |+
+
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub ${ParentStackName}-SecurityGroup
+        InstanceType: !Ref DynamicNodeInstanceType
+        IamInstanceProfile:
+          Name:
+            Fn::ImportValue: !Sub ${ParentStackName}-IAMRole
+        MetadataOptions:
+          HttpTokens: required
+        # A rename creates a new launch template version, which makes the ASG replace nodes.
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: marklogic:dynamic-host-group
+                Value: !Ref DynamicHostGroupName
+
+  DynamicAlbTargetGroup9000:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 9000
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId:
+        Fn::ImportValue: !Sub ${ParentStackName}-VpcId
+
+  DynamicAlbTargetGroup9001:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 9001
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId:
+        Fn::ImportValue: !Sub ${ParentStackName}-VpcId
+
+  DynamicAlbTargetGroup9002:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 9002
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId:
+        Fn::ImportValue: !Sub ${ParentStackName}-VpcId
+
+  DynamicAlbTargetGroup9003:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 9003
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId:
+        Fn::ImportValue: !Sub ${ParentStackName}-VpcId
+
+  DynamicAlbTargetGroup9004:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 9004
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId:
+        Fn::ImportValue: !Sub ${ParentStackName}-VpcId
+
+  DynamicAlbTargetGroup9005:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 9005
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId:
+        Fn::ImportValue: !Sub ${ParentStackName}-VpcId
+
+  DynamicAlbTargetGroup9006:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 9006
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId:
+        Fn::ImportValue: !Sub ${ParentStackName}-VpcId
+
+  DynamicAlbTargetGroup9007:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 9007
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId:
+        Fn::ImportValue: !Sub ${ParentStackName}-VpcId
+
+  DynamicAlbTargetGroup9008:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      HealthCheckPort: 7997
+      UnhealthyThresholdCount: 5
+      Port: 9008
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 3600
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      VpcId:
+        Fn::ImportValue: !Sub ${ParentStackName}-VpcId
+
+  DynamicAlbListener9000:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    DependsOn: DynamicAlbTargetGroup9000
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref DynamicAlbTargetGroup9000
+          Type: forward
+      LoadBalancerArn:
+        Fn::ImportValue: !Sub ${ParentStackName}-AlbArn
+      Port: 9000
+      Protocol: HTTP
+
+  DynamicAlbListener9001:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    DependsOn: DynamicAlbTargetGroup9001
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref DynamicAlbTargetGroup9001
+          Type: forward
+      LoadBalancerArn:
+        Fn::ImportValue: !Sub ${ParentStackName}-AlbArn
+      Port: 9001
+      Protocol: HTTP
+
+  DynamicAlbListener9002:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    DependsOn: DynamicAlbTargetGroup9002
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref DynamicAlbTargetGroup9002
+          Type: forward
+      LoadBalancerArn:
+        Fn::ImportValue: !Sub ${ParentStackName}-AlbArn
+      Port: 9002
+      Protocol: HTTP
+
+  DynamicAlbListener9003:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    DependsOn: DynamicAlbTargetGroup9003
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref DynamicAlbTargetGroup9003
+          Type: forward
+      LoadBalancerArn:
+        Fn::ImportValue: !Sub ${ParentStackName}-AlbArn
+      Port: 9003
+      Protocol: HTTP
+
+  DynamicAlbListener9004:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    DependsOn: DynamicAlbTargetGroup9004
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref DynamicAlbTargetGroup9004
+          Type: forward
+      LoadBalancerArn:
+        Fn::ImportValue: !Sub ${ParentStackName}-AlbArn
+      Port: 9004
+      Protocol: HTTP
+
+  DynamicAlbListener9005:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    DependsOn: DynamicAlbTargetGroup9005
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref DynamicAlbTargetGroup9005
+          Type: forward
+      LoadBalancerArn:
+        Fn::ImportValue: !Sub ${ParentStackName}-AlbArn
+      Port: 9005
+      Protocol: HTTP
+
+  DynamicAlbListener9006:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    DependsOn: DynamicAlbTargetGroup9006
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref DynamicAlbTargetGroup9006
+          Type: forward
+      LoadBalancerArn:
+        Fn::ImportValue: !Sub ${ParentStackName}-AlbArn
+      Port: 9006
+      Protocol: HTTP
+
+  DynamicAlbListener9007:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    DependsOn: DynamicAlbTargetGroup9007
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref DynamicAlbTargetGroup9007
+          Type: forward
+      LoadBalancerArn:
+        Fn::ImportValue: !Sub ${ParentStackName}-AlbArn
+      Port: 9007
+      Protocol: HTTP
+
+  DynamicAlbListener9008:
+    Condition: CreateDynamicAlbResources
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    DependsOn: DynamicAlbTargetGroup9008
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref DynamicAlbTargetGroup9008
+          Type: forward
+      LoadBalancerArn:
+        Fn::ImportValue: !Sub ${ParentStackName}-AlbArn
+      Port: 9008
+      Protocol: HTTP
+
+  # Single multi-subnet ASG — AWS distributes nodes across AZs for HA
+  DynamicNodesASG:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Condition: IsDynamicEnabled
+    # SNS must be allowed to invoke the Lambda before the first lifecycle event fires.
+    DependsOn:
+      - DynamicNodesLaunchTemplate
+      - TokenIssuerSNSPermission
+    # One node at a time so the others keep serving; each old node drains and leaves via the terminate hook.
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MinInstancesInService: 0
+        MaxBatchSize: 1
+        PauseTime: PT1M
+    Properties:
+      # Single-zone parents export PrivateSubnet2/3 equal to PrivateSubnet1, and Auto Scaling rejects duplicate subnet IDs.
+      VPCZoneIdentifier: !If
+        - ParentIsMultiZone
+        - - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet1
+          - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet2
+          - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet3
+        - - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet1
+      LaunchTemplate:
+        LaunchTemplateId: !Ref DynamicNodesLaunchTemplate
+        Version: !GetAtt DynamicNodesLaunchTemplate.LatestVersionNumber
+      MinSize: '0'
+      MaxSize: !Ref DynamicNodesCount
+      DesiredCapacity: !Ref DynamicNodesCount
+      # Dynamic nodes use dedicated parent-ALB target groups on ports 9000-9008.
+      TargetGroupARNs: !If
+        - CreateDynamicAlbResources
+        - - !Ref DynamicAlbTargetGroup9000
+          - !Ref DynamicAlbTargetGroup9001
+          - !Ref DynamicAlbTargetGroup9002
+          - !Ref DynamicAlbTargetGroup9003
+          - !Ref DynamicAlbTargetGroup9004
+          - !Ref DynamicAlbTargetGroup9005
+          - !Ref DynamicAlbTargetGroup9006
+          - !Ref DynamicAlbTargetGroup9007
+          - !Ref DynamicAlbTargetGroup9008
+        - !Ref 'AWS::NoValue'
+      Cooldown: '300'
+      HealthCheckType: EC2
+      HealthCheckGracePeriod: '300'
+      LifecycleHookSpecificationList:
+        - LifecycleHookName: DynamicNodeLaunchHook
+          LifecycleTransition: autoscaling:EC2_INSTANCE_LAUNCHING
+          # 20-min heartbeat — outlasts the Lambda's 15-min timeout so it always reports CONTINUE/ABANDON itself
+          HeartbeatTimeout: 1200
+          DefaultResult: ABANDON
+          NotificationTargetARN: !Ref DynamicNodeLifecycleTopic
+          RoleARN: !GetAtt DynamicNodesASGLifecycleRole.Arn
+        - LifecycleHookName: DynamicNodeTerminateHook
+          LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
+          # 5-min heartbeat — Lambda removes the host from ML before the instance terminates
+          HeartbeatTimeout: 300
+          DefaultResult: CONTINUE
+          NotificationTargetARN: !Ref DynamicNodeLifecycleTopic
+          RoleARN: !GetAtt DynamicNodesASGLifecycleRole.Arn
+      Tags:
+        - Key: marklogic:stack:name
+          Value: !Ref 'AWS::StackName'
+          PropagateAtLaunch: 'true'
+        - Key: marklogic:stack:id
+          Value: !Ref 'AWS::StackId'
+          PropagateAtLaunch: 'true'
+        - Key: marklogic:dynamic-host-group
+          Value: !Ref DynamicHostGroupName
+          PropagateAtLaunch: 'true'
+
+  # Updates after the ASG, so a renamed group is deleted only after its nodes were replaced.
+  GroupCleanupResource:
+    Type: Custom::GroupManager
+    Condition: IsDynamicEnabled
+    DependsOn: DynamicNodesASG
+    Properties:
+      ServiceToken: !GetAtt GroupManagerFunction.Arn
+      # Above the Lambda's 360 s timeout, far below CloudFormation's 1 h default.
+      ServiceTimeout: 420
+      CleanupOnly: 'true'
+      AdminUser: !Ref AdminUser
+      AdminPass: !Ref AdminPass
+      DynamicHostGroupName: !Ref DynamicHostGroupName
+
+  # IAM Role allowing the ASG to publish lifecycle notifications to SNS
+  DynamicNodesASGLifecycleRole:
+    Type: AWS::IAM::Role
+    Condition: IsDynamicEnabled
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: autoscaling.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AllowSNSPublish
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: sns:Publish
+                Resource: !Ref DynamicNodeLifecycleTopic
+
+Outputs:
+  LambdaFunctionArn:
+    Condition: IsDynamicEnabled
+    Value: !GetAtt GroupManagerFunction.Arn
+
+  DynamicNodesASGName:
+    Condition: IsDynamicEnabled
+    Description: Name of the Auto Scaling Group managing dynamic MarkLogic nodes
+    Value: !Ref DynamicNodesASG
+
+  TokenIssuerFunctionArn:
+    Condition: IsDynamicEnabled
+    Description: ARN of the Lambda that generates fresh tokens and joins each dynamic node at launch
+    Value: !GetAtt TokenIssuerFunction.Arn
