@@ -2328,19 +2328,15 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-IsMultiZone
   PrivateSubnet2Id:
-    Description: >-
-      Private Subnet 2 ID. In MultiZone deployments this is the real AZ2 subnet.
-      In single-zone deployments it falls back to PrivateSubnet1 so the export
-      always exists and can be unconditionally imported by dependent stacks.
-    Value: !If [MultiZone, !Ref PrivateSubnet2, !Ref PrivateSubnet1]
+    Condition: MultiZone
+    Description: Private Subnet 2 ID (AZ2). Only exported for multi-zone deployments.
+    Value: !Ref PrivateSubnet2
     Export:
       Name: !Sub ${AWS::StackName}-PrivateSubnet2
   PrivateSubnet3Id:
-    Description: >-
-      Private Subnet 3 ID. In MultiZone deployments this is the real AZ3 subnet.
-      In single-zone deployments it falls back to PrivateSubnet1 so the export
-      always exists and can be unconditionally imported by dependent stacks.
-    Value: !If [MultiZone, !Ref PrivateSubnet3, !Ref PrivateSubnet1]
+    Condition: MultiZone
+    Description: Private Subnet 3 ID (AZ3). Only exported for multi-zone deployments.
+    Value: !Ref PrivateSubnet3
     Export:
       Name: !Sub ${AWS::StackName}-PrivateSubnet3
   NodeAMIId:

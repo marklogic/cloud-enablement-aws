@@ -129,8 +129,13 @@ Resources:
       VpcConfig:
         SecurityGroupIds:
           - Fn::ImportValue: !Sub ${ParentStackName}-SecurityGroup
-        SubnetIds:
-          - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet1
+        # Every zone of a multi-zone parent, so one zone's outage doesn't stop the Lambda.
+        SubnetIds: !If
+          - ParentIsMultiZone
+          - - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet1
+            - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet2
+            - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet3
+          - - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet1
       Environment:
         Variables:
           CLUSTER_ENDPOINT:
@@ -162,6 +167,13 @@ Resources:
           def out_of_time(reserve: float = 0.0) -> bool:
               return time.time() + reserve >= DEADLINE
 
+          def budgeted_request(method: str, url: str, cap: float, **kwargs):
+              """http.request that ends before DEADLINE; retries are off so they can't multiply the timeout."""
+              left = DEADLINE - time.time()
+              if left < 1.0:
+                  raise Exception(f"Out of time before {method} {url}")
+              return http.request(method, url, timeout=urllib3.Timeout(total=min(cap, left)), retries=False, **kwargs)
+
           def handler(event, context):
               global DEADLINE
               DEADLINE = time.time() + context.get_remaining_time_in_millis() / 1000.0 - 30
@@ -191,7 +203,7 @@ Resources:
               """Make request with HTTP Digest Authentication"""
               body = json.dumps(payload) if payload else None
               
-              response = http.request(method, url, body=body, timeout=30.0)
+              response = budgeted_request(method, url, 30.0, body=body)
               
               if response.status != 401:
                   return response
@@ -222,7 +234,7 @@ Resources:
                           'Accept': 'application/json'
                       }
                       
-                      return http.request(method, url, body=body, headers=headers, timeout=30.0)
+                      return budgeted_request(method, url, 30.0, body=body, headers=headers)
               
               auth_string = base64.b64encode(f"{username}:{password}".encode()).decode()
               headers = {
@@ -231,7 +243,7 @@ Resources:
                   'Accept': 'application/json'
               }
               
-              return http.request(method, url, body=body, headers=headers, timeout=30.0)
+              return budgeted_request(method, url, 30.0, body=body, headers=headers)
           
           def wait_for_ready(endpoint: str, username: str, password: str):
               """Wait for MarkLogic to be ready"""
@@ -299,9 +311,9 @@ Resources:
                   print(f"⚠ Not found: {name}")
               elif response.status == 400:
                   # Group may have assigned hosts
-                  print(f"⚠ Cannot delete '{name}' - may have assigned hosts or other dependencies")
+                  raise Exception(f"Cannot delete '{name}': assigned hosts or other dependencies remain")
               else:
-                  print(f"⚠ Delete failed for {name}: {response.status}")
+                  raise Exception(f"Delete failed for '{name}': {response.status}")
           
           def enable_dynamic_hosts(endpoint: str, username: str, password: str, group_name: str):
               """Enable allow-dynamic-hosts on a group via PUT /manage/v2/groups/{name}/properties"""
@@ -571,6 +583,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - autoscaling:CompleteLifecycleAction
+                  - autoscaling:DescribeAutoScalingInstances
                   - ec2:DescribeInstances
                   - ec2:GetConsoleOutput
                 Resource: '*'
@@ -592,8 +605,13 @@ Resources:
       VpcConfig:
         SecurityGroupIds:
           - Fn::ImportValue: !Sub ${ParentStackName}-SecurityGroup
-        SubnetIds:
-          - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet1
+        # Every zone of a multi-zone parent, so one zone's outage doesn't stop the Lambda.
+        SubnetIds: !If
+          - ParentIsMultiZone
+          - - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet1
+            - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet2
+            - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet3
+          - - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet1
       Environment:
         Variables:
           CLUSTER_ENDPOINT:
@@ -619,6 +637,13 @@ Resources:
 
           def out_of_time(reserve: float = 0.0) -> bool:
               return time.time() + reserve >= DEADLINE
+
+          def budgeted_request(method: str, url: str, cap: float, **kwargs):
+              """http.request that ends before DEADLINE; retries are off so they can't multiply the timeout."""
+              left = DEADLINE - time.time()
+              if left < 1.0:
+                  raise Exception(f"Out of time before {method} {url}")
+              return http.request(method, url, timeout=urllib3.Timeout(total=min(cap, left)), retries=False, **kwargs)
 
           def handler(event, context):
               global DEADLINE
@@ -680,6 +705,10 @@ Resources:
                           print(f"Failed to send CONTINUE: {e2}")
               else:
                   # Scale-up: join the new node to the cluster
+                  # SNS delivers at least once, so a launch that already completed must not run again.
+                  if launch_pending(asg, instance_id) is False:
+                      print(f"Launch of {instance_id} already completed — ignoring duplicate notification")
+                      return
                   node_hostname = None
                   try:
                       node_ip, node_hostname = get_instance_info(ec2, instance_id)
@@ -709,6 +738,10 @@ Resources:
                       print(f"ERROR: {e}")
                       import traceback
                       traceback.print_exc()
+                      # A duplicate run that fails after the launch completed must not evict the healthy node.
+                      if launch_pending(asg, instance_id) is not True:
+                          print(f"Launch of {instance_id} is not pending — skipping host removal and ABANDON")
+                          return
                       log_console_tail(ec2, instance_id)
                       if node_hostname:
                           # A partial join can still register the host; don't leave it behind.
@@ -723,6 +756,17 @@ Resources:
                           )
                       except Exception as e2:
                           print(f"Failed to send ABANDON: {e2}")
+
+          def launch_pending(asg, instance_id: str):
+              """True while the launch lifecycle action is open, False once it has completed, None if unknown."""
+              try:
+                  found = asg.describe_auto_scaling_instances(InstanceIds=[instance_id])['AutoScalingInstances']
+              except Exception as e:
+                  print(f"Could not read lifecycle state of {instance_id}: {e}")
+                  return None
+              if not found:
+                  return None
+              return found[0]['LifecycleState'] in ('Pending', 'Pending:Wait')
 
           def log_console_tail(ec2, instance_id: str, lines: int = 80):
               """Boot failures are only visible on the node, which is terminated right after ABANDON."""
@@ -941,7 +985,7 @@ Resources:
           def digest_auth(method: str, url: str, username: str, password: str,
                           body=None, content_type='application/json'):
               headers = {'Content-Type': content_type, 'Accept': 'application/json'}
-              r = http.request(method, url, body=body, headers=headers, timeout=30.0)
+              r = budgeted_request(method, url, 30.0, body=body, headers=headers)
               if r.status != 401:
                   return r
               www_auth = r.headers.get('WWW-Authenticate', '')
@@ -959,10 +1003,9 @@ Resources:
               dr  = hashlib.md5(f"{ha1}:{nonce_val}:{ha2}".encode()).hexdigest()
               auth = (f'Digest username="{username}", realm="{realm_val}", '
                       f'nonce="{nonce_val}", uri="{uri}", response="{dr}"')
-              return http.request(method, url, body=body,
-                                  headers={'Authorization': auth, 'Content-Type': content_type,
-                                           'Accept': 'application/json'},
-                                  timeout=30.0)
+              return budgeted_request(method, url, 30.0, body=body,
+                                      headers={'Authorization': auth, 'Content-Type': content_type,
+                                               'Accept': 'application/json'})
 
           def get_cluster_name(endpoint: str, username: str, password: str) -> str:
               # GET /manage/v2?view=status&format=json returns local-cluster-status.name
@@ -1024,7 +1067,7 @@ Resources:
                   }
               }).encode('utf-8')
               r = digest_auth('POST', url, username, password, body=payload)
-              print(f"Token API response: status={r.status}, body={r.data.decode('utf-8', errors='replace')[:500]}")
+              print(f"Token API response: status={r.status}")
               if r.status not in [200, 201]:
                   raise Exception(f"Token generation failed: {r.status} {r.data.decode('utf-8')[:200]}")
               # This endpoint always returns XML regardless of Accept header:
@@ -1069,10 +1112,9 @@ Resources:
                       time.sleep(interval)
                       continue
                   body = f'<init xmlns="http://marklogic.com/manage"><dynamic-host-token>{token}</dynamic-host-token></init>'
-                  r = http.request('POST', url,
-                                   body=body.encode('utf-8'),
-                                   headers={'Content-Type': 'application/xml'},
-                                   timeout=60.0)
+                  r = budgeted_request('POST', url, 60.0,
+                                       body=body.encode('utf-8'),
+                                       headers={'Content-Type': 'application/xml'})
                   if r.status in [200, 202]:
                       print(f"✓ admin/v1/init accepted on {node_ip} (status={r.status})")
                       return
@@ -1502,7 +1544,7 @@ Resources:
         MaxBatchSize: 1
         PauseTime: PT1M
     Properties:
-      # Single-zone parents export PrivateSubnet2/3 equal to PrivateSubnet1, and Auto Scaling rejects duplicate subnet IDs.
+      # PrivateSubnet2/3 are exported only by multi-zone parents.
       VPCZoneIdentifier: !If
         - ParentIsMultiZone
         - - Fn::ImportValue: !Sub ${ParentStackName}-PrivateSubnet1
