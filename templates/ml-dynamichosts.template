@@ -738,14 +738,7 @@ Resources:
                       print(f"ERROR: {e}")
                       import traceback
                       traceback.print_exc()
-                      # A duplicate run that fails after the launch completed must not evict the healthy node.
-                      if launch_pending(asg, instance_id) is not True:
-                          print(f"Launch of {instance_id} is not pending — skipping host removal and ABANDON")
-                          return
                       log_console_tail(ec2, instance_id)
-                      if node_hostname:
-                          # A partial join can still register the host; don't leave it behind.
-                          remove_host_from_cluster(cluster_endpoint, username, password, node_hostname)
                       # ABANDON causes ASG to terminate the instance and try again
                       try:
                           asg.complete_lifecycle_action(
@@ -755,7 +748,12 @@ Resources:
                               LifecycleActionResult='ABANDON'
                           )
                       except Exception as e2:
+                          # Only the run whose ABANDON the ASG accepts may remove the host.
                           print(f"Failed to send ABANDON: {e2}")
+                          return
+                      if node_hostname:
+                          # A partial join can still register the host; don't leave it behind.
+                          remove_host_from_cluster(cluster_endpoint, username, password, node_hostname)
 
           def launch_pending(asg, instance_id: str):
               """True while the launch lifecycle action is open, False once it has completed, None if unknown."""
