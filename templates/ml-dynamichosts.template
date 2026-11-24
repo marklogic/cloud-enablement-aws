@@ -680,6 +680,9 @@ Resources:
                       node_ip, node_hostname = get_instance_info(ec2, instance_id)
                       print(f"Terminating dynamic node: {instance_id} → {node_ip} ({node_hostname})")
                       remove_host_from_cluster(cluster_endpoint, username, password, node_hostname)
+                      # Before CONTINUE: the sweep expects this instance to still be running.
+                      remove_stale_dynamic_hosts(ec2, asg_name, cluster_endpoint, username, password,
+                                                 group_name, node_hostname)
                       asg.complete_lifecycle_action(
                           LifecycleHookName=lifecycle_hook,
                           AutoScalingGroupName=asg_name,
@@ -687,8 +690,6 @@ Resources:
                           LifecycleActionResult='CONTINUE'
                       )
                       print(f"✓ Dynamic node {instance_id} removed from cluster")
-                      remove_stale_dynamic_hosts(ec2, asg_name, cluster_endpoint, username, password,
-                                                 group_name, node_hostname)
                   except Exception as e:
                       print(f"ERROR during termination cleanup: {e}")
                       import traceback
@@ -1019,11 +1020,21 @@ Resources:
               print(f"Cluster name: {name}")
               return name
 
+          def admin_reachable(host: str) -> bool:
+              """Same readiness test as the node probes: the Admin timestamp endpoint answers 200 or 401."""
+              try:
+                  r = budgeted_request('GET', f"http://{host}:8001/admin/v1/timestamp", 3.0)
+                  return r.status in (200, 401)
+              except Exception:
+                  return False
+
           def get_cluster_host(endpoint: str, username: str, password: str) -> str:
               """
-              Return a stable Default-group host name (e.g. ip-10-0-0-93.us-west-2.compute.internal).
+              Return a Default-group host name (e.g. ip-10-0-0-93.us-west-2.compute.internal) that answers on
+              its Admin port: the first in sorted order, or the first host if none answers.
               The $host param in dynamic-host-token must be an actual cluster node, NOT the ALB/endpoint.
               MarkLogic validates it with xdmp:host() — passing the ALB causes XDMP-NOSUCHHOST.
+              Dynamic nodes join through this host, so a down one fails every join.
               Dynamic nodes are skipped: a freshly joined one may be unknown to some backends.
               """
               base = f"http://{endpoint}:8002/manage/v2/hosts?format=json"
@@ -1040,9 +1051,15 @@ Resources:
                       break
               if not items:
                   raise Exception("No hosts found in cluster")
-              host = sorted(h['nameref'] for h in items)[0]
-              print(f"Using cluster host for token: {host}")
-              return host
+              hosts = sorted(h['nameref'] for h in items)
+              for host in hosts:
+                  if admin_reachable(host):
+                      print(f"Using cluster host for token: {host}")
+                      return host
+                  print(f"Admin endpoint on {host} is not answering, trying the next host")
+              # Keep the previous choice so the probe itself can never block a join.
+              print(f"No cluster host answered; using {hosts[0]} for the token")
+              return hosts[0]
 
           def generate_token(endpoint: str, username: str, password: str, group_name: str) -> str:
               """
