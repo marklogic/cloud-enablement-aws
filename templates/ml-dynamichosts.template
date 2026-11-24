@@ -989,7 +989,13 @@ Resources:
                   return r
               www_auth = r.headers.get('WWW-Authenticate', '')
               if 'Digest' not in www_auth:
-                  return r
+                  # A Basic-only Manage server never offers Digest.
+                  if 'Basic' not in www_auth:
+                      return r
+                  basic = base64.b64encode(f"{username}:{password}".encode()).decode()
+                  return budgeted_request(method, url, 30.0, body=body,
+                                          headers={'Authorization': f'Basic {basic}', 'Content-Type': content_type,
+                                                   'Accept': 'application/json'})
               realm = re.search(r'realm="([^"]+)"', www_auth)
               nonce = re.search(r'nonce="([^"]+)"', www_auth)
               if not (realm and nonce):
